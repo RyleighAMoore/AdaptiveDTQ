@@ -1,0 +1,48 @@
+A few things I want to note:
+
+1)
+I don't think there is a method in Python that is equivalent to the function dnorm in R.
+I just wrote my own though that is equivalent and I believe it is fairly efficient.
+
+2)
+There is currently a slight difference between how the R code and the Python code iterate
+because I feel my way in the Python code makes more sense.
+It would be a quick change though if we decide otherwise.
+
+In the R code, the loop is done in kind of an odd way in my opinion.
+The code uses, for (i in c(2:numSteps)) as the loop which makes it so that if numSteps
+is 0, we take  for (i in [2 1 0]) so that there are 3 time steps.
+
+In the Python code, I make it so that if numSteps is 0 then we don't take any time steps.
+
+Below is a chart showing the maximum value of the solution (phat) for comparison of the R
+and Python codes. The number in parentheses is the number of steps the R code really takes.
+
+            R               Python
+numSteps    0 (3)           0
+max(phat)   1.877697        3.988158
+
+numSteps    1 (2)           1
+max(phat)   2.212652        2.764882
+
+numSteps    2 (1)           2
+max(phat)   2.764882        2.212652
+
+numSteps    3 (2)           3
+max(phat)   2.212652        1.877697
+
+numSteps    4 (3)           4
+max(phat)   1.877697        1.645359
+
+...         ...             ...
+
+numSteps    99 (98)         99
+max(phat)   0.625075        0.629170
+
+numSteps    100  (99)       100
+max(phat)   0.629170        0.633143
+
+I currently have the Python code multiplying by the A matrix exactly numSteps times
+because I feel that this makes the most sense. The R code multiplies by the A matrix
+(numSteps - 1) times other than the seemingly odd way that it starts out for small
+values of numSteps.
