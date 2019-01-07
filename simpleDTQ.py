@@ -3,7 +3,7 @@
 # dX_t = X_t*(4-X_t^2) dt + dW_t
 import numpy as np
 import matplotlib.pyplot as plt
-
+import matplotlib.animation as animation
 
 # Drift function
 def driftfun(x):
@@ -32,12 +32,15 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
     return test
 
 
+# visualization parameters
+animate = True
+
 # simulation parameters
-T = 0  # final time, code computes PDF of X_T
+T = 1  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
-numsteps = np.ceil(T / h)
+numsteps = int(np.ceil(T / h))
 
 # define spatial grid
 k = h ** s
@@ -50,9 +53,29 @@ A = np.multiply(k, integrandmat(xvec, xvec, h, driftfun, difffun))
 # pdf after one time step with Dirac delta(x-init) initial condition
 phat = dnorm(xvec, init + driftfun(init), np.abs(difffun(init)) * np.sqrt(h))
 
-# main iteration loop
-for i in range(int(numsteps)):
-    phat = np.matmul(A, phat)
+if animate:
+    pdf_trajectory = np.zeros([phat.size, numsteps+1])
+    pdf_trajectory[:,0] = phat
+    for i in range(numsteps):
+        pdf_trajectory[:,i+1] = np.dot(A, pdf_trajectory[:,i])
 
-plt.plot(xvec, phat, '.')
-plt.show()
+    def update_animation(step, pdf_data, l):
+        l.set_xdata(xvec)
+        l.set_ydata(pdf_data[:,step+1])
+        return l,
+
+    f1 = plt.figure()
+    l, = plt.plot([],[],'r')
+    plt.xlim(np.min(xvec), np.max(xvec))
+    plt.ylim(0, np.max(phat))
+    anim = animation.FuncAnimation(f1, update_animation, numsteps, fargs=(pdf_trajectory,l), interval=50, blit=True)
+
+    plt.show()
+
+else:
+    # main iteration loop
+    for i in range(numsteps):
+        phat = np.matmul(A, phat)
+
+    plt.plot(xvec, phat, '.')
+    plt.show()
