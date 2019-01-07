@@ -2,3 +2,4 @@
   overresovled example)
 - prescribe method to redefine grid. I.e., evolve the grid with time
 - change the quadrature rule when the grid evolves
+- start writing this up in latex
