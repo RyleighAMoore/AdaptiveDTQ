@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+
 # Drift function
 def driftfun(x):
     return x * (4 - x ** 2)
@@ -33,7 +34,7 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
 
 
 # visualization parameters
-animate = True
+animate = False
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -41,6 +42,8 @@ s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
 numsteps = int(np.ceil(T / h))
+
+assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
@@ -56,7 +59,7 @@ phat = dnorm(xvec, init + driftfun(init), np.abs(difffun(init)) * np.sqrt(h))
 if animate:
     pdf_trajectory = np.zeros([phat.size, numsteps+1])
     pdf_trajectory[:,0] = phat
-    for i in range(numsteps):
+    for i in range(numsteps-1):  # since one time step is computed above
         pdf_trajectory[:,i+1] = np.dot(A, pdf_trajectory[:,i])
 
     def update_animation(step, pdf_data, l):
@@ -74,7 +77,7 @@ if animate:
 
 else:
     # main iteration loop
-    for i in range(numsteps):
+    for i in range(numsteps-1):  # since one time step is computed above
         phat = np.matmul(A, phat)
 
     plt.plot(xvec, phat, '.')
