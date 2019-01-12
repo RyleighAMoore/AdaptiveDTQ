@@ -47,8 +47,9 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-yM = 5
-xvec = np.arange(-yM, yM, k)
+xMin = 5
+xMax = 5
+xvec = np.arange(-xMin, xMax, k)
 
 # Kernel matrix
 A = np.multiply(k, integrandmat(xvec, xvec, h, driftfun, difffun))
