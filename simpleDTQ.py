@@ -20,7 +20,7 @@ def dnorm(x, mu, sigma):
     return np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
 
 
-#  Function that returns the kernel matrix
+#  Function that returns the kernel matrix G(x,y)
 def integrandmat(xvec, yvec, h, driftfun, difffun):
     Y = np.zeros((len(yvec), len(yvec)))
     for i in range(len(yvec)):
@@ -28,13 +28,13 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
     mu = Y + driftfun(Y) * h
     Y = np.transpose(Y)  # Transpose Y for use in the dnorm function
     sigma = abs(difffun(Y)) * np.sqrt(h)
-    sigma = np.reshape(sigma, [315, 315])  # make a matrix for the dnorm function
+    sigma = np.reshape(sigma, [np.size(xvec), np.size(xvec)])  # make a matrix for the dnorm function
     test = dnorm(Y, mu, sigma)
     return test
 
 
 # visualization parameters
-animate = False
+animate = True
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -47,7 +47,7 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-yM = 0.05 * k * (np.pi / (k ** 2))
+yM = 5
 xvec = np.arange(-yM, yM, k)
 
 # Kernel matrix
