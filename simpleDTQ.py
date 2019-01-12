@@ -8,7 +8,7 @@ import matplotlib.animation as animation
 
 # Drift function
 def driftfun(x):
-    return x * (25 - x ** 2)
+    return x * (4 - x ** 2)
 
 
 # Diffusion function
@@ -48,8 +48,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-xMin = 7
-xMax = 7
+xMin = -4
+xMax = 4
 xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
@@ -78,7 +78,7 @@ if animate:
 
     if evolution:
         plt.figure()
-        plt.suptitle("Evolution for $f(x)=x(25 - x^2), g(x)=1$")
+        plt.suptitle("Evolution for $f(x)=x(4 - x^2), g(x)=1$")
         numPDF = np.size(pdf_trajectory,1)
         plt.subplot(2, 2, 1)
         plt.title("t=0")
@@ -92,7 +92,6 @@ if animate:
         plt.subplot(2, 2, 4)
         plt.title("t=T")
         plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF-2))])
-
     plt.show()
 
 else:
