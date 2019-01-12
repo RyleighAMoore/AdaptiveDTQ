@@ -8,7 +8,7 @@ import matplotlib.animation as animation
 
 # Drift function
 def driftfun(x):
-    return x * (4 - x ** 2)
+    return x * (25 - x ** 2)
 
 
 # Diffusion function
@@ -35,6 +35,7 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
 
 # visualization parameters
 animate = True
+evolution = True
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -47,9 +48,9 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-xMin = 5
-xMax = 5
-xvec = np.arange(-xMin, xMax, k)
+xMin = 7
+xMax = 7
+xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
 A = np.multiply(k, integrandmat(xvec, xvec, h, driftfun, difffun))
@@ -73,6 +74,24 @@ if animate:
     plt.xlim(np.min(xvec), np.max(xvec))
     plt.ylim(0, np.max(phat))
     anim = animation.FuncAnimation(f1, update_animation, numsteps, fargs=(pdf_trajectory,l), interval=50, blit=True)
+    plt.show()
+
+    if evolution:
+        plt.figure()
+        plt.suptitle("Evolution for $f(x)=x(25 - x^2), g(x)=1$")
+        numPDF = np.size(pdf_trajectory,1)
+        plt.subplot(2, 2, 1)
+        plt.title("t=0")
+        plt.plot(xvec, pdf_trajectory[:,0])
+        plt.subplot(2, 2, 2)
+        plt.title("t=T/3")
+        plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF*(1/3)))])
+        plt.subplot(2, 2, 3)
+        plt.title("t=2T/3")
+        plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF * (2 / 3)))])
+        plt.subplot(2, 2, 4)
+        plt.title("t=T")
+        plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF-2))])
 
     plt.show()
 
@@ -83,3 +102,6 @@ else:
 
     plt.plot(xvec, phat, '.')
     plt.show()
+
+
+
