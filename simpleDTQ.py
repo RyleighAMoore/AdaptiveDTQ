@@ -37,7 +37,7 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
 # visualization parameters
 animate = True
 evolution = True
-saveSolution = True
+saveSolution = False
 gridFileName = 'CoarseX'
 solutionFileName = 'CoarseSolution'
 
