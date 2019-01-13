@@ -4,11 +4,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-
+import pickle
 
 # Drift function
 def driftfun(x):
-    return x * (4 - x ** 2)
+    # return np.tan(x)
+    return (x * (4 - x ** 2)-x)
 
 
 # Diffusion function
@@ -36,6 +37,9 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
 # visualization parameters
 animate = True
 evolution = True
+saveSolution = True
+gridFileName = 'CoarseX'
+solutionFileName = 'CoarseSolution'
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -48,8 +52,9 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-xMin = -4
-xMax = 4
+#k = 0.001
+xMin = -5
+xMax = 5
 xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
@@ -59,14 +64,14 @@ A = np.multiply(k, integrandmat(xvec, xvec, h, driftfun, difffun))
 phat = dnorm(xvec, init + driftfun(init), np.abs(difffun(init)) * np.sqrt(h))
 
 if animate:
-    pdf_trajectory = np.zeros([phat.size, numsteps+1])
-    pdf_trajectory[:,0] = phat
+    pdf_trajectory = np.zeros([phat.size, numsteps])
+    pdf_trajectory[:,0] = phat  # solution after one time step from above
     for i in range(numsteps-1):  # since one time step is computed above
         pdf_trajectory[:,i+1] = np.dot(A, pdf_trajectory[:,i])
 
     def update_animation(step, pdf_data, l):
         l.set_xdata(xvec)
-        l.set_ydata(pdf_data[:,step+1])
+        l.set_ydata(pdf_data[:,step])
         return l,
 
     f1 = plt.figure()
@@ -78,7 +83,7 @@ if animate:
 
     if evolution:
         plt.figure()
-        plt.suptitle("Evolution for $f(x)=x(4 - x^2), g(x)=1$")
+        plt.suptitle(r'Evolution for $f(x)=np.tan(x), g(x)=1, k \approx 0.032$')
         numPDF = np.size(pdf_trajectory,1)
         plt.subplot(2, 2, 1)
         plt.title("t=0")
@@ -91,8 +96,17 @@ if animate:
         plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF * (2 / 3)))])
         plt.subplot(2, 2, 4)
         plt.title("t=T")
-        plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF-2))])
+        plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF-1))])
     plt.show()
+
+    if saveSolution:
+        SolutionToSave = open(solutionFileName, 'wb')
+        pickle.dump(pdf_trajectory, SolutionToSave)
+        SolutionToSave.close()
+        GridToSave = open(gridFileName, 'wb')
+        pickle.dump(xvec, GridToSave)
+        GridToSave.close()
+
 
 else:
     # main iteration loop
