@@ -1,6 +1,5 @@
-# code to compute the PDF of the solution of the SDE:
-#
-# dX_t = X_t*(4-X_t^2) dt + dW_t
+# Code to graph solutions together saved by simpleDTQ.py using pickle.
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
