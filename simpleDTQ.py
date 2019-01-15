@@ -5,11 +5,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import pickle
+import Integrand
 
 # Drift function
 def driftfun(x):
-    # return np.tan(x)
-    return (x * (4 - x ** 2)-x)
+    return (x * (25 - x ** 2)-x)
 
 
 # Diffusion function
@@ -36,10 +36,11 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
 
 # visualization parameters
 animate = True
-evolution = True
+plotEvolution = True
 saveSolution = False
 gridFileName = 'CoarseX'
 solutionFileName = 'CoarseSolution'
+plotEps = True
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -53,21 +54,25 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 # define spatial grid
 k = h ** s
 #k = 0.001
-xMin = -5
+xMin = - 5
 xMax = 5
 xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
-A = np.multiply(k, integrandmat(xvec, xvec, h, driftfun, difffun))
+G = integrandmat(xvec, xvec, h, driftfun, difffun)
+A = np.multiply(k, G)
 
 # pdf after one time step with Dirac delta(x-init) initial condition
 phat = dnorm(xvec, init + driftfun(init), np.abs(difffun(init)) * np.sqrt(h))
 
+pdf_trajectory = np.zeros([phat.size, numsteps])
+epsilon = np.zeros(numsteps)
 if animate:
-    pdf_trajectory = np.zeros([phat.size, numsteps])
-    pdf_trajectory[:,0] = phat  # solution after one time step from above
+    pdf_trajectory[:, 0] = phat  # solution after one time step from above
+    epsilon[0] = Integrand.computeEpsilon(G, phat)
     for i in range(numsteps-1):  # since one time step is computed above
         pdf_trajectory[:,i+1] = np.dot(A, pdf_trajectory[:,i])
+        epsilon[i+1] = Integrand.computeEpsilon(G, pdf_trajectory[:,i])
 
     def update_animation(step, pdf_data, l):
         l.set_xdata(xvec)
@@ -81,38 +86,41 @@ if animate:
     anim = animation.FuncAnimation(f1, update_animation, numsteps, fargs=(pdf_trajectory,l), interval=50, blit=True)
     plt.show()
 
-    if evolution:
-        plt.figure()
-        plt.suptitle(r'Evolution for $f(x)=np.tan(x), g(x)=1, k \approx 0.032$')
-        numPDF = np.size(pdf_trajectory,1)
-        plt.subplot(2, 2, 1)
-        plt.title("t=0")
-        plt.plot(xvec, pdf_trajectory[:,0])
-        plt.subplot(2, 2, 2)
-        plt.title("t=T/3")
-        plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF*(1/3)))])
-        plt.subplot(2, 2, 3)
-        plt.title("t=2T/3")
-        plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF * (2 / 3)))])
-        plt.subplot(2, 2, 4)
-        plt.title("t=T")
-        plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF-1))])
+if plotEps:
+    plt.figure()
+    plt.plot(epsilon)
     plt.show()
 
-    if saveSolution:
-        SolutionToSave = open(solutionFileName, 'wb')
-        pickle.dump(pdf_trajectory, SolutionToSave)
-        SolutionToSave.close()
-        GridToSave = open(gridFileName, 'wb')
-        pickle.dump(xvec, GridToSave)
-        GridToSave.close()
+if plotEvolution:
+    plt.figure()
+    plt.suptitle(r'Evolution for $f(x)=np.tan(x), g(x)=1, k \approx 0.032$')
+    numPDF = np.size(pdf_trajectory,1)
+    plt.subplot(2, 2, 1)
+    plt.title("t=0")
+    plt.plot(xvec, pdf_trajectory[:,0])
+    plt.subplot(2, 2, 2)
+    plt.title("t=T/3")
+    plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF*(1/3)))])
+    plt.subplot(2, 2, 3)
+    plt.title("t=2T/3")
+    plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF * (2 / 3)))])
+    plt.subplot(2, 2, 4)
+    plt.title("t=T")
+    plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF-1))])
+    plt.show()
 
+if saveSolution:
+    SolutionToSave = open(solutionFileName, 'wb')
+    pickle.dump(pdf_trajectory, SolutionToSave)
+    SolutionToSave.close()
+    GridToSave = open(gridFileName, 'wb')
+    pickle.dump(xvec, GridToSave)
+    GridToSave.close()
 
 else:
     # main iteration loop
     for i in range(numsteps-1):  # since one time step is computed above
         phat = np.matmul(A, phat)
-
     plt.plot(xvec, phat, '.')
     plt.show()
 
