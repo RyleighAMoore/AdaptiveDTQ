@@ -36,13 +36,13 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
 
 # visualization parameters
 finalGraph = False
-animate = False
+animate = True
 plotEvolution = False
 saveSolution = False
 gridFileName = 'CoarseX'
 solutionFileName = 'CoarseSolution'
-plotEps = False
-animateIntegrand = True
+plotEps = True
+animateIntegrand = False
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -55,9 +55,9 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-#k = 0.1
-xMin = - 3
-xMax = 3
+# k = 0.1
+xMin = - 1
+xMax = 1
 xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
@@ -69,9 +69,9 @@ phat = dnorm(xvec, init + driftfun(init), np.abs(difffun(init)) * np.sqrt(h))
 
 pdf_trajectory = np.zeros([phat.size, numsteps])
 epsilon = np.zeros(numsteps)
+epsilon[0] = Integrand.computeEpsilon(G, phat)
 if animate:
     pdf_trajectory[:, 0] = phat  # solution after one time step from above
-    epsilon[0] = Integrand.computeEpsilon(G, phat)
     for i in range(numsteps-1):  # since one time step is computed above
         pdf_trajectory[:,i+1] = np.dot(A, pdf_trajectory[:,i])
         epsilon[i+1] = Integrand.computeEpsilon(G, pdf_trajectory[:,i])
@@ -114,6 +114,7 @@ if animateIntegrand:
     plt.show()
 
 if plotEps:
+    assert animate == True, 'The variable animate must be True'
     plt.figure()
     plt.plot(epsilon)
     plt.xlabel('Time Step')
