@@ -42,7 +42,7 @@ saveSolution = False
 gridFileName = 'CoarseX'
 solutionFileName = 'CoarseSolution'
 plotEps = False
-animateInterand = True
+animateIntegrand = True
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -89,7 +89,7 @@ if animate:
     plt.show()
 
 phat_history = np.zeros([phat.size, numsteps])
-if animateInterand:
+if animateIntegrand:
     phat_history[:,0] = phat
     for i in range(numsteps-1):  # since one time step is computed above
         phat_history[:, i+1] = np.dot(A, phat_history[:, i])
