@@ -9,7 +9,7 @@ import Integrand
 
 # Drift function
 def driftfun(x):
-    return (x * (25 - x ** 2)-x)
+    return (x * (4 - x ** 2))
 
 
 # Diffusion function
@@ -35,12 +35,14 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
 
 
 # visualization parameters
-animate = True
-plotEvolution = True
+finalGraph = False
+animate = False
+plotEvolution = False
 saveSolution = False
 gridFileName = 'CoarseX'
 solutionFileName = 'CoarseSolution'
-plotEps = True
+plotEps = False
+animateInterand = True
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -53,9 +55,9 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-#k = 0.001
-xMin = - 5
-xMax = 5
+#k = 0.1
+xMin = - 3
+xMax = 3
 xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
@@ -86,14 +88,42 @@ if animate:
     anim = animation.FuncAnimation(f1, update_animation, numsteps, fargs=(pdf_trajectory,l), interval=50, blit=True)
     plt.show()
 
+phat_history = np.zeros([phat.size, numsteps])
+if animateInterand:
+    phat_history[:,0] = phat
+    for i in range(numsteps-1):  # since one time step is computed above
+        phat_history[:, i+1] = np.dot(A, phat_history[:, i])
+
+    def update_animation(step, Y, l):
+        # integrandCalc = calculateIntegrand(G, phat_history[:,step])
+        integrand = np.zeros([phat.size, phat.size])
+        for i in range(np.size(xvec)):
+            integrand[:, i] = G[:, i] * phat_history[i,step]
+        l.set_xdata(Y)
+        l.set_ydata(integrand)
+        return l,
+
+    f1 = plt.figure()
+    l, = plt.plot([],[],'r')
+    plt.xlim(np.min(xvec), np.max(xvec))
+    plt.ylim(0, np.max(G*phat))
+    Y = np.zeros((len(xvec), len(xvec)))  # Matrix with xvec along each column for use in animation
+    for i in range(len(xvec)):
+        Y[i, :] = xvec
+    anim = animation.FuncAnimation(f1, update_animation, numsteps, fargs=(Y,l), interval=50, blit=True)
+    plt.show()
+
 if plotEps:
     plt.figure()
     plt.plot(epsilon)
+    plt.xlabel('Time Step')
+    plt.ylabel(r'$\varepsilon$ value')
+    plt.title(r'$\varepsilon$ at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, interval [-1,1]')
     plt.show()
 
 if plotEvolution:
     plt.figure()
-    plt.suptitle(r'Evolution for $f(x)=np.tan(x), g(x)=1, k \approx 0.032$')
+    plt.suptitle(r'Evolution for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$')
     numPDF = np.size(pdf_trajectory,1)
     plt.subplot(2, 2, 1)
     plt.title("t=0")
@@ -117,7 +147,7 @@ if saveSolution:
     pickle.dump(xvec, GridToSave)
     GridToSave.close()
 
-else:
+if finalGraph:
     # main iteration loop
     for i in range(numsteps-1):  # since one time step is computed above
         phat = np.matmul(A, phat)
