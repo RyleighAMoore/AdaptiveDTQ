@@ -36,13 +36,13 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
 
 # visualization parameters
 finalGraph = False
-animate = True
+animate = False
 plotEvolution = False
 saveSolution = False
 gridFileName = 'CoarseX'
 solutionFileName = 'CoarseSolution'
 plotEps = True
-animateIntegrand = False
+animateIntegrand = True
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -56,8 +56,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 # define spatial grid
 k = h ** s
 # k = 0.1
-xMin = - 1
-xMax = 1
+xMin = - 4
+xMax = 4
 xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
@@ -95,10 +95,7 @@ if animateIntegrand:
         phat_history[:, i+1] = np.dot(A, phat_history[:, i])
 
     def update_animation(step, Y, l):
-        # integrandCalc = calculateIntegrand(G, phat_history[:,step])
-        integrand = np.zeros([phat.size, phat.size])
-        for i in range(np.size(xvec)):
-            integrand[:, i] = G[:, i] * phat_history[i,step]
+        integrand = Integrand.calculateIntegrand(G, phat_history[:,step])
         l.set_xdata(Y)
         l.set_ydata(integrand)
         return l,
@@ -154,6 +151,5 @@ if finalGraph:
         phat = np.matmul(A, phat)
     plt.plot(xvec, phat, '.')
     plt.show()
-
 
 
