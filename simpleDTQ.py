@@ -37,15 +37,15 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
 def addRowsToG(spatialStep, currentStart, currentEnd, numColsG, xvec):
     xvec = np.insert(xvec, 0, currentStart-spatialStep)
     xvec = np.append(xvec, currentEnd+spatialStep)
-    Ynew = np.zeros([2, xvec.size])
-    Ynew[0,:] = xvec
-    Ynew[1, :] = xvec
-    mu = Ynew + driftfun(Ynew) * h
+    Ynew = np.zeros([numColsG, 2])
+    Ynew[:,0] = np.ones(numColsG)* (currentStart-spatialStep)
+    Ynew[:, 1] = np.ones(numColsG)* (currentEnd+spatialStep)
+    mu = xvec + driftfun(xvec) * h
     sigma = abs(difffun(Ynew)) * np.sqrt(h)
     sigma = np.reshape(sigma, [2, numColsG+2])  # make a matrix for the dnorm function
     #Ynew = np.transpose(Ynew)  # Transpose Y for use in the dnorm function
     test = dnorm(Ynew, mu, sigma)
-    return test*spatialStep
+    return test
 
 
 
@@ -57,7 +57,7 @@ saveSolution = False
 gridFileName = 'CoarseX'
 solutionFileName = 'CoarseSolution'
 plotEps = True
-animateIntegrand = True
+animateIntegrand = False
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -71,8 +71,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 # define spatial grid
 k = h ** s
 # k = 0.1
-xMin = - 1.5
-xMax = 1.5
+xMin = - 1
+xMax = 1
 xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
@@ -84,33 +84,39 @@ phat = dnorm(xvec, init + driftfun(init), np.abs(difffun(init)) * np.sqrt(h))
 
 pdf_trajectory = []
 xvec_trajectory = []
-epsilonArray = np.zeros(numsteps)
-epsilonArray[0] = Integrand.computeEpsilon(G, phat)
+epsilonArray = []
+epsilonArray.append(Integrand.computeEpsilon(G, phat))
 count = 1
 if animate:
     pdf_trajectory.append(phat)  # solution after one time step from above
     xvec_trajectory.append(xvec)
-    for i in range(numsteps-1):  # since one time step is computed above
+    i=0
+    while i < numsteps-1:  # since one time step is computed above
         epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
         tol = -40
         if epsilon <= tol:
             pdf_trajectory.append(np.dot(G*k, pdf_trajectory[-1]))
+            G = integrandmat(xvec,xvec, h,driftfun,difffun)
+            count = 1
             xvec_trajectory.append(xvec)
-            epsilonArray[count] = Integrand.computeEpsilon(G, pdf_trajectory[-1])
+            epsilonArray.append(Integrand.computeEpsilon(G, pdf_trajectory[-1]))
+            i=i+1
         else:
             count = count - 1
             if count != 0:
                 del pdf_trajectory[-1]  # step back one time step
                 del xvec_trajectory[-1]
             while epsilon >= tol:
-                xvec = np.insert(xvec, 0, xMin - k)
-                xvec = np.append(xvec, xMax + k)
+                xvec = np.insert(xvec, 0, min(xvec) - k)
+                xvec = np.append(xvec, max(xvec) + k)
                 #Ynew = addRowsToG(k, xMin, xMax, np.ma.size(Gk, 1), xvec)
                 G = integrandmat(xvec, xvec, h, driftfun, difffun)
                 #w = Ynew[0,:]
-                G = G[:,1:-1]
+                for i in range(count+1):
+                    G = G[:,1:-1]
                 count = count + 1
                 epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
+                epsilonArray.append(Integrand.computeEpsilon(G, pdf_trajectory[-1]))
 
                 print(epsilon)
 
@@ -125,7 +131,7 @@ if animate:
     l, = plt.plot([],[],'r')
     plt.xlim(np.min(xvec), np.max(xvec))
     plt.ylim(0, np.max(phat))
-    anim = animation.FuncAnimation(f1, update_animation, numsteps, fargs=(pdf_trajectory,l), interval=50, blit=True)
+    anim = animation.FuncAnimation(f1, update_animation, len(xvec_trajectory), fargs=(pdf_trajectory,l), interval=50, blit=True)
     plt.show()
 
 phat_history = np.zeros([phat.size, numsteps])
