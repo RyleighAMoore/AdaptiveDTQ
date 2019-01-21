@@ -27,16 +27,31 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
     for i in range(len(yvec)):
         Y[i, :] = xvec  # Y has the same grid value along each column (col1 has x1, col2 has x2, etc)
     mu = Y + driftfun(Y) * h
-    Y = np.transpose(Y)  # Transpose Y for use in the dnorm function
     sigma = abs(difffun(Y)) * np.sqrt(h)
     sigma = np.reshape(sigma, [np.size(xvec), np.size(xvec)])  # make a matrix for the dnorm function
+    Y = np.transpose(Y)  # Transpose Y for use in the dnorm function
     test = dnorm(Y, mu, sigma)
     return test
 
 
+def addRowsToG(spatialStep, currentStart, currentEnd, numColsG, xvec):
+    xvec = np.insert(xvec, 0, currentStart-spatialStep)
+    xvec = np.append(xvec, currentEnd+spatialStep)
+    Ynew = np.zeros([2, xvec.size])
+    Ynew[0,:] = xvec
+    Ynew[1, :] = xvec
+    mu = Ynew + driftfun(Ynew) * h
+    sigma = abs(difffun(Ynew)) * np.sqrt(h)
+    sigma = np.reshape(sigma, [2, numColsG+2])  # make a matrix for the dnorm function
+    #Ynew = np.transpose(Ynew)  # Transpose Y for use in the dnorm function
+    test = dnorm(Ynew, mu, sigma)
+    return test*spatialStep
+
+
+
 # visualization parameters
 finalGraph = False
-animate = False
+animate = True
 plotEvolution = False
 saveSolution = False
 gridFileName = 'CoarseX'
@@ -56,29 +71,54 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 # define spatial grid
 k = h ** s
 # k = 0.1
-xMin = - 4
-xMax = 4
+xMin = - 1.5
+xMax = 1.5
 xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
 G = integrandmat(xvec, xvec, h, driftfun, difffun)
-A = np.multiply(k, G)
+Gk = np.multiply(k, G)
 
 # pdf after one time step with Dirac delta(x-init) initial condition
 phat = dnorm(xvec, init + driftfun(init), np.abs(difffun(init)) * np.sqrt(h))
 
-pdf_trajectory = np.zeros([phat.size, numsteps])
-epsilon = np.zeros(numsteps)
-epsilon[0] = Integrand.computeEpsilon(G, phat)
+pdf_trajectory = []
+xvec_trajectory = []
+epsilonArray = np.zeros(numsteps)
+epsilonArray[0] = Integrand.computeEpsilon(G, phat)
+count = 1
 if animate:
-    pdf_trajectory[:, 0] = phat  # solution after one time step from above
+    pdf_trajectory.append(phat)  # solution after one time step from above
+    xvec_trajectory.append(xvec)
     for i in range(numsteps-1):  # since one time step is computed above
-        pdf_trajectory[:,i+1] = np.dot(A, pdf_trajectory[:,i])
-        epsilon[i+1] = Integrand.computeEpsilon(G, pdf_trajectory[:,i])
+        epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
+        tol = -40
+        if epsilon <= tol:
+            pdf_trajectory.append(np.dot(G*k, pdf_trajectory[-1]))
+            xvec_trajectory.append(xvec)
+            epsilonArray[count] = Integrand.computeEpsilon(G, pdf_trajectory[-1])
+        else:
+            count = count - 1
+            if count != 0:
+                del pdf_trajectory[-1]  # step back one time step
+                del xvec_trajectory[-1]
+            while epsilon >= tol:
+                xvec = np.insert(xvec, 0, xMin - k)
+                xvec = np.append(xvec, xMax + k)
+                #Ynew = addRowsToG(k, xMin, xMax, np.ma.size(Gk, 1), xvec)
+                G = integrandmat(xvec, xvec, h, driftfun, difffun)
+                #w = Ynew[0,:]
+                G = G[:,1:-1]
+                count = count + 1
+                epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
+
+                print(epsilon)
+
+
 
     def update_animation(step, pdf_data, l):
-        l.set_xdata(xvec)
-        l.set_ydata(pdf_data[:,step])
+        l.set_xdata(xvec_trajectory[step])
+        l.set_ydata(pdf_data[step])
         return l,
 
     f1 = plt.figure()
@@ -92,7 +132,7 @@ phat_history = np.zeros([phat.size, numsteps])
 if animateIntegrand:
     phat_history[:,0] = phat
     for i in range(numsteps-1):  # since one time step is computed above
-        phat_history[:, i+1] = np.dot(A, phat_history[:, i])
+        phat_history[:, i+1] = np.dot(Gk, phat_history[:, i])
 
     def update_animation(step, Y, l):
         integrand = Integrand.calculateIntegrand(G, phat_history[:,step])
@@ -113,7 +153,7 @@ if animateIntegrand:
 if plotEps:
     assert animate == True, 'The variable animate must be True'
     plt.figure()
-    plt.plot(epsilon)
+    plt.plot(epsilonArray)
     plt.xlabel('Time Step')
     plt.ylabel(r'$\varepsilon$ value')
     plt.title(r'$\varepsilon$ at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, interval [-1,1]')
@@ -148,7 +188,7 @@ if saveSolution:
 if finalGraph:
     # main iteration loop
     for i in range(numsteps-1):  # since one time step is computed above
-        phat = np.matmul(A, phat)
+        phat = np.matmul(Gk, phat)
     plt.plot(xvec, phat, '.')
     plt.show()
 
