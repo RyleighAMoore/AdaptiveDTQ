@@ -36,7 +36,7 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
 
 # visualization parameters
 finalGraph = False
-animate = False
+animate = True
 plotEvolution = False
 saveSolution = False
 gridFileName = 'CoarseX'
@@ -74,7 +74,7 @@ if animate:
     pdf_trajectory[:, 0] = phat  # solution after one time step from above
     for i in range(numsteps-1):  # since one time step is computed above
         pdf_trajectory[:,i+1] = np.dot(A, pdf_trajectory[:,i])
-        epsilon[i+1] = Integrand.computeEpsilon(G, pdf_trajectory[:,i])
+        epsilon[i+1] = Integrand.computeEpsilon(G, pdf_trajectory[:,i+1])
 
     def update_animation(step, pdf_data, l):
         l.set_xdata(xvec)
@@ -116,7 +116,7 @@ if plotEps:
     plt.plot(epsilon)
     plt.xlabel('Time Step')
     plt.ylabel(r'$\varepsilon$ value')
-    plt.title(r'$\varepsilon$ at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, interval [-1,1]')
+    plt.title(r'$\varepsilon$ at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, interval [-4,4]')
     plt.show()
 
 if plotEvolution:
