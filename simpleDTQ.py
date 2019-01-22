@@ -86,39 +86,37 @@ pdf_trajectory = []
 xvec_trajectory = []
 epsilonArray = []
 epsilonArray.append(Integrand.computeEpsilon(G, phat))
-count = 1
+numTimesExpandG = 0
 if animate:
     pdf_trajectory.append(phat)  # solution after one time step from above
     xvec_trajectory.append(xvec)
-    i=0
-    while i < numsteps-1:  # since one time step is computed above
+    countSteps = 0
+    while countSteps < numsteps-1:  # since one time step is computed above
         epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
-        tol = -40
+        tol = -100
         if epsilon <= tol:
             pdf_trajectory.append(np.dot(G*k, pdf_trajectory[-1]))
-            G = integrandmat(xvec,xvec, h,driftfun,difffun)
-            count = 1
             xvec_trajectory.append(xvec)
             epsilonArray.append(Integrand.computeEpsilon(G, pdf_trajectory[-1]))
-            i=i+1
+            countSteps=countSteps+1
+            numTimesExpandG = 0
         else:
-            count = count - 1
-            if count != 0:
+            if len(pdf_trajectory) > 1:
                 del pdf_trajectory[-1]  # step back one time step
                 del xvec_trajectory[-1]
             while epsilon >= tol:
-                xvec = np.insert(xvec, 0, min(xvec) - k)
+                numTimesExpandG = numTimesExpandG + 1
+                xvec = np.insert(xvec, 0, min(xvec) - k)  # add elements to xvec
                 xvec = np.append(xvec, max(xvec) + k)
-                #Ynew = addRowsToG(k, xMin, xMax, np.ma.size(Gk, 1), xvec)
                 G = integrandmat(xvec, xvec, h, driftfun, difffun)
-                #w = Ynew[0,:]
-                for i in range(count+1):
-                    G = G[:,1:-1]
-                count = count + 1
+                for i in range(numTimesExpandG):
+                    G = G[:, 1:-1]
                 epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
                 epsilonArray.append(Integrand.computeEpsilon(G, pdf_trajectory[-1]))
-
                 print(epsilon)
+            pdf_trajectory.append(np.dot(G * k, pdf_trajectory[-1]))
+            xvec_trajectory.append(xvec)
+            G = integrandmat(xvec, xvec, h, driftfun, difffun)
 
 
 
