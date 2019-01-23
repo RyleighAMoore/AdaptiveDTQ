@@ -17,5 +17,5 @@ def computeEpsilon(G, phat):
 def calculateIntegrand(G, phat):
     val = np.zeros([phat.size, phat.size])
     for i in range(np.size(phat)):
-        val[:,i]= G[i,:] * phat[i]
+        val[i,:]= G[i,:] * phat[i]
     return val
