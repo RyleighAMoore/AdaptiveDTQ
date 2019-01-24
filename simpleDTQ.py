@@ -71,8 +71,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 # define spatial grid
 k = h ** s
 # k = 0.1
-xMin = - 5
-xMax = 5
+xMin = -1
+xMax = 1
 xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
@@ -121,8 +121,8 @@ if animate:
                 print(epsilon)
             pdf_trajectory.append(np.dot(G * k, pdf_trajectory[-1]))
             xvec_trajectory.append(xvec)
-            G_history.append(G)
             G = integrandmat(xvec, xvec, h, driftfun, difffun)
+            G_history.append(G)
 
     def update_animation(step, pdf_data, l):
         l.set_xdata(xvec_trajectory[step])
@@ -140,19 +140,21 @@ if animateIntegrand:
     assert animate == True, 'Animate must be True'
 
     def update_animation_integrand(step, val, l):
+        e = G_history[step]
         integrand = Integrand.calculateIntegrand(G_history[step], pdf_trajectory[step])
-        w =np.size(xvec_trajectory[step])
+        w = np.size(xvec_trajectory[step])
         Y = np.zeros([w, np.size(integrand,1)])
         pp = np.size(integrand,1)
+        p = xvec_trajectory[step]
         for i in range(np.size(integrand,1)):
-            Y[:, i] = xvec_trajectory[step]
+            Y[i, :] = xvec_trajectory[step]
         l.set_xdata(Y)
         l.set_ydata(integrand)
         return l,
 
     f1 = plt.figure()
     l, = plt.plot([],[],'r')
-    plt.xlim(np.min(xvec), np.max(xvec))
+    plt.xlim(np.min(xvec), np.max(xvec), '.')
     plt.ylim(0, 14)
     anim = animation.FuncAnimation(f1, update_animation_integrand, numsteps, fargs=(3,l), interval=50, blit=True)
     plt.show()
