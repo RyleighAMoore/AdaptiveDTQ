@@ -52,7 +52,7 @@ def addRowsToG(spatialStep, currentStart, currentEnd, numColsG, xvec):
 # visualization parameters
 finalGraph = False
 animate = True
-plotEvolution = False
+plotEvolution = True
 saveSolution = False
 gridFileName = 'CoarseX'
 solutionFileName = 'CoarseSolution'
@@ -140,12 +140,8 @@ if animateIntegrand:
     assert animate == True, 'Animate must be True'
 
     def update_animation_integrand(step, val, l):
-        e = G_history[step]
         integrand = Integrand.calculateIntegrand(G_history[step], pdf_trajectory[step])
-        w = np.size(xvec_trajectory[step])
-        Y = np.zeros([w, np.size(integrand,1)])
-        pp = np.size(integrand,1)
-        p = xvec_trajectory[step]
+        Y = np.zeros([np.size(xvec_trajectory[step]), np.size(integrand,1)])
         for i in range(np.size(integrand,1)):
             Y[i, :] = xvec_trajectory[step]
         l.set_xdata(Y)
@@ -171,19 +167,19 @@ if plotEps:
 if plotEvolution:
     plt.figure()
     plt.suptitle(r'Evolution for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$')
-    numPDF = np.size(pdf_trajectory,1)
+    numPDF = len(pdf_trajectory)
     plt.subplot(2, 2, 1)
     plt.title("t=0")
-    plt.plot(xvec, pdf_trajectory[:,0])
+    plt.plot(xvec_trajectory[0], pdf_trajectory[0])
     plt.subplot(2, 2, 2)
     plt.title("t=T/3")
-    plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF*(1/3)))])
+    plt.plot(xvec_trajectory[int(np.ceil(numPDF*(1/3)))], pdf_trajectory[int(np.ceil(numPDF*(1/3)))])
     plt.subplot(2, 2, 3)
     plt.title("t=2T/3")
-    plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF * (2 / 3)))])
+    plt.plot(xvec_trajectory[int(np.ceil(numPDF*(2/3)))], pdf_trajectory[int(np.ceil(numPDF * (2 / 3)))])
     plt.subplot(2, 2, 4)
     plt.title("t=T")
-    plt.plot(xvec, pdf_trajectory[:, int(np.ceil(numPDF-1))])
+    plt.plot(xvec_trajectory[int(np.ceil(numPDF-1))], pdf_trajectory[int(np.ceil(numPDF-1))])
     plt.show()
 
 if saveSolution:
