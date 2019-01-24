@@ -4,7 +4,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import pickle
 import Integrand
 
 # Drift function
@@ -32,21 +31,6 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
     Y = np.transpose(Y)  # Transpose Y for use in the dnorm function
     test = dnorm(Y, mu, sigma)
     return test
-
-
-def addRowsToG(spatialStep, currentStart, currentEnd, numColsG, xvec):
-    xvec = np.insert(xvec, 0, currentStart-spatialStep)
-    xvec = np.append(xvec, currentEnd+spatialStep)
-    Ynew = np.zeros([numColsG, 2])
-    Ynew[:,0] = np.ones(numColsG)* (currentStart-spatialStep)
-    Ynew[:, 1] = np.ones(numColsG)* (currentEnd+spatialStep)
-    mu = xvec + driftfun(xvec) * h
-    sigma = abs(difffun(Ynew)) * np.sqrt(h)
-    sigma = np.reshape(sigma, [2, numColsG+2])  # make a matrix for the dnorm function
-    #Ynew = np.transpose(Ynew)  # Transpose Y for use in the dnorm function
-    test = dnorm(Ynew, mu, sigma)
-    return test
-
 
 
 # visualization parameters
@@ -86,6 +70,7 @@ phat_history = []
 G_history = []
 epsilonArray.append(Integrand.computeEpsilon(G, phat))
 numTimesExpandG = 0
+
 if animate:
     pdf_trajectory.append(phat)  # solution after one time step from above
     xvec_trajectory.append(xvec)
