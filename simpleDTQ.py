@@ -50,12 +50,9 @@ def addRowsToG(spatialStep, currentStart, currentEnd, numColsG, xvec):
 
 
 # visualization parameters
-finalGraph = False
+finalGraph = True
 animate = True
 plotEvolution = True
-saveSolution = False
-gridFileName = 'CoarseX'
-solutionFileName = 'CoarseSolution'
 plotEps = True
 animateIntegrand = True
 
@@ -165,6 +162,7 @@ if plotEps:
     plt.show()
 
 if plotEvolution:
+    assert animate == True, 'The variable animate must be True'
     plt.figure()
     plt.suptitle(r'Evolution for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$')
     numPDF = len(pdf_trajectory)
@@ -182,19 +180,10 @@ if plotEvolution:
     plt.plot(xvec_trajectory[int(np.ceil(numPDF-1))], pdf_trajectory[int(np.ceil(numPDF-1))])
     plt.show()
 
-if saveSolution:
-    SolutionToSave = open(solutionFileName, 'wb')
-    pickle.dump(pdf_trajectory, SolutionToSave)
-    SolutionToSave.close()
-    GridToSave = open(gridFileName, 'wb')
-    pickle.dump(xvec, GridToSave)
-    GridToSave.close()
 
 if finalGraph:
-    # main iteration loop
-    for i in range(numsteps-1):  # since one time step is computed above
-        phat = np.matmul(Gk, phat)
-    plt.plot(xvec, phat, '.')
+    assert animate == True, 'The variable animate must be True'
+    plt.plot(xvec_trajectory[-1], pdf_trajectory[-1], '.')
     plt.show()
 
 
