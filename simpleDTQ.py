@@ -34,9 +34,9 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
 
 
 # visualization parameters
-finalGraph = True
+finalGraph = False
 animate = True
-plotEvolution = True
+plotEvolution = False
 plotEps = True
 animateIntegrand = True
 
@@ -52,8 +52,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 # define spatial grid
 k = h ** s
 # k = 0.1
-xMin = -1
-xMax = 1
+xMin = -4
+xMax = 4
 xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
@@ -74,7 +74,7 @@ numTimesExpandG = 0
 if animate:
     pdf_trajectory.append(phat)  # solution after one time step from above
     xvec_trajectory.append(xvec)
-    G_history.append(G)
+    if animateIntegrand: G_history.append(G)
     countSteps = 0
     while countSteps < numsteps-1:  # since one time step is computed above
         epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
@@ -82,7 +82,7 @@ if animate:
         if epsilon <= tol:
             pdf_trajectory.append(np.dot(G*k, pdf_trajectory[-1]))
             xvec_trajectory.append(xvec)
-            G_history.append(G)
+            if animateIntegrand: G_history.append(G)
             epsilonArray.append(Integrand.computeEpsilon(G, pdf_trajectory[-1]))
             countSteps=countSteps+1
             numTimesExpandG = 0
@@ -90,7 +90,7 @@ if animate:
             if len(pdf_trajectory) > 1:
                 del pdf_trajectory[-1]  # step back one time step
                 del xvec_trajectory[-1]
-                del G_history[-1]
+                if animateIntegrand: del G_history[-1]
             while epsilon >= tol:
                 numTimesExpandG = numTimesExpandG + 1
                 xvec = np.insert(xvec, 0, min(xvec) - k)  # add elements to xvec
@@ -104,8 +104,9 @@ if animate:
             pdf_trajectory.append(np.dot(G * k, pdf_trajectory[-1]))
             xvec_trajectory.append(xvec)
             G = integrandmat(xvec, xvec, h, driftfun, difffun)
-            G_history.append(G)
+            if animateIntegrand: G_history.append(G)
 
+    wer = pdf_trajectory[0]
     def update_animation(step, pdf_data, l):
         l.set_xdata(xvec_trajectory[step])
         l.set_ydata(pdf_data[step])
