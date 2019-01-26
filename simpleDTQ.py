@@ -52,8 +52,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 # define spatial grid
 k = h ** s
 #k = 0.01
-xMin = -20
-xMax = 20
+xMin = -1
+xMax = 1
 xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
@@ -133,7 +133,7 @@ if animateIntegrand:
 
     f1 = plt.figure()
     l, = plt.plot([],[],'r')
-    plt.xlim(np.min(xvec*2), np.max(xvec*2), '.')
+    plt.xlim(np.min(xvec), np.max(xvec), '.')
     plt.ylim(0, 14)
     anim = animation.FuncAnimation(f1, update_animation_integrand, numsteps, fargs=(3,l), interval=50, blit=True)
     plt.show()
