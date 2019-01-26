@@ -51,9 +51,9 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-# k = 0.1
-xMin = -1
-xMax = 1
+#k = 0.01
+xMin = -20
+xMax = 20
 xvec = np.arange(xMin, xMax, k)
 
 # Kernel matrix
@@ -126,7 +126,7 @@ if animateIntegrand:
         integrand = Integrand.calculateIntegrand(G_history[step], pdf_trajectory[step])
         Y = np.zeros([np.size(xvec_trajectory[step]), np.size(integrand,1)])
         for i in range(np.size(integrand,1)):
-            Y[:, i] = xvec_trajectory[step]
+            Y[i, :] = xvec_trajectory[step]
         l.set_xdata(Y)
         l.set_ydata(integrand)
         return l,
@@ -178,4 +178,5 @@ plt.figure()
 for j,i in enumerate(G_history):
     w = i.shape[0]
     plt.plot(j, w,'.')
+plt.title("Size of G Evolution")
 plt.show()
