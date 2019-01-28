@@ -32,21 +32,43 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
     test = dnorm(Y, mu, sigma)
     return test
 
-
+# This adds a N dimensional row to a M by N dimensional G
 def addRowToG(xvec, newVal, h, driftfun, difffun, G, rowIndex):
     mu = xvec + driftfun(xvec) * h
     sigma = abs(difffun(xvec)) * np.sqrt(h)
-    xnew = np.ones(len(mu))*newVal
-    newRow = dnorm(xnew, mu, sigma)
-    Gnew = np.insert(G, rowIndex, newRow,0)
+    xrep = np.ones(len(mu))*newVal
+    newRow = dnorm(xrep, mu, sigma)
+    Gnew = np.insert(G, rowIndex, newRow, 0)
     return Gnew
+
+# This adds a M dimensional column to a M by N dimensional G
+def addColumnToG(xvec, newVal, h, driftfun, difffun, G, colIndex):
+    mu = np.ones(len(G))*(newVal + driftfun(newVal) * h)
+    w = np.ones(len(G))*newVal
+    sigma = abs(difffun(w)) * np.sqrt(h)
+    xnewLoc = np.searchsorted(xvec,newVal)
+    xnew = np.insert(xvec, xnewLoc, newVal)
+    newCol = dnorm(xnew, mu, sigma)
+    Gnew = np.insert(G, colIndex, newCol, axis=1)
+    return Gnew
+
+
+def addGridValueToG(xvec, newVal, h, driftfun, difffun, G, rowIndex):
+    G = addRowToG(xvec, newVal, h, driftfun, difffun, G, rowIndex)
+    G = addColumnToG(xvec, newVal, h, driftfun, difffun, G, rowIndex)
+    return G
+
+def addValueToXvec(xvec, newVal):
+    xnewLoc = np.searchsorted(xvec, newVal)
+    xvec_new = np.insert(xvec, xnewLoc, newVal)
+    return xnewLoc, xvec_new
 
 
 # visualization parameters
 finalGraph = False
 animate = True
 plotEvolution = False
-plotEps = False
+plotEps = True
 animateIntegrand = True
 
 # simulation parameters
@@ -87,35 +109,35 @@ if animate:
     countSteps = 0
     while countSteps < numsteps-1:  # since one time step is computed above
         epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
-        tol = -100
+        tol = -20
         if epsilon <= tol:
             pdf_trajectory.append(np.dot(G*k, pdf_trajectory[-1]))
-            xvec_trajectory.append(xvec)
+            xvec_trajectory.append(xvec_trajectory[-1])
             if animateIntegrand: G_history.append(G)
             epsilonArray.append(Integrand.computeEpsilon(G, pdf_trajectory[-1]))
             countSteps=countSteps+1
             numTimesExpandG = 0
         else:
-            if len(pdf_trajectory) > 1:
-                del pdf_trajectory[-1]  # step back one time step
-                del xvec_trajectory[-1]
-                if animateIntegrand: del G_history[-1]
+            IC = False
+            if len(xvec_trajectory) < 2: # pdf trajectory size is 1
+                flag = True
             while epsilon >= tol:
-                numTimesExpandG = numTimesExpandG+1
-                G = addRowToG(xvec, min(xvec)-numTimesExpandG*k, h,driftfun,difffun,G, 0)
-                G = addRowToG(xvec, max(xvec) + numTimesExpandG*k, h, driftfun, difffun, G, len(G))
+                newVal = xvec_trajectory[-1][0]-k
+                newVal2 = xvec_trajectory[-1][-1] + k
+                G = addGridValueToG(xvec_trajectory[-1], newVal, h, driftfun, difffun, G, 0)
+                xLoc, xvec_trajectory[-1] = addValueToXvec(xvec_trajectory[-1], newVal)
+                pdf_trajectory[-1] = np.insert(pdf_trajectory[-1], xLoc, 0)
+
+                G = addGridValueToG(xvec_trajectory[-1], newVal2, h, driftfun, difffun, G, len(G))
+                xLoc, xvec_trajectory[-1] = addValueToXvec(xvec_trajectory[-1], newVal2)
+                pdf_trajectory[-1] = np.insert(pdf_trajectory[-1], xLoc, 0)
                 epsilon = Integrand.computeEpsilon(G, G*pdf_trajectory[-1])
                 epsilonArray.append(epsilon)
                 print(epsilon)
-            minx = min(xvec)
-            maxx = max(xvec)
-            for i in range(numTimesExpandG+1):
-                xvec = np.insert(xvec, 0, minx - (i+1)*k)
-                xvec = np.append(xvec, maxx + (i+1)*k)
-            pdf_trajectory.append(np.dot(G * k, pdf_trajectory[-1]))
-            xvec_trajectory.append(xvec)
-            G = integrandmat(xvec, xvec, h, driftfun, difffun)
-            if animateIntegrand: G_history.append(G)
+            # recompute ICs
+            if IC: pdf_trajectory[-1] = dnorm(xvec, init + driftfun(init), np.abs(difffun(init)) * np.sqrt(h))
+            else: pdf_trajectory[-1] = (np.dot(G * k, pdf_trajectory[-1]))
+            if animateIntegrand: G_history[-1] = G
 
     wer = pdf_trajectory[0]
     def update_animation(step, pdf_data, l):
@@ -125,7 +147,7 @@ if animate:
 
     f1 = plt.figure()
     l, = plt.plot([],[],'r')
-    plt.xlim(np.min(xvec), np.max(xvec))
+    plt.xlim(np.min(xvec_trajectory[-1]), np.max(xvec_trajectory[-1]))
     plt.ylim(0, np.max(phat))
     anim = animation.FuncAnimation(f1, update_animation, len(xvec_trajectory), fargs=(pdf_trajectory,l), interval=50, blit=True)
     plt.show()
@@ -144,7 +166,7 @@ if animateIntegrand:
 
     f1 = plt.figure()
     l, = plt.plot([],[],'r')
-    plt.xlim(np.min(xvec), np.max(xvec), '.')
+    plt.xlim(np.min(xvec_trajectory[-1]), np.max(xvec_trajectory[-1]), '.')
     plt.ylim(0, 14)
     anim = animation.FuncAnimation(f1, update_animation_integrand, numsteps, fargs=(3,l), interval=50, blit=True)
     plt.show()

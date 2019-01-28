@@ -17,4 +17,7 @@
     Add rows to M
     test epsilon again
 
-
+1/28/19
+- Add and remove values from G
+- Plot first eigenvector of G
+- Try with f(x)=1 and small diffusion.
