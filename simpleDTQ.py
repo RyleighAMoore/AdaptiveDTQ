@@ -107,9 +107,11 @@ if animate:
                 epsilon = Integrand.computeEpsilon(G, G*pdf_trajectory[-1])
                 epsilonArray.append(epsilon)
                 print(epsilon)
-            for i in range(numTimesExpandG):
-                xvec = np.insert(xvec, 0, min(xvec) - (i+1)*k)
-                xvec = np.append(xvec, max(xvec) + (i+1)*k)
+            minx = min(xvec)
+            maxx = max(xvec)
+            for i in range(numTimesExpandG+1):
+                xvec = np.insert(xvec, 0, minx - (i+1)*k)
+                xvec = np.append(xvec, maxx + (i+1)*k)
             pdf_trajectory.append(np.dot(G * k, pdf_trajectory[-1]))
             xvec_trajectory.append(xvec)
             G = integrandmat(xvec, xvec, h, driftfun, difffun)
