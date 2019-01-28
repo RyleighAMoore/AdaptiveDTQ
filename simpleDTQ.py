@@ -51,7 +51,7 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-#k = 0.01
+#k = 0.1
 xMin = -1
 xMax = 1
 xvec = np.arange(xMin, xMax, k)
@@ -178,5 +178,5 @@ plt.figure()
 for j,i in enumerate(G_history):
     w = i.shape[0]
     plt.plot(j, w,'.')
-plt.title("Size of G Evolution")
+plt.title(r'Size of G at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, starting interval [-1,1], tol = -100')
 plt.show()

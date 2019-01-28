@@ -14,11 +14,11 @@ def computeEpsilon(G, phat):
         return val
 
 
-def computeEpsilon3(G, phat):
+def computeEpsilonArray(G, phat):
     val = np.zeros(len(G))
     for w in range(len(G)-1):
         val[w] = np.max(G[w,:]*phat[w])
-    return np.log(np.sum(np.abs(val)))
+    return val
 
 
 def calculateIntegrand(G, phat):
