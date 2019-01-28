@@ -33,11 +33,20 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
     return test
 
 
+def addRowToG(xvec, newVal, h, driftfun, difffun, G, rowIndex):
+    mu = xvec + driftfun(xvec) * h
+    sigma = abs(difffun(xvec)) * np.sqrt(h)
+    xnew = np.ones(len(mu))*newVal
+    newRow = dnorm(xnew, mu, sigma)
+    Gnew = np.insert(G, rowIndex, newRow,0)
+    return Gnew
+
+
 # visualization parameters
 finalGraph = False
 animate = True
 plotEvolution = False
-plotEps = True
+plotEps = False
 animateIntegrand = True
 
 # simulation parameters
@@ -92,15 +101,15 @@ if animate:
                 del xvec_trajectory[-1]
                 if animateIntegrand: del G_history[-1]
             while epsilon >= tol:
-                numTimesExpandG = numTimesExpandG + 1
-                xvec = np.insert(xvec, 0, min(xvec) - k)  # add elements to xvec
-                xvec = np.append(xvec, max(xvec) + k)
-                G = integrandmat(xvec, xvec, h, driftfun, difffun)
-                for i in range(numTimesExpandG):
-                    G = G[:, 1:-1]
+                numTimesExpandG = numTimesExpandG+1
+                G = addRowToG(xvec, min(xvec)-numTimesExpandG*k, h,driftfun,difffun,G, 0)
+                G = addRowToG(xvec, max(xvec) + numTimesExpandG*k, h, driftfun, difffun, G, len(G))
                 epsilon = Integrand.computeEpsilon(G, G*pdf_trajectory[-1])
                 epsilonArray.append(epsilon)
                 print(epsilon)
+            for i in range(numTimesExpandG):
+                xvec = np.insert(xvec, 0, min(xvec) - (i+1)*k)
+                xvec = np.append(xvec, max(xvec) + (i+1)*k)
             pdf_trajectory.append(np.dot(G * k, pdf_trajectory[-1]))
             xvec_trajectory.append(xvec)
             G = integrandmat(xvec, xvec, h, driftfun, difffun)
@@ -174,6 +183,7 @@ if finalGraph:
 
 
 plt.figure()
+
 
 for j,i in enumerate(G_history):
     w = i.shape[0]
