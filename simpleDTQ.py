@@ -14,7 +14,7 @@ def driftfun(x):
     # else:
     #     return np.ones(np.shape(x))*5
     # return 4-x
-    return x * (4 - x ** 2)
+    return (13 - x ** 2)
 
 
 # Diffusion function
@@ -107,17 +107,17 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 # define spatial grid
 k = h ** s
 # k = 0.001
-xMin = 10
-xMax = 20
+xMin = -1
+xMax = 1
 
 # pdf after one time step with Dirac delta(x-init) initial condition
 a = init + driftfun(init)
 b = np.abs(difffun(init)) * np.sqrt(h)
 while a <= xMin:
-    xMin = xMin - 5
+    xMin = xMin - 4
 
 while a >= xMax:
-    xMax = xMax + 5
+    xMax = xMax + 4
 
 xvec = np.arange(xMin, xMax, k)
 phat = dnorm(xvec, a, b)
@@ -125,9 +125,6 @@ phat = dnorm(xvec, a, b)
 # Kernel matrix
 G = integrandmat(xvec, xvec, h, driftfun, difffun)
 Gk = np.multiply(k, G)
-
-
-
 
 plt.figure()
 plt.plot(xvec, phat)
@@ -203,17 +200,17 @@ if animate:
                 pdf_trajectory[-1] = (np.dot(G * k, pdf_trajectory[-1]))
             if animateIntegrand: G_history[-1] = G
 
-    multiplier = 1
-    minxgrid = np.floor(np.min(xvec_trajectory[0])) * multiplier
-    maxxgrid = np.ceil(np.max(xvec_trajectory[0])) * multiplier
-    maxygrid = np.ceil(np.max(pdf_trajectory[0])) * multiplier
+    buffer = 0
+    minxgrid = np.floor(np.min(xvec_trajectory[0])) - buffer
+    maxxgrid = np.ceil(np.max(xvec_trajectory[0])) + buffer
+    maxygrid = np.ceil(np.max(pdf_trajectory[0])) + buffer
 
     def update_animation(step, pdf_traj, l):
         global minxgrid, maxxgrid, maxygrid
         if step == 0:
-            minxgrid = np.floor(np.min(xvec_trajectory[0])) * multiplier
-            maxxgrid = np.ceil(np.max(xvec_trajectory[0])) * multiplier
-            maxygrid = np.ceil(np.max(pdf_trajectory[0])) * multiplier
+            minxgrid = np.floor(np.min(xvec_trajectory[0])) - buffer
+            maxxgrid = np.ceil(np.max(xvec_trajectory[0])) + buffer
+            maxygrid = np.ceil(np.max(pdf_trajectory[0])) + buffer
             plt.xlim(minxgrid, maxxgrid)
             plt.ylim(0, maxygrid)
 
@@ -224,26 +221,26 @@ if animate:
         My = np.ceil(np.max(pdf_trajectory[step]))
         diff = 10
 
-        if (np.abs(My - maxygrid)) > 20:
-            l.set_ylim(0, My * multiplier)
+        if (np.abs(My - maxygrid)) > 10:  # Y axis changed a lot
+            l.set_ylim(0, My + buffer)
             maxygrid = My
 
-        if (mx < minxgrid) & (Mx > maxxgrid):
-            l.set_xlim(mx * multiplier, Mx * multiplier)
+        if (mx < minxgrid) & (Mx > maxxgrid):  #  if both x axis need updating
+            l.set_xlim(mx - buffer, Mx + buffer)
             minxgrid = mx
             maxxgrid = Mx
 
         elif (minxgrid- mx > diff) | (maxxgrid-Mx > diff):
-            l.set_xlim(mx * multiplier, Mx * multiplier)
+            l.set_xlim(mx - buffer, Mx + buffer)
             minxgrid = mx
             maxxgrid = Mx
 
         elif mx < minxgrid:
-            l.set_xlim(mx * multiplier, maxxgrid)
+            l.set_xlim(mx - buffer, maxxgrid)
             minxgrid = mx
 
         elif Mx > maxxgrid:
-            l.set_xlim(minxgrid, Mx * multiplier)
+            l.set_xlim(minxgrid, Mx + buffer)
             maxxgrid = Mx
         return im
 
