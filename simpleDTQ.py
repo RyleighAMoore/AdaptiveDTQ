@@ -126,9 +126,9 @@ phat = dnorm(xvec, a, b)
 G = integrandmat(xvec, xvec, h, driftfun, difffun)
 Gk = np.multiply(k, G)
 
-plt.figure()
-plt.plot(xvec, phat)
-plt.show()
+# plt.figure()
+# plt.plot(xvec, phat)
+# plt.show()
 
 pdf_trajectory = []
 xvec_trajectory = []
