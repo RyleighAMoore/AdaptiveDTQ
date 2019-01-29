@@ -9,12 +9,12 @@ from matplotlib.animation import FuncAnimation
 
 # Drift function
 def driftfun(x):
-    return (x * (10 - x ** 2))
+    return x*(40- x ** 2)
 
 
 # Diffusion function
 def difffun(x):
-    return np.repeat(0.1, np.size(x))
+    return np.repeat(1, np.size(x))
 
 
 def dnorm(x, mu, sigma):
@@ -86,7 +86,7 @@ plotEps = False
 animateIntegrand = False
 
 # simulation parameters
-T = 1  # final time, code computes PDF of X_T
+T = 0.5  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
@@ -120,7 +120,7 @@ if animate:
     countSteps = 0
     while countSteps < numsteps-1:  # since one time step is computed above
         epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
-        tol = -20
+        tol = -10
         if epsilon <= tol:
             valsToRemove = checkReduceG(G, pdf_trajectory[-1])  # Remove if val is -inf
             if (len(G) > 60) & (countSteps > 1) & (-np.inf in valsToRemove):
@@ -133,14 +133,13 @@ if animate:
                         pdf_trajectory[-1] = np.delete(pdf_trajectory[-1], ind_w)
                 countSteps = countSteps + 1
                 if animateIntegrand: G_history.append(G)
-
             else:
                 pdf_trajectory.append(np.dot(G*k, pdf_trajectory[-1]))
                 xvec_trajectory.append(xvec_trajectory[-1])
                 if animateIntegrand: G_history.append(G)
                 epsilonArray.append(Integrand.computeEpsilon(G, pdf_trajectory[-1]))
                 countSteps = countSteps+1
-
+            test = 0
         else:
             IC = False
             if len(xvec_trajectory) < 2: # pdf trajectory size is 1
@@ -164,17 +163,42 @@ if animate:
             if IC: pdf_trajectory[-1] = dnorm(xvec, init + driftfun(init), np.abs(difffun(init)) * np.sqrt(h))
             else: pdf_trajectory[-1] = (np.dot(G * k, pdf_trajectory[-1]))
             if animateIntegrand: G_history[-1] = G
-#here
+
+    multiplier = 1.5
+    minxgrid = np.floor(np.min(xvec_trajectory[0])) * multiplier
+    maxxgrid = np.ceil(np.max(xvec_trajectory[0])) * multiplier
+
     def update_animation(step, pdf_traj, l):
+        global minxgrid
+        global maxxgrid
+        if step == 0:
+            minxgrid = np.floor(np.min(xvec_trajectory[0]) * multiplier)
+            maxxgrid = np.ceil(np.max(xvec_trajectory[0]) * multiplier)
+            plt.xlim(np.min(xvec_trajectory[0]) * multiplier, np.max(xvec_trajectory[0]) * multiplier)
+
         im.set_xdata(xvec_trajectory[step])
         im.set_ydata(pdf_traj[step])
-        l.set_xlim(np.min(xvec_trajectory[step]),np.max(xvec_trajectory[step]))
+        m = np.floor(np.min(xvec_trajectory[step]))
+        M = np.ceil(np.max(xvec_trajectory[step]))
+        if (m < minxgrid) & (M > maxxgrid):
+            l.set_xlim(m * multiplier, M*multiplier)
+            minxgrid = m
+            maxxgrid = M
+
+        elif m < minxgrid:
+            l.set_xlim(m*multiplier, maxxgrid)
+            minxgrid = m
+
+        elif M > maxxgrid:
+            l.set_xlim(minxgrid, M*multiplier)
+            maxxgrid = M
         return im
+
 
     f1 = plt.figure()
     l = f1.add_subplot(1,1,1)
-    im, = l.plot([],[],'k')
-    plt.xlim(np.min(xvec_trajectory[-1]), np.max(xvec_trajectory[-1]))
+    im, = l.plot([],[],'r')
+    plt.xlim(np.min(xvec_trajectory[0])*5, np.max(xvec_trajectory[0])*5)
     plt.ylim(0, np.max(phat))
     anim = animation.FuncAnimation(f1, update_animation, len(xvec_trajectory), fargs=(pdf_trajectory,l), interval=50, blit=False)
     plt.show()
