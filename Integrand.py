@@ -14,9 +14,9 @@ def computeEpsilon(G, phat):
         return val
 
 
-def computeEpsilonArray(G, phat):
+def computeIntegrandArray(G, phat):
     val = np.zeros(len(G))
-    for w in range(len(G)-1):
+    for w in range(len(G)):
         val[w] = np.max(G[w,:]*phat[w])
     return val
 

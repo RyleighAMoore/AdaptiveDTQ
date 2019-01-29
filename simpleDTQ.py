@@ -5,15 +5,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import Integrand
+from matplotlib.animation import FuncAnimation
 
 # Drift function
 def driftfun(x):
-    return (x * (4 - x ** 2))
+    return (x * (10 - x ** 2))
 
 
 # Diffusion function
 def difffun(x):
-    return np.repeat(1, np.size(x))
+    return np.repeat(0.1, np.size(x))
 
 
 def dnorm(x, mu, sigma):
@@ -81,8 +82,8 @@ def checkReduceG(G, phat):
 finalGraph = False
 animate = True
 plotEvolution = False
-plotEps = True
-animateIntegrand = True
+plotEps = False
+animateIntegrand = False
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -163,17 +164,19 @@ if animate:
             if IC: pdf_trajectory[-1] = dnorm(xvec, init + driftfun(init), np.abs(difffun(init)) * np.sqrt(h))
             else: pdf_trajectory[-1] = (np.dot(G * k, pdf_trajectory[-1]))
             if animateIntegrand: G_history[-1] = G
-
-    def update_animation(step, pdf_data, l):
-        l.set_xdata(xvec_trajectory[step])
-        l.set_ydata(pdf_data[step])
-        return l,
+#here
+    def update_animation(step, pdf_traj, l):
+        im.set_xdata(xvec_trajectory[step])
+        im.set_ydata(pdf_traj[step])
+        l.set_xlim(np.min(xvec_trajectory[step]),np.max(xvec_trajectory[step]))
+        return im
 
     f1 = plt.figure()
-    l, = plt.plot([],[],'r')
+    l = f1.add_subplot(1,1,1)
+    im, = l.plot([],[],'k')
     plt.xlim(np.min(xvec_trajectory[-1]), np.max(xvec_trajectory[-1]))
     plt.ylim(0, np.max(phat))
-    anim = animation.FuncAnimation(f1, update_animation, len(xvec_trajectory), fargs=(pdf_trajectory,l), interval=50, blit=True)
+    anim = animation.FuncAnimation(f1, update_animation, len(xvec_trajectory), fargs=(pdf_trajectory,l), interval=50, blit=False)
     plt.show()
 
 if animateIntegrand:
@@ -232,9 +235,10 @@ if finalGraph:
 
 plt.figure()
 
-
+'''
 for j,i in enumerate(G_history):
     w = i.shape[0]
     plt.plot(j, w,'.')
 plt.title(r'Size of G at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, starting interval [-1,1], tol = -100')
 plt.show()
+'''
