@@ -25,4 +25,5 @@ def calculateIntegrand(G, phat):
     val = np.zeros([np.size(G, 0), np.size(G, 1)])
     for i in range(np.size(G, 1)):
         val[:,i]= G[i,:] * phat[i]
+    r = np.sum(val)
     return val
