@@ -10,11 +10,7 @@ def computeEpsilon(G, phat):
     if (val1 <= tol) & (val2 <= tol):
         return -np.inf
     else:
-<<<<<<< HEAD
-        val = np.log(np.max(G[0,:] * phat[0] + G[-1,:] * phat[-1]))
-=======
         val = np.log(max(val1, val2))
->>>>>>> NewRowToGMethodStart
         return val
 
 
@@ -26,14 +22,8 @@ def computeIntegrandArray(G, phat):
 
 
 def calculateIntegrand(G, phat):
-<<<<<<< HEAD
-    val = np.zeros([phat.size, phat.size])
-    for i in range(np.size(phat)):
-        val[i,:]= G[i,:] * phat[i]
-=======
     val = np.zeros([np.size(G, 0), np.size(G, 1)])
     for i in range(np.size(G, 1)):
         val[:,i]= G[i,:] * phat[i]
     r = np.sum(val,0)
->>>>>>> NewRowToGMethodStart
     return val
