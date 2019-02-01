@@ -6,20 +6,20 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import Integrand
 
+machEps = np.finfo(float).eps
 
 # Drift function
 def driftfun(x):
     # if isinstance(x, int) | isinstance(x, float):
-    #     return 5
+    #     return 4
     # else:
-    #     return np.ones(np.shape(x))*5
-    # return 4-x
-    return (13 - x ** 2)
+    #     return np.ones(np.shape(x))*4
+    return x*(4 - x ** 2)
 
 
 # Diffusion function
 def difffun(x):
-    return np.repeat(1, np.size(x))
+    return np.repeat(0.1, np.size(x))
 
 
 def dnorm(x, mu, sigma):
@@ -81,22 +81,27 @@ def addValueToXvec(xvec, newVal):
 
 
 def checkReduceG(G, phat):
-    tol = np.finfo(float).eps
-    tol2 = 0.000001
     integrandMaxes = Integrand.computeIntegrandArray(G, phat)
-    integrandMaxes[(integrandMaxes < tol) & (phat < tol2)] = -np.inf
+    integrandMaxes[(integrandMaxes < machEps) & (phat < machEps)] = -np.inf
     return integrandMaxes
 
 
 # visualization parameters
 finalGraph = False
 animate = True
-plotEvolution = True
+plotEvolution = False
 plotEps = False
-animateIntegrand = True
+animateIntegrand = False
+plotGSizeEvolution = False
+
+
+# tolerance parameters
+epsilonTolerance = -20
+minSizeG = 60
+minMaxOfPhatAndStillRemoveValsFromG = 1
 
 # simulation parameters
-T = 1  # final time, code computes PDF of X_T
+T = 2 # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
@@ -106,39 +111,50 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-# k = 0.001
-xMin = -1
-xMax = 1
+xMin = 3.5
+xMax = 4.5
 
 # pdf after one time step with Dirac delta(x-init) initial condition
 a = init + driftfun(init)
 b = np.abs(difffun(init)) * np.sqrt(h)
+
+# Figure out better initial max and min for the grid.
+tol = 1
 while a <= xMin:
-    xMin = xMin - 4
+    xMin = np.round(xMin - tol,3)
+    xMax = a+tol
 
 while a >= xMax:
-    xMax = xMax + 4
+    xMax = np.round(xMax + tol,3)
+    xMin = a - tol
 
 xvec = np.arange(xMin, xMax, k)
 phat = dnorm(xvec, a, b)
+numNonzero = np.sum(phat > machEps)
+tol = len(phat)*0.3
+while (numNonzero < tol) & (k > 0.001): # check if we need to make the grid size finer.
+    k = k * 0.5
+    xvec = np.arange(xMin, xMax, k)
+    phat = dnorm(xvec, a, b)
+    numNonzero = np.sum(phat > machEps)
 
 # Kernel matrix
 G = integrandmat(xvec, xvec, h, driftfun, difffun)
-Gk = np.multiply(k, G)
 
-# plt.figure()
-# plt.plot(xvec, phat)
-# plt.show()
+#plt.figure()
+#plt.plot(xvec, phat)
+#plt.show()
 
 pdf_trajectory = []
 xvec_trajectory = []
 epsilonArray = []
 G_history = []
 epsilonArray.append(Integrand.computeEpsilon(G, phat))
+
 if animate:
     pdf_trajectory.append(phat)  # solution after one time step from above
     xvec_trajectory.append(xvec)
-    if animateIntegrand: G_history.append(G)
+    if animateIntegrand | plotGSizeEvolution: G_history.append(G)
     countSteps = 0
     while countSteps < numsteps - 1:  # since one time step is computed above
         print(countSteps)
@@ -147,38 +163,37 @@ if animate:
             numsteps = countSteps - 1
             del pdf_trajectory[-1]
             del xvec_trajectory[-1]
-            if animateIntegrand: del G_history[-1]
+            if animateIntegrand | plotGSizeEvolution: del G_history[-1]
             break
-        epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
-        tol = -10
-        countvalsRem = 0
-        if epsilon <= tol:
-            ############################################## removing from grid
-            valsToRemove = checkReduceG(G, pdf_trajectory[-1])  # Remove if val is -inf
-            if (len(G) > 60) & (countSteps > 1) & (-np.inf in valsToRemove):
-                xvec_trajectory.append(xvec_trajectory[-1])
-                pdf_trajectory.append(pdf_trajectory[-1])
-                for ind_w in reversed(range(len(valsToRemove))):
-                    if (valsToRemove[ind_w] == -np.inf) & (np.max(pdf_trajectory[-1] > 1)):
+        ############################################## removing from grid
+        valsToRemove = checkReduceG(G, pdf_trajectory[-1])  # Remove if val is -inf
+        changedG = False
+        if (len(G) > minSizeG) & (countSteps > 1) & (-np.inf in valsToRemove):
+            xvec_trajectory.append(xvec_trajectory[-1])
+            pdf_trajectory.append(pdf_trajectory[-1])
+            for ind_w in reversed(range(len(valsToRemove))):  # reversed to avoid index problems
+                if (valsToRemove[ind_w] == -np.inf) & (np.max(pdf_trajectory[-1] > minMaxOfPhatAndStillRemoveValsFromG)):
+                    if (len(G) > minSizeG):
                         G = removeGridValuesFromG(ind_w, G)
-                        countvalsRem = countvalsRem + 1
+                        changedG = True
                         xvec_trajectory[-1] = np.delete(xvec_trajectory[-1], ind_w)
                         pdf_trajectory[-1] = np.delete(pdf_trajectory[-1], ind_w)
-                countSteps = countSteps + 1
-                if animateIntegrand: G_history.append(G)
-            #################################################################3
-            else:
+            if changedG: countSteps = countSteps + 1
+            if (animateIntegrand | plotGSizeEvolution) & changedG: G_history.append(G)
+        ############################################################
+        epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
+        if epsilon <= epsilonTolerance:
+            if changedG == False:
                 pdf_trajectory.append(np.dot(G * k, pdf_trajectory[-1]))
                 xvec_trajectory.append(xvec_trajectory[-1])
-                if animateIntegrand: G_history.append(G)
+                if animateIntegrand | plotGSizeEvolution: G_history.append(G)
                 epsilonArray.append(Integrand.computeEpsilon(G, pdf_trajectory[-1]))
                 countSteps = countSteps + 1
-            test = 0
         else:
             IC = False
             if len(xvec_trajectory) < 2:  # pdf trajectory size is 1
-                flag = True
-            while epsilon >= tol:
+                IC = True
+            while epsilon >= epsilonTolerance:
                 ############################################## adding to grid
                 leftEnd = xvec_trajectory[-1][0] - k
                 rightEnd = xvec_trajectory[-1][-1] + k
@@ -191,57 +206,71 @@ if animate:
                 epsilon = Integrand.computeEpsilon(G, G * pdf_trajectory[-1])
                 epsilonArray.append(epsilon)
                 print(epsilon)
-                ##############################################
-
+                ################################################
             # recompute ICs
             if IC:
-                pdf_trajectory[-1] = dnorm(xvec, init + driftfun(init), np.abs(difffun(init)) * np.sqrt(h))
+                pdf_trajectory[-1] = dnorm(xvec_trajectory[-1], init + driftfun(init), np.abs(difffun(init)) * np.sqrt(h))
             else:
                 pdf_trajectory[-1] = (np.dot(G * k, pdf_trajectory[-1]))
-            if animateIntegrand: G_history[-1] = G
+            if animateIntegrand | plotGSizeEvolution: G_history[-1] = G
 
     buffer = 0
-    minxgrid = np.floor(np.min(xvec_trajectory[0])) - buffer
-    maxxgrid = np.ceil(np.max(xvec_trajectory[0])) + buffer
-    maxygrid = np.ceil(np.max(pdf_trajectory[0])) + buffer
+    NeedToChangeYAxes = True
+    NeedToChangeXAxes = True
+    MinX = min([(min(a)) for a in xvec_trajectory])
+    MaxX = max([(max(a)) for a in xvec_trajectory])
+    MaxY = max([(max(a)) for a in pdf_trajectory])
+    starting_minxgrid = np.floor(np.min(xvec_trajectory[0])) - buffer
+    starting_maxxgrid = np.ceil(np.max(xvec_trajectory[0])) + buffer
+    starting_maxygrid = np.ceil(np.max(pdf_trajectory[0])) + buffer
+    if abs(MaxY - starting_maxygrid) < 20:
+        starting_maxygrid = MaxY
+        NeedToChangeYAxes = False
+    if (abs(MaxX - starting_maxxgrid) < 20) & (abs(MinX - starting_minxgrid) < 20):
+        starting_maxxgrid = MaxX
+        starting_minxgrid = MinX
+        NeedToChangeXAxes = False
+
 
     def update_animation(step, pdf_traj, l):
-        global minxgrid, maxxgrid, maxygrid
+        global starting_minxgrid, starting_maxxgrid, starting_maxygrid, MaxY, MaxX
         if step == 0:
-            minxgrid = np.floor(np.min(xvec_trajectory[0])) - buffer
-            maxxgrid = np.ceil(np.max(xvec_trajectory[0])) + buffer
-            maxygrid = np.ceil(np.max(pdf_trajectory[0])) + buffer
-            plt.xlim(minxgrid, maxxgrid)
-            plt.ylim(0, maxygrid)
+            plt.xlim(starting_minxgrid, starting_maxxgrid)
+            plt.ylim(0, starting_maxygrid)
 
         im.set_xdata(xvec_trajectory[step])
         im.set_ydata(pdf_traj[step])
-        mx = np.floor(np.min(xvec_trajectory[step]))
-        Mx = np.ceil(np.max(xvec_trajectory[step]))
-        My = np.ceil(np.max(pdf_trajectory[step]))
-        diff = 10
+        if NeedToChangeXAxes | NeedToChangeYAxes:
+            mx = np.floor(np.min(xvec_trajectory[step]))
+            Mx = np.ceil(np.max(xvec_trajectory[step]))
+            My = np.ceil(np.max(pdf_trajectory[step]))
+            diff = 10
+        if NeedToChangeYAxes:
+            if (np.abs(My - starting_maxygrid)) > diff:  # Y axis changed a lot
+                l.set_ylim(0, My + buffer)
+                starting_maxygrid = My
+            if My > starting_maxygrid:  # Y axis changed a lot
+                l.set_ylim(0, My + buffer)
+                starting_maxygrid = My
 
-        if (np.abs(My - maxygrid)) > 10:  # Y axis changed a lot
-            l.set_ylim(0, My + buffer)
-            maxygrid = My
+        if NeedToChangeXAxes:
+            if (mx < starting_minxgrid) & (Mx > starting_maxxgrid):  #  if both x axis need updating
+                l.set_xlim(mx - buffer, Mx + buffer)
+                starting_minxgrid = mx
+                starting_maxxgrid = Mx
 
-        if (mx < minxgrid) & (Mx > maxxgrid):  #  if both x axis need updating
-            l.set_xlim(mx - buffer, Mx + buffer)
-            minxgrid = mx
-            maxxgrid = Mx
+            elif (starting_minxgrid - mx > diff) | (starting_maxxgrid - Mx > diff):
+                l.set_xlim(mx - buffer, Mx + buffer)
+                starting_minxgrid = mx
+                starting_maxxgrid = Mx
 
-        elif (minxgrid- mx > diff) | (maxxgrid-Mx > diff):
-            l.set_xlim(mx - buffer, Mx + buffer)
-            minxgrid = mx
-            maxxgrid = Mx
+            elif mx < starting_minxgrid:
+                l.set_xlim(mx - buffer, starting_maxxgrid)
+                starting_minxgrid = mx
 
-        elif mx < minxgrid:
-            l.set_xlim(mx - buffer, maxxgrid)
-            minxgrid = mx
-
-        elif Mx > maxxgrid:
-            l.set_xlim(minxgrid, Mx + buffer)
-            maxxgrid = Mx
+            elif Mx > starting_maxxgrid:
+                l.set_xlim(starting_minxgrid, Mx + buffer)
+                starting_maxxgrid = Mx
         return im
 
 
@@ -256,8 +285,6 @@ if animate:
 
 if animateIntegrand:
     assert animate == True, 'Animate must be True'
-
-
     def update_animation_integrand(step, val, l):
         integrand = Integrand.calculateIntegrand(G_history[step], pdf_trajectory[step])
         Y = np.zeros([np.size(xvec_trajectory[step]), np.size(integrand, 1)])
@@ -275,6 +302,7 @@ if animateIntegrand:
     anim = animation.FuncAnimation(f1, update_animation_integrand, numsteps, fargs=(3, l), interval=50, blit=True)
     plt.show()
 
+
 if plotEps:
     assert animate == True, 'The variable animate must be True'
     plt.figure()
@@ -282,7 +310,7 @@ if plotEps:
     plt.xlabel('Time Step')
     plt.ylabel(r'$\varepsilon$ value')
     plt.title(
-        r'$\varepsilon$ at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, starting interval [-1,1], tol = -100')
+        r'$\varepsilon$ at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, tol = -20')
     plt.show()
 
 if plotEvolution:
@@ -309,11 +337,11 @@ if finalGraph:
     plt.plot(xvec_trajectory[-1], pdf_trajectory[-1], '.')
     plt.show()
 
-plt.figure()
-
-for j, i in enumerate(G_history):
-    w = i.shape[0]
-    plt.plot(j, w, '.')
-plt.title(
-    r'Size of G at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, starting interval [-1,1], tol = -100')
-plt.show()
+if plotGSizeEvolution:
+    plt.figure()
+    for j, i in enumerate(G_history):
+        w = i.shape[0]
+        plt.plot(j, w, '.')
+    plt.title(
+        r'Size of G at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, starting interval [-1,1], tol = -100')
+    plt.show()

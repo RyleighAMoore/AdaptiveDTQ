@@ -1,23 +1,19 @@
 1/7/19
 - Generate example when simulation on current grid is poor (compare to
   overresovled example)
-- prescribe method to redefine grid. I.e., evolve the grid with time
 - change the quadrature rule when the grid evolves
 
 1/14/19
-- Plot the integrand over time
-- Plot $\epsilon = max[log(G(y_l,y_{-M})\hat{p}(y_{-M},t_n))] +
-  max[log(G(y_l,y_{M})\hat{p}(y_{M},t_n))]$ for each time step.
-- Prescribe method to redefine grid if the epsilon becomes too large.
-  This will boil down to adding rows to the kernel matrix G.
-  if eps > num: (ie integrand is < e^{-num})
-        ...
-  else:
-    Go back a time step
-    Add rows to M
-    test epsilon again
+DONE
 
 1/28/19
 - Add and remove values from G
 - Plot first eigenvector of G
+    vals, vects = np.linalg.eig(G_history[-1])
+    largest_eigenvector = vects[:, 20]
+    plt.figure()
+    plt.plot(xvec_trajectory[-1],largest_eigenvector)
+    plt.show()
 - Try with f(x)=1 and small diffusion.
+- Make plot titles dynamic
+
