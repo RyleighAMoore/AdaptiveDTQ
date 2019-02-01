@@ -153,17 +153,6 @@ G_history = []
 epsilonArray.append(Integrand.computeEpsilon(G, phat))
 
 if animate:
-<<<<<<< HEAD
-    pdf_trajectory[:, 0] = phat  # solution after one time step from above
-    for i in range(numsteps-1):  # since one time step is computed above
-        pdf_trajectory[:,i+1] = np.dot(A, pdf_trajectory[:,i])
-        epsilon[i+1] = Integrand.computeEpsilon(G, pdf_trajectory[:,i+1])
-
-    def update_animation(step, pdf_data, l):
-        l.set_xdata(xvec)
-        l.set_ydata(pdf_data[:,step])
-        return l,
-=======
     pdf_trajectory.append(phat)  # solution after one time step from above
     xvec_trajectory.append(xvec)
     if animateIntegrand | plotGSizeEvolution: G_history.append(G)
@@ -282,7 +271,6 @@ if animate:
                 starting_maxxgrid = Mx
         return im
 
->>>>>>> NewRowToGMethodStart
 
     f1 = plt.figure()
     l = f1.add_subplot(1, 1, 1)
@@ -319,12 +307,8 @@ if plotEps:
     plt.plot(epsilonArray)
     plt.xlabel('Time Step')
     plt.ylabel(r'$\varepsilon$ value')
-<<<<<<< HEAD
-    plt.title(r'$\varepsilon$ at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, interval [-4,4]')
-=======
     plt.title(
         r'$\varepsilon$ at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, tol = -20')
->>>>>>> NewRowToGMethodStart
     plt.show()
 
 if plotEvolution:
