@@ -10,18 +10,19 @@ machEps = np.finfo(float).eps
 
 # Drift function
 def driftfun(x):
-    # if isinstance(x, int) | isinstance(x, float):
-    #     return 4
-    # else:
-    #     return np.ones(np.shape(x))*4
-    return x*(4 - x ** 2)
+    if isinstance(x, int) | isinstance(x, float):
+        return 4
+    else:
+        return np.ones(np.shape(x))*4
+    #return x*(4 - x ** 2)
 
 
 # Diffusion function
 def difffun(x):
     return np.repeat(0.1, np.size(x))
 
-
+# Density, distribution function, quantile function and random generation for the
+# normal distribution with mean equal to mu and standard deviation equal to sigma.
 def dnorm(x, mu, sigma):
     return np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
 
@@ -61,25 +62,25 @@ def addColumnToG(xvec, newVal, h, driftfun, difffun, G, colIndex):
     Gnew = np.insert(G, colIndex, newCol, axis=1)
     return Gnew
 
-
+# This adds a new grid value to G
 def addGridValueToG(xvec, newVal, h, driftfun, difffun, G, rowIndex):
     G = addRowToG(xvec, newVal, h, driftfun, difffun, G, rowIndex)
     G = addColumnToG(xvec, newVal, h, driftfun, difffun, G, rowIndex)
     return G
 
-
-def removeGridValuesFromG(xValIdexToRemove, G):
-    G = np.delete(G, xValIdexToRemove, 0)
-    G = np.delete(G, xValIdexToRemove, 1)
+# This removes a new grid value from G
+def removeGridValuesFromG(xValIndexToRemove, G):
+    G = np.delete(G, xValIndexToRemove, 0)
+    G = np.delete(G, xValIndexToRemove, 1)
     return G
 
-
+# Adds the new value to the xvec grid in the correct location based on numerical order
 def addValueToXvec(xvec, newVal):
     xnewLoc = np.searchsorted(xvec, newVal)
     xvec_new = np.insert(xvec, xnewLoc, newVal)
     return xnewLoc, xvec_new
 
-
+# Check if we should remove values from G because they are "zero"
 def checkReduceG(G, phat):
     integrandMaxes = Integrand.computeIntegrandArray(G, phat)
     integrandMaxes[(integrandMaxes < machEps) & (phat < machEps)] = -np.inf
@@ -101,7 +102,7 @@ minSizeG = 60
 minMaxOfPhatAndStillRemoveValsFromG = 1
 
 # simulation parameters
-T = 2 # final time, code computes PDF of X_T
+T = 15  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
@@ -111,8 +112,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-xMin = 3.5
-xMax = 4.5
+xMin = -1
+xMax = 1
 
 # pdf after one time step with Dirac delta(x-init) initial condition
 a = init + driftfun(init)
@@ -220,9 +221,9 @@ if animate:
     MinX = min([(min(a)) for a in xvec_trajectory])
     MaxX = max([(max(a)) for a in xvec_trajectory])
     MaxY = max([(max(a)) for a in pdf_trajectory])
-    starting_minxgrid = np.floor(np.min(xvec_trajectory[0])) - buffer
-    starting_maxxgrid = np.ceil(np.max(xvec_trajectory[0])) + buffer
-    starting_maxygrid = np.ceil(np.max(pdf_trajectory[0])) + buffer
+    starting_minxgrid = np.floor(np.min(xvec_trajectory[0]))
+    starting_maxxgrid = np.ceil(np.max(xvec_trajectory[0]))
+    starting_maxygrid = np.ceil(np.max(pdf_trajectory[0]))
     if abs(MaxY - starting_maxygrid) < 20:
         starting_maxygrid = MaxY
         NeedToChangeYAxes = False
@@ -246,28 +247,25 @@ if animate:
             My = np.ceil(np.max(pdf_trajectory[step]))
             diff = 10
         if NeedToChangeYAxes:
-            if (np.abs(My - starting_maxygrid)) > diff:  # Y axis changed a lot
+            if (np.abs(My - starting_maxygrid)) > diff:
                 l.set_ylim(0, My + buffer)
                 starting_maxygrid = My
-            if My > starting_maxygrid:  # Y axis changed a lot
+            if My > starting_maxygrid:
                 l.set_ylim(0, My + buffer)
                 starting_maxygrid = My
 
         if NeedToChangeXAxes:
-            if (mx < starting_minxgrid) & (Mx > starting_maxxgrid):  #  if both x axis need updating
+            if (mx < starting_minxgrid) & (Mx > starting_maxxgrid):
                 l.set_xlim(mx - buffer, Mx + buffer)
                 starting_minxgrid = mx
                 starting_maxxgrid = Mx
-
             elif (starting_minxgrid - mx > diff) | (starting_maxxgrid - Mx > diff):
                 l.set_xlim(mx - buffer, Mx + buffer)
                 starting_minxgrid = mx
                 starting_maxxgrid = Mx
-
             elif mx < starting_minxgrid:
                 l.set_xlim(mx - buffer, starting_maxxgrid)
                 starting_minxgrid = mx
-
             elif Mx > starting_maxxgrid:
                 l.set_xlim(starting_minxgrid, Mx + buffer)
                 starting_maxxgrid = Mx
