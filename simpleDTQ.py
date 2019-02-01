@@ -102,7 +102,7 @@ minSizeG = 60
 minMaxOfPhatAndStillRemoveValsFromG = 1
 
 # simulation parameters
-T = 15  # final time, code computes PDF of X_T
+T = 1  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
