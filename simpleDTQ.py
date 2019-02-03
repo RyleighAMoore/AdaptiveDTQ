@@ -98,7 +98,7 @@ finalGraph = False
 animate = True
 plotEvolution = False
 plotEps = False
-animateIntegrand = False
+animateIntegrand = True
 plotGSizeEvolution = False
 
 # tolerance parameters
@@ -234,21 +234,12 @@ if animate:
 if animateIntegrand:
     assert animate == True, 'Animate must be True'
 
-    def update_animation_integrand(step, val, l):
-        integrand = Integrand.calculateIntegrand(G_history[step], pdf_trajectory[step])
-        Y = np.zeros([np.size(xvec_trajectory[step]), np.size(integrand, 1)])
-        for i in range(np.size(integrand, 1)):
-            Y[i, :] = xvec_trajectory[step]
-        l.set_xdata(Y)
-        l.set_ydata(integrand)
-        return l,
-
-
     f1 = plt.figure()
-    l, = plt.plot([], [], 'r')
-    plt.xlim(np.min(xvec_trajectory[-1]), np.max(xvec_trajectory[-1]), '.')
-    plt.ylim(0, 14)
-    anim = animation.FuncAnimation(f1, update_animation_integrand, numsteps, fargs=(3, l), interval=50, blit=True)
+    l = f1.add_subplot(1, 1, 1)
+    im, = l.plot([], [], 'r')
+    anim = animation.FuncAnimation(f1, AnimationTools.update_animation, len(xvec_trajectory),
+                                   fargs=(G_history, l, xvec_trajectory, pdf_trajectory, im), interval=50,
+                                   blit=False)
     plt.show()
 
 if plotEps:
