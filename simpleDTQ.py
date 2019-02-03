@@ -16,11 +16,11 @@ def driftfun(x):
         return 4
     else:
         return np.ones(np.shape(x)) * 4
-    # return x*(4 - x ** 2)
+    #return x*(4 - x ** 2)
 
 # Diffusion function
 def difffun(x):
-    return np.repeat(0.1, np.size(x))
+    return np.repeat(0.5, np.size(x))
 
 
 # Density, distribution function, quantile function and random generation for the
@@ -177,6 +177,7 @@ if animate:
         if (len(G) > minSizeG) & (countSteps > 1) & (-np.inf in valsToRemove):
             xvec_trajectory.append(xvec_trajectory[-1])
             pdf_trajectory.append(pdf_trajectory[-1])
+            if animateIntegrand | plotGSizeEvolution: G_history.append(G_history[-1])
             for ind_w in reversed(range(len(valsToRemove))):  # reversed to avoid index problems
                 if (valsToRemove[ind_w] == -np.inf) & (
                 np.max(pdf_trajectory[-1] > minMaxOfPhatAndStillRemoveValsFromG)):
@@ -186,7 +187,7 @@ if animate:
                         xvec_trajectory[-1] = np.delete(xvec_trajectory[-1], ind_w)
                         pdf_trajectory[-1] = np.delete(pdf_trajectory[-1], ind_w)
             if changedG: countSteps = countSteps + 1
-            if (animateIntegrand | plotGSizeEvolution) & changedG: G_history.append(G)
+            if (animateIntegrand | plotGSizeEvolution) & changedG: G_history[-1] = G
         ############################################################
         epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
         if epsilon <= epsilonTolerance:
@@ -227,17 +228,16 @@ if animate:
     l = f1.add_subplot(1, 1, 1)
     im, = l.plot([], [], 'r')
     anim = animation.FuncAnimation(f1, AnimationTools.update_animation, len(xvec_trajectory),
-                                   fargs=(pdf_trajectory, l, xvec_trajectory, pdf_trajectory, im), interval=50,
+                                   fargs=(pdf_trajectory, l, xvec_trajectory, im), interval=50,
                                    blit=False)
     plt.show()
 
 if animateIntegrand:
     assert animate == True, 'Animate must be True'
-
     f1 = plt.figure()
     l = f1.add_subplot(1, 1, 1)
     im, = l.plot([], [], 'r')
-    anim = animation.FuncAnimation(f1, AnimationTools.update_animation, len(xvec_trajectory),
+    anim = animation.FuncAnimation(f1, AnimationTools.update_animation_integrand, len(xvec_trajectory),
                                    fargs=(G_history, l, xvec_trajectory, pdf_trajectory, im), interval=50,
                                    blit=False)
     plt.show()
