@@ -237,8 +237,10 @@ if animateIntegrand:
     f1 = plt.figure()
     l = f1.add_subplot(1, 1, 1)
     im, = l.plot([], [], 'r')
+    NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid = AnimationTools.axis_setup(
+        xvec_trajectory, pdf_trajectory)
     anim = animation.FuncAnimation(f1, AnimationTools.update_animation_integrand, len(xvec_trajectory),
-                                   fargs=(G_history, l, xvec_trajectory, pdf_trajectory, im), interval=50,
+                                   fargs=(G_history, l, xvec_trajectory, pdf_trajectory, im, NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid), interval=50,
                                    blit=False)
     plt.show()
 
