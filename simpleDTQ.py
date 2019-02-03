@@ -227,8 +227,10 @@ if animate:
     f1 = plt.figure()
     l = f1.add_subplot(1, 1, 1)
     im, = l.plot([], [], 'r')
+    NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid = AnimationTools.axis_setup(
+        xvec_trajectory, pdf_trajectory)
     anim = animation.FuncAnimation(f1, AnimationTools.update_animation, len(xvec_trajectory),
-                                   fargs=(pdf_trajectory, l, xvec_trajectory, im), interval=50,
+                                   fargs=(pdf_trajectory, l, xvec_trajectory, im,  NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid), interval=50,
                                    blit=False)
     plt.show()
 

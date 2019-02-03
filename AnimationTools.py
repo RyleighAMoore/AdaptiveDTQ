@@ -59,9 +59,7 @@ def update_x_axis(xvec_trajectory, step, starting_minxgrid,
     return starting_minxgrid, starting_maxxgrid, starting_maxygrid
 
 
-def update_animation(step, pdf_trajectory, l, xvec_trajectory, im):
-    NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid = axis_setup(
-        xvec_trajectory, pdf_trajectory)
+def update_animation(step, pdf_trajectory, l, xvec_trajectory, im,  NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid):
     if step == 0:
         plt.xlim(starting_minxgrid, starting_maxxgrid)
         plt.ylim(0, starting_maxygrid)
