@@ -1,19 +1,16 @@
 1/7/19
-- Generate example when simulation on current grid is poor (compare to
-  overresovled example)
 - change the quadrature rule when the grid evolves
 
 1/14/19
 DONE
 
 1/28/19
-- Add and remove values from G
 - Plot first eigenvector of G
     vals, vects = np.linalg.eig(G_history[-1])
     largest_eigenvector = vects[:, 20]
     plt.figure()
     plt.plot(xvec_trajectory[-1],largest_eigenvector)
     plt.show()
-- Try with f(x)=1 and small diffusion.
 - Make plot titles dynamic
+- Make Integrand animation better for the Y axis
 
