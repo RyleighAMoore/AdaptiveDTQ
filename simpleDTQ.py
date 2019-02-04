@@ -16,7 +16,8 @@ def driftfun(x):
         return 4
     else:
         return np.ones(np.shape(x)) * 4
-    return x*(4 - x ** 2)
+    return x * (4 - x ** 2)
+
 
 # Diffusion function
 def difffun(x):
@@ -100,11 +101,18 @@ plotEvolution = False
 plotEps = False
 animateIntegrand = True
 plotGSizeEvolution = True
+plotLargestEigenvector = True
 
 # tolerance parameters
 epsilonTolerance = -20
-minSizeG = 60
+minSizeGAndStillRemoveValsFromG = 60
 minMaxOfPhatAndStillRemoveValsFromG = 0.01
+
+# Run parameters
+autoCorrectInitialGrid = True
+RemoveFromG = True
+AddToG= True
+
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -124,25 +132,30 @@ xMax = 1
 a = init + driftfun(init)
 b = np.abs(difffun(init)) * np.sqrt(h)
 
-# Figure out better initial max and min for the grid.
-tol = 1
-while a <= xMin:
-    xMin = np.round(xMin - tol, 3)
-    xMax = a + tol
+if not autoCorrectInitialGrid:
+    xvec = np.arange(xMin, xMax, k)
+    phat = dnorm(xvec, a, b)
 
-while a >= xMax:
-    xMax = np.round(xMax + tol, 3)
-    xMin = a - tol
+if autoCorrectInitialGrid:
+    # Figure out better initial max and min for the grid.
+    tol = 1
+    while a <= xMin:
+        xMin = np.round(xMin - tol, 3)
+        xMax = a + tol
 
-xvec = np.arange(xMin, xMax, k)
-phat = dnorm(xvec, a, b)
-numNonzero = np.sum(phat > machEps)
-tol = len(phat) * 0.3
-while (numNonzero < tol) & (k > 0.001):  # check if we need to make the grid size finer.
-    k = k * 0.5
+    while a >= xMax:
+        xMax = np.round(xMax + tol, 3)
+        xMin = a - tol
+
     xvec = np.arange(xMin, xMax, k)
     phat = dnorm(xvec, a, b)
     numNonzero = np.sum(phat > machEps)
+    tol = len(phat) * 0.3
+    while (numNonzero < tol) & (k > 0.001):  # check if we need to make the grid size finer.
+        k = k * 0.5
+        xvec = np.arange(xMin, xMax, k)
+        phat = dnorm(xvec, a, b)
+        numNonzero = np.sum(phat > machEps)
 
 # Kernel matrix
 G = integrandmat(xvec, xvec, h, driftfun, difffun)
@@ -171,12 +184,12 @@ if animate:
 
         ############################################## removing from grid
         changedG = False
-        if (len(G) > minSizeG) & (countSteps > 10):
+        if RemoveFromG & (len(G) > minSizeGAndStillRemoveValsFromG) & (countSteps > 10):
             valsToRemove = checkReduceG(G, pdf)  # Remove if val is -inf
             if -np.inf in valsToRemove:
                 for ind_w in reversed(range(len(valsToRemove))):  # reversed to avoid index problems
                     if (valsToRemove[ind_w] == -np.inf) & (
-                            np.max(pdf > minMaxOfPhatAndStillRemoveValsFromG)) & (len(G) > minSizeG):
+                            np.max(pdf > minMaxOfPhatAndStillRemoveValsFromG)) & (len(G) > minSizeGAndStillRemoveValsFromG):
                         G = removeGridValuesFromG(ind_w, G)
                         changedG = True
                         xvec = np.delete(xvec, ind_w)
@@ -189,8 +202,7 @@ if animate:
             IC = False
             if len(xvec_trajectory) < 2:  # pdf trajectory size is 1
                 IC = True
-
-            while epsilon >= epsilonTolerance:
+            while AddToG & (epsilon >= epsilonTolerance):
                 ############################################## adding to grid
                 leftEnd = xvec[0] - k
                 rightEnd = xvec[-1] + k
@@ -209,15 +221,12 @@ if animate:
                 pdf_trajectory[-1] = dnorm(xvec, init + driftfun(init),
                                            np.abs(difffun(init)) * np.sqrt(h))
 
-            # if animateIntegrand | plotGSizeEvolution: G_history[-1] = G
-
         if epsilon <= epsilonTolerance:  # things are going well
             pdf_trajectory.append(np.dot(G * k, pdf))
             xvec_trajectory.append(xvec)
             if animateIntegrand | plotGSizeEvolution: G_history.append(G)
             epsilonArray.append(Integrand.computeEpsilon(G, pdf))
             countSteps = countSteps + 1
-
 
     # Animate the PDF
     f1 = plt.figure()
@@ -226,7 +235,8 @@ if animate:
     NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid = AnimationTools.axis_setup(
         xvec_trajectory, pdf_trajectory)
     anim = animation.FuncAnimation(f1, AnimationTools.update_animation, len(xvec_trajectory),
-                                   fargs=(pdf_trajectory, l, xvec_trajectory, im,  NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid), interval=50,
+                                   fargs=(pdf_trajectory, l, xvec_trajectory, im, NeedToChangeXAxes, NeedToChangeYAxes,
+                                          starting_minxgrid, starting_maxxgrid, starting_maxygrid), interval=50,
                                    blit=False)
     plt.show()
 
@@ -238,7 +248,9 @@ if animateIntegrand:
     NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid = AnimationTools.axis_setup(
         xvec_trajectory, pdf_trajectory)
     anim = animation.FuncAnimation(f1, AnimationTools.update_animation_integrand, len(xvec_trajectory),
-                                   fargs=(G_history, l, xvec_trajectory, pdf_trajectory, im, NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid), interval=50,
+                                   fargs=(G_history, l, xvec_trajectory, pdf_trajectory, im, NeedToChangeXAxes,
+                                          NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid),
+                                   interval=50,
                                    blit=False)
     plt.show()
 
@@ -283,4 +295,13 @@ if plotGSizeEvolution:
         plt.plot(j, w, '.')
     plt.title(
         r'Size of G at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, starting interval [-1,1], tol = -100')
+    plt.show()
+
+if plotLargestEigenvector:
+    vals, vects = np.linalg.eig(G_history[-1])
+    largest_eigenvector = vects[:, 0]
+    plt.figure()
+    plt.plot(xvec_trajectory[-1],largest_eigenvector, label = 'Eigenvector') #blue
+    plt.plot(xvec_trajectory[-1],pdf_trajectory[-1], label = 'PDF')
+    plt.legend()
     plt.show()
