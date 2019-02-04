@@ -16,4 +16,5 @@ using a derivative (gradient)
 - Numerically enforce eigenvalue to have density 1 and add to animation as the solution.
 - Look into possible spectral orth. poly method if bored someday to (most likely) eliminate it as
  a good idea. I.e. this will most likely not work.
+- Clean up the latex doc a bit and make quadrature rule notation better.
 
