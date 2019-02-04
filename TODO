@@ -13,4 +13,5 @@ DONE
     plt.show()
 - Make plot titles dynamic
 - Make Integrand animation better for the Y axis
+- Write some unit tests
 

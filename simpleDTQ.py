@@ -16,11 +16,11 @@ def driftfun(x):
         return 4
     else:
         return np.ones(np.shape(x)) * 4
-    #return x*(4 - x ** 2)
+    return x*(4 - x ** 2)
 
 # Diffusion function
 def difffun(x):
-    return np.repeat(0.5, np.size(x))
+    return np.repeat(0.1, np.size(x))
 
 
 # Density, distribution function, quantile function and random generation for the
@@ -99,12 +99,12 @@ animate = True
 plotEvolution = False
 plotEps = False
 animateIntegrand = True
-plotGSizeEvolution = False
+plotGSizeEvolution = True
 
 # tolerance parameters
 epsilonTolerance = -20
 minSizeG = 60
-minMaxOfPhatAndStillRemoveValsFromG = 1
+minMaxOfPhatAndStillRemoveValsFromG = 0.01
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -161,67 +161,63 @@ if animate:
     pdf_trajectory.append(phat)  # solution after one time step from above
     xvec_trajectory.append(xvec)
     if animateIntegrand | plotGSizeEvolution: G_history.append(G)
+
     countSteps = 0
     while countSteps < numsteps - 1:  # since one time step is computed above
         print(countSteps)
-        if G.size == 0:
-            print('Quit at numStep', countSteps, 'due to G becoming empty')
-            numsteps = countSteps - 1
-            del pdf_trajectory[-1]
-            del xvec_trajectory[-1]
-            if animateIntegrand | plotGSizeEvolution: del G_history[-1]
-            break
+        pdf = pdf_trajectory[-1]  # set up placeholder variables
+        xvec = xvec_trajectory[-1]
+        epsilon = Integrand.computeEpsilon(G, pdf)
+
         ############################################## removing from grid
-        valsToRemove = checkReduceG(G, pdf_trajectory[-1])  # Remove if val is -inf
         changedG = False
-        if (len(G) > minSizeG) & (countSteps > 1) & (-np.inf in valsToRemove):
-            xvec_trajectory.append(xvec_trajectory[-1])
-            pdf_trajectory.append(pdf_trajectory[-1])
-            if animateIntegrand | plotGSizeEvolution: G_history.append(G_history[-1])
-            for ind_w in reversed(range(len(valsToRemove))):  # reversed to avoid index problems
-                if (valsToRemove[ind_w] == -np.inf) & (
-                np.max(pdf_trajectory[-1] > minMaxOfPhatAndStillRemoveValsFromG)):
-                    if (len(G) > minSizeG):
+        if (len(G) > minSizeG) & (countSteps > 10):
+            valsToRemove = checkReduceG(G, pdf)  # Remove if val is -inf
+            if -np.inf in valsToRemove:
+                for ind_w in reversed(range(len(valsToRemove))):  # reversed to avoid index problems
+                    if (valsToRemove[ind_w] == -np.inf) & (
+                            np.max(pdf > minMaxOfPhatAndStillRemoveValsFromG)) & (len(G) > minSizeG):
                         G = removeGridValuesFromG(ind_w, G)
                         changedG = True
-                        xvec_trajectory[-1] = np.delete(xvec_trajectory[-1], ind_w)
-                        pdf_trajectory[-1] = np.delete(pdf_trajectory[-1], ind_w)
-            if changedG: countSteps = countSteps + 1
-            if (animateIntegrand | plotGSizeEvolution) & changedG: G_history[-1] = G
-        ############################################################
-        epsilon = Integrand.computeEpsilon(G, pdf_trajectory[-1])
-        if epsilon <= epsilonTolerance:
-            if changedG == False:
-                pdf_trajectory.append(np.dot(G * k, pdf_trajectory[-1]))
-                xvec_trajectory.append(xvec_trajectory[-1])
-                if animateIntegrand | plotGSizeEvolution: G_history.append(G)
-                epsilonArray.append(Integrand.computeEpsilon(G, pdf_trajectory[-1]))
-                countSteps = countSteps + 1
-        else:
+                        xvec = np.delete(xvec, ind_w)
+                        pdf = np.delete(pdf, ind_w)
+            ############################################################
+        if changedG:
+            epsilon = Integrand.computeEpsilon(G, pdf)
+
+        if epsilon > epsilonTolerance:
             IC = False
             if len(xvec_trajectory) < 2:  # pdf trajectory size is 1
                 IC = True
+
             while epsilon >= epsilonTolerance:
                 ############################################## adding to grid
-                leftEnd = xvec_trajectory[-1][0] - k
-                rightEnd = xvec_trajectory[-1][-1] + k
-                G = addGridValueToG(xvec_trajectory[-1], leftEnd, h, driftfun, difffun, G, 0)
-                xLoc, xvec_trajectory[-1] = addValueToXvec(xvec_trajectory[-1], leftEnd)
-                pdf_trajectory[-1] = np.insert(pdf_trajectory[-1], xLoc, 0)
-                G = addGridValueToG(xvec_trajectory[-1], rightEnd, h, driftfun, difffun, G, len(G))
-                xLoc, xvec_trajectory[-1] = addValueToXvec(xvec_trajectory[-1], rightEnd)
-                pdf_trajectory[-1] = np.insert(pdf_trajectory[-1], xLoc, 0)
-                epsilon = Integrand.computeEpsilon(G, G * pdf_trajectory[-1])
+                leftEnd = xvec[0] - k
+                rightEnd = xvec[-1] + k
+                G = addGridValueToG(xvec, leftEnd, h, driftfun, difffun, G, 0)
+                xLoc, xvec = addValueToXvec(xvec, leftEnd)
+                pdf = np.insert(pdf, xLoc, 0)
+                G = addGridValueToG(xvec, rightEnd, h, driftfun, difffun, G, len(G))
+                xLoc, xvec = addValueToXvec(xvec, rightEnd)
+                pdf = np.insert(pdf, xLoc, 0)
+                epsilon = Integrand.computeEpsilon(G, G * pdf)
                 epsilonArray.append(epsilon)
                 print(epsilon)
                 ################################################
-            # recompute ICs
+            # recompute ICs with new xvec. "restart"
             if IC:
-                pdf_trajectory[-1] = dnorm(xvec_trajectory[-1], init + driftfun(init),
+                pdf_trajectory[-1] = dnorm(xvec, init + driftfun(init),
                                            np.abs(difffun(init)) * np.sqrt(h))
-            else:
-                pdf_trajectory[-1] = (np.dot(G * k, pdf_trajectory[-1]))
-            if animateIntegrand | plotGSizeEvolution: G_history[-1] = G
+
+            # if animateIntegrand | plotGSizeEvolution: G_history[-1] = G
+
+        if epsilon <= epsilonTolerance:  # things are going well
+            pdf_trajectory.append(np.dot(G * k, pdf))
+            xvec_trajectory.append(xvec)
+            if animateIntegrand | plotGSizeEvolution: G_history.append(G)
+            epsilonArray.append(Integrand.computeEpsilon(G, pdf))
+            countSteps = countSteps + 1
+
 
     # Animate the PDF
     f1 = plt.figure()
