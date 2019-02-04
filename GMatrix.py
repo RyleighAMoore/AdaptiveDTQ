@@ -58,13 +58,6 @@ def removeGridValuesFromG(xValIndexToRemove, G):
     return G
 
 
-# Adds the new value to the xvec grid in the correct location based on numerical order
-def addValueToXvec(xvec, newVal):
-    xnewLoc = np.searchsorted(xvec, newVal)
-    xvec_new = np.insert(xvec, xnewLoc, newVal)
-    return xnewLoc, xvec_new
-
-
 # Check if we should remove values from G because they are "zero"
 def checkReduceG(G, phat):
     machEps = np.finfo(float).eps

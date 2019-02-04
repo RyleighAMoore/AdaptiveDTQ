@@ -7,9 +7,9 @@ import matplotlib.animation as animation
 import Integrand
 import AnimationTools
 import GMatrix
+import XGrid
 
 machEps = np.finfo(float).eps
-
 
 # Drift function
 def driftfun(x):
@@ -31,14 +31,14 @@ def dnorm(x, mu, sigma):
     return np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
 
 
-# visualization parameters
+# visualization parameters ############################################################
 finalGraph = False
 animate = True
 plotEvolution = False
 plotEps = False
 animateIntegrand = True
 plotGSizeEvolution = True
-plotLargestEigenvector = True
+plotLargestEigenvector = False
 plotIC = False
 
 # tolerance parameters
@@ -46,12 +46,10 @@ epsilonTolerance = -20
 minSizeGAndStillRemoveValsFromG = 60
 minMaxOfPhatAndStillRemoveValsFromG = 0.01
 
-# Run parameters
+# simulation parameters
 autoCorrectInitialGrid = True
 RemoveFromG = True
 AddToG = True
-
-# simulation parameters
 T = 1  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
@@ -65,6 +63,8 @@ k = h ** s
 xMin = -1
 xMax = 1
 
+################################################################################
+
 # pdf after one time step with Dirac delta(x-init) initial condition
 a = init + driftfun(init)
 b = np.abs(difffun(init)) * np.sqrt(h)
@@ -73,26 +73,8 @@ if not autoCorrectInitialGrid:
     xvec = np.arange(xMin, xMax, k)
     phat = dnorm(xvec, a, b)
 
-if autoCorrectInitialGrid:
-    # Figure out better initial max and min for the grid.
-    tol = 1
-    while a <= xMin:
-        xMin = np.round(xMin - tol, 3)
-        xMax = a + tol
-
-    while a >= xMax:
-        xMax = np.round(xMax + tol, 3)
-        xMin = a - tol
-
-    xvec = np.arange(xMin, xMax, k)
-    phat = dnorm(xvec, a, b)
-    numNonzero = np.sum(phat > machEps)
-    tol = len(phat) * 0.3
-    while (numNonzero < tol) & (k > 0.001):  # check if we need to make the grid size finer.
-        k = k * 0.5
-        xvec = np.arange(xMin, xMax, k)
-        phat = dnorm(xvec, a, b)
-        numNonzero = np.sum(phat > machEps)
+else:
+    xvec,k,phat = XGrid.correctInitialGrid(xMin,xMax,a,b,k,dnorm)
 
 # Kernel matrix
 G = GMatrix.computeG(xvec, xvec, h, driftfun, difffun, dnorm)
@@ -146,10 +128,10 @@ if animate:
                 leftEnd = xvec[0] - k
                 rightEnd = xvec[-1] + k
                 G = GMatrix.addGridValueToG(xvec, leftEnd, h, driftfun, difffun, G, 0, dnorm)
-                xLoc, xvec = GMatrix.addValueToXvec(xvec, leftEnd)
+                xLoc, xvec = XGrid.addValueToXvec(xvec, leftEnd)
                 pdf = np.insert(pdf, xLoc, 0)
                 G = GMatrix.addGridValueToG(xvec, rightEnd, h, driftfun, difffun, G, len(G), dnorm)
-                xLoc, xvec = GMatrix.addValueToXvec(xvec, rightEnd)
+                xLoc, xvec = XGrid.addValueToXvec(xvec, rightEnd)
                 pdf = np.insert(pdf, xLoc, 0)
                 epsilon = Integrand.computeEpsilon(G, G * pdf)
                 epsilonArray.append(epsilon)
