@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import Integrand
 import AnimationTools
+import GMatrix
 
 machEps = np.finfo(float).eps
 
@@ -29,69 +30,6 @@ def difffun(x):
 def dnorm(x, mu, sigma):
     return np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
 
-#  Function that returns the kernel matrix G(x,y)
-def integrandmat(xvec, yvec, h, driftfun, difffun):
-    Y = np.zeros((len(yvec), len(yvec)))
-    for i in range(len(yvec)):
-        Y[i, :] = xvec  # Y has the same grid value along each column (col1 has x1, col2 has x2, etc)
-    mu = Y + driftfun(Y) * h
-    r = difffun(Y)
-    sigma = abs(difffun(Y)) * np.sqrt(h)
-    sigma = np.reshape(sigma, [np.size(xvec), np.size(yvec)])  # make a matrix for the dnorm function
-    Y = np.transpose(Y)  # Transpose Y for use in the dnorm function
-    test = dnorm(Y, mu, sigma)
-    return test
-
-
-# This adds a N dimensional row to a M by N dimensional G
-def addRowToG(xvec, newVal, h, driftfun, difffun, G, rowIndex):
-    mu = xvec + driftfun(xvec) * h
-    sigma = abs(difffun(xvec)) * np.sqrt(h)
-    xrep = np.ones(len(mu)) * newVal
-    newRow = dnorm(xrep, mu, sigma)
-    Gnew = np.insert(G, rowIndex, newRow, 0)
-    return Gnew
-
-
-# This adds a M dimensional column to a M by N dimensional G
-def addColumnToG(xvec, newVal, h, driftfun, difffun, G, colIndex):
-    mu = np.ones(len(G)) * (newVal + driftfun(newVal) * h)
-    w = np.ones(len(G)) * newVal
-    sigma = abs(difffun(w)) * np.sqrt(h)
-    xnewLoc = np.searchsorted(xvec, newVal)
-    xnew = np.insert(xvec, xnewLoc, newVal)
-    newCol = dnorm(xnew, mu, sigma)
-    Gnew = np.insert(G, colIndex, newCol, axis=1)
-    return Gnew
-
-
-# This adds a new grid value to G
-def addGridValueToG(xvec, newVal, h, driftfun, difffun, G, rowIndex):
-    G = addRowToG(xvec, newVal, h, driftfun, difffun, G, rowIndex)
-    G = addColumnToG(xvec, newVal, h, driftfun, difffun, G, rowIndex)
-    return G
-
-
-# This removes a new grid value from G
-def removeGridValuesFromG(xValIndexToRemove, G):
-    G = np.delete(G, xValIndexToRemove, 0)
-    G = np.delete(G, xValIndexToRemove, 1)
-    return G
-
-
-# Adds the new value to the xvec grid in the correct location based on numerical order
-def addValueToXvec(xvec, newVal):
-    xnewLoc = np.searchsorted(xvec, newVal)
-    xvec_new = np.insert(xvec, xnewLoc, newVal)
-    return xnewLoc, xvec_new
-
-
-# Check if we should remove values from G because they are "zero"
-def checkReduceG(G, phat):
-    integrandMaxes = Integrand.computeIntegrandArray(G, phat)
-    integrandMaxes[(integrandMaxes < machEps) & (phat < machEps)] = -np.inf
-    return integrandMaxes
-
 
 # visualization parameters
 finalGraph = False
@@ -101,6 +39,7 @@ plotEps = False
 animateIntegrand = True
 plotGSizeEvolution = True
 plotLargestEigenvector = True
+plotIC = False
 
 # tolerance parameters
 epsilonTolerance = -20
@@ -110,8 +49,7 @@ minMaxOfPhatAndStillRemoveValsFromG = 0.01
 # Run parameters
 autoCorrectInitialGrid = True
 RemoveFromG = True
-AddToG= True
-
+AddToG = True
 
 # simulation parameters
 T = 1  # final time, code computes PDF of X_T
@@ -157,11 +95,12 @@ if autoCorrectInitialGrid:
         numNonzero = np.sum(phat > machEps)
 
 # Kernel matrix
-G = integrandmat(xvec, xvec, h, driftfun, difffun)
+G = GMatrix.computeG(xvec, xvec, h, driftfun, difffun, dnorm)
 
-# plt.figure()
-# plt.plot(xvec, phat)
-# plt.show()
+if plotIC:
+    plt.figure()
+    plt.plot(xvec, phat)
+    plt.show()
 
 pdf_trajectory = []
 xvec_trajectory = []
@@ -184,12 +123,13 @@ if animate:
         ############################################## removing from grid
         changedG = False
         if RemoveFromG & (len(G) > minSizeGAndStillRemoveValsFromG) & (countSteps > 10):
-            valsToRemove = checkReduceG(G, pdf)  # Remove if val is -inf
+            valsToRemove = GMatrix.checkReduceG(G, pdf)  # Remove if val is -inf
             if -np.inf in valsToRemove:
                 for ind_w in reversed(range(len(valsToRemove))):  # reversed to avoid index problems
                     if (valsToRemove[ind_w] == -np.inf) & (
-                            np.max(pdf > minMaxOfPhatAndStillRemoveValsFromG)) & (len(G) > minSizeGAndStillRemoveValsFromG):
-                        G = removeGridValuesFromG(ind_w, G)
+                            np.max(pdf > minMaxOfPhatAndStillRemoveValsFromG)) & (
+                            len(G) > minSizeGAndStillRemoveValsFromG):
+                        G = GMatrix.removeGridValuesFromG(ind_w, G)
                         changedG = True
                         xvec = np.delete(xvec, ind_w)
                         pdf = np.delete(pdf, ind_w)
@@ -205,11 +145,11 @@ if animate:
                 ############################################## adding to grid
                 leftEnd = xvec[0] - k
                 rightEnd = xvec[-1] + k
-                G = addGridValueToG(xvec, leftEnd, h, driftfun, difffun, G, 0)
-                xLoc, xvec = addValueToXvec(xvec, leftEnd)
+                G = GMatrix.addGridValueToG(xvec, leftEnd, h, driftfun, difffun, G, 0, dnorm)
+                xLoc, xvec = GMatrix.addValueToXvec(xvec, leftEnd)
                 pdf = np.insert(pdf, xLoc, 0)
-                G = addGridValueToG(xvec, rightEnd, h, driftfun, difffun, G, len(G))
-                xLoc, xvec = addValueToXvec(xvec, rightEnd)
+                G = GMatrix.addGridValueToG(xvec, rightEnd, h, driftfun, difffun, G, len(G), dnorm)
+                xLoc, xvec = GMatrix.addValueToXvec(xvec, rightEnd)
                 pdf = np.insert(pdf, xLoc, 0)
                 epsilon = Integrand.computeEpsilon(G, G * pdf)
                 epsilonArray.append(epsilon)
@@ -221,7 +161,7 @@ if animate:
                                            np.abs(difffun(init)) * np.sqrt(h))
 
         if epsilon <= epsilonTolerance:  # things are going well
-            pdf_trajectory.append(np.dot(G * k, pdf))
+            pdf_trajectory.append(np.dot(G * k, pdf))  # Equispaced Trapezoidal Rule
             xvec_trajectory.append(xvec)
             if animateIntegrand | plotGSizeEvolution: G_history.append(G)
             epsilonArray.append(Integrand.computeEpsilon(G, pdf))
@@ -296,17 +236,11 @@ if plotGSizeEvolution:
         r'Size of G at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, starting interval [-1,1], tol = -100')
     plt.show()
 
-def scaleEigenvector(eigenvector, stepSizes):
-    scale = np.real(np.matmul(eigenvector, stepSizes))
-    scale = 1/scale
-    return (scale)*eigenvector
-
 if plotLargestEigenvector:
     vals, vects = np.linalg.eig(G_history[-1])
-    largest_eigenvector = scaleEigenvector(vects[:, 0], k*np.ones(len(vects[:, 0])))
+    largest_eigenvector = GMatrix.scaleEigenvector(vects[:, 0], k * np.ones(len(vects[:, 0])))
     plt.figure()
-    plt.plot(xvec_trajectory[-1],pdf_trajectory[-1], label = 'PDF')
-    plt.plot(xvec_trajectory[-1],largest_eigenvector, '.k', label = 'Eigenvector')  #blue
+    plt.plot(xvec_trajectory[-1], pdf_trajectory[-1], label='PDF')
+    plt.plot(xvec_trajectory[-1], np.real(largest_eigenvector), '.k', label='Eigenvector')  # blue
     plt.legend()
     plt.show()
-
