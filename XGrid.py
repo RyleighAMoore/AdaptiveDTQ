@@ -1,13 +1,15 @@
 import numpy as np
 
+
 # Adds the new value to the xvec grid in the correct location based on numerical order
 def addValueToXvec(xvec, newVal):
     xnewLoc = np.searchsorted(xvec, newVal)
     xvec_new = np.insert(xvec, xnewLoc, newVal)
     return xnewLoc, xvec_new
 
+
 # Figure out better initial max and min for the grid.
-def correctInitialGrid(xMin,xMax,a,b,k,dnorm):
+def correctInitialGrid(xMin, xMax, a, b, k, dnorm):
     machEps = np.finfo(float).eps
     tol = 1
     while a <= xMin:

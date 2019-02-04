@@ -11,6 +11,7 @@ import XGrid
 
 machEps = np.finfo(float).eps
 
+
 # Drift function
 def driftfun(x):
     if isinstance(x, int) | isinstance(x, float):
@@ -62,7 +63,6 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 k = h ** s
 xMin = -1
 xMax = 1
-
 ################################################################################
 
 # pdf after one time step with Dirac delta(x-init) initial condition
@@ -74,7 +74,7 @@ if not autoCorrectInitialGrid:
     phat = dnorm(xvec, a, b)
 
 else:
-    xvec,k,phat = XGrid.correctInitialGrid(xMin,xMax,a,b,k,dnorm)
+    xvec, k, phat = XGrid.correctInitialGrid(xMin, xMax, a, b, k, dnorm)
 
 # Kernel matrix
 G = GMatrix.computeG(xvec, xvec, h, driftfun, difffun, dnorm)
