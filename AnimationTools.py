@@ -12,7 +12,7 @@ def axis_setup(xvec_trajectory, pdf_trajectory):
     starting_minxgrid = np.floor(np.min(xvec_trajectory[0]))
     starting_maxxgrid = np.ceil(np.max(xvec_trajectory[0]))
     starting_maxygrid = np.ceil(np.max(pdf_trajectory[0]))
-    diff = 3
+    diff = 10
     if abs(MaxY - starting_maxygrid) < diff:
         starting_maxygrid = MaxY
         NeedToChangeYAxes = False

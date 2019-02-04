@@ -29,7 +29,6 @@ def difffun(x):
 def dnorm(x, mu, sigma):
     return np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
 
-
 #  Function that returns the kernel matrix G(x,y)
 def integrandmat(xvec, yvec, h, driftfun, difffun):
     Y = np.zeros((len(yvec), len(yvec)))
@@ -38,7 +37,7 @@ def integrandmat(xvec, yvec, h, driftfun, difffun):
     mu = Y + driftfun(Y) * h
     r = difffun(Y)
     sigma = abs(difffun(Y)) * np.sqrt(h)
-    sigma = np.reshape(sigma, [np.size(xvec), np.size(xvec)])  # make a matrix for the dnorm function
+    sigma = np.reshape(sigma, [np.size(xvec), np.size(yvec)])  # make a matrix for the dnorm function
     Y = np.transpose(Y)  # Transpose Y for use in the dnorm function
     test = dnorm(Y, mu, sigma)
     return test
@@ -297,11 +296,17 @@ if plotGSizeEvolution:
         r'Size of G at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, starting interval [-1,1], tol = -100')
     plt.show()
 
+def scaleEigenvector(eigenvector, stepSizes):
+    scale = np.real(np.matmul(eigenvector, stepSizes))
+    scale = 1/scale
+    return (scale)*eigenvector
+
 if plotLargestEigenvector:
     vals, vects = np.linalg.eig(G_history[-1])
-    largest_eigenvector = vects[:, 0]
+    largest_eigenvector = scaleEigenvector(vects[:, 0], k*np.ones(len(vects[:, 0])))
     plt.figure()
-    plt.plot(xvec_trajectory[-1],largest_eigenvector, label = 'Eigenvector') #blue
     plt.plot(xvec_trajectory[-1],pdf_trajectory[-1], label = 'PDF')
+    plt.plot(xvec_trajectory[-1],largest_eigenvector, '.k', label = 'Eigenvector')  #blue
     plt.legend()
     plt.show()
+
