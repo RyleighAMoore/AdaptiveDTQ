@@ -8,6 +8,7 @@ import Integrand
 import AnimationTools
 import GMatrix
 import XGrid
+import QuadRules
 
 machEps = np.finfo(float).eps
 
@@ -23,7 +24,7 @@ def driftfun(x):
 
 # Diffusion function
 def difffun(x):
-    return np.repeat(0.1, np.size(x))
+    return np.repeat(.1, np.size(x))
 
 
 # Density, distribution function, quantile function and random generation for the
@@ -143,7 +144,8 @@ if animate:
                                            np.abs(difffun(init)) * np.sqrt(h))
 
         if epsilon <= epsilonTolerance:  # things are going well
-            pdf_trajectory.append(np.dot(G * k, pdf))  # Equispaced Trapezoidal Rule
+            #pdf_trajectory.append(np.dot(G * k, pdf))  # Equispaced Trapezoidal Rule
+            pdf_trajectory.append(QuadRules.TrapUnequal(G, pdf, np.ones(len(pdf)-1)*k))
             xvec_trajectory.append(xvec)
             if animateIntegrand | plotGSizeEvolution: G_history.append(G)
             epsilonArray.append(Integrand.computeEpsilon(G, pdf))
@@ -162,7 +164,7 @@ if animate:
     plt.show()
 
 if animateIntegrand:
-    assert animate == True, 'Animate must be True'
+    assert animate, 'Animate must be True'
     f1 = plt.figure()
     l = f1.add_subplot(1, 1, 1)
     im, = l.plot([], [], 'r')
