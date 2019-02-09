@@ -16,10 +16,10 @@ machEps = np.finfo(float).eps
 # Drift function
 def driftfun(x):
     # if isinstance(x, int) | isinstance(x, float):
-    #     return 4
+    #     return 1
     # else:
-    #     return np.ones(np.shape(x)) * 4
-    return x * (40 - x ** 2)
+    #     return np.ones(np.shape(x)) * 1
+    return x * (4 - x ** 2)
 
 
 # Diffusion function
@@ -63,7 +63,7 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 # define spatial grid
 k = h ** s
 xMin = -1
-xMax = 1
+xMax = 3
 ################################################################################
 
 # pdf after one time step with Dirac delta(x-init) initial condition
@@ -110,11 +110,12 @@ if animate:
         xvec = xvec_trajectory[-1]
         epsilon = Integrand.computeEpsilon(G, pdf)
         ############################################# Densify grid
-        steepness = np.gradient(pdf, xvec)
-        steepnessArr.append(abs(steepness))
-        x = len(xvec)
-        xvec, G, pdf = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm)
-        diff.append(len(xvec) - x)
+        if countSteps > 0:
+            steepness = np.gradient(pdf, xvec)
+            steepnessArr.append(abs(steepness))
+            x = len(xvec)
+            xvec, G, pdf = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm)
+            diff.append(len(xvec) - x)
         ############################################
 
         ############################################## removing from grid
