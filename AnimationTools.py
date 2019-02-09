@@ -8,7 +8,7 @@ def axis_setup(xvec_trajectory, pdf_trajectory):
     NeedToChangeXAxes = True
     MinX = min([(min(a)) for a in xvec_trajectory])
     MaxX = max([(max(a)) for a in xvec_trajectory])
-    MaxY = max([(max(a)) for a in pdf_trajectory])
+    MaxY = max([(max(a)) for a in pdf_trajectory[2:]])
     starting_minxgrid = np.floor(np.min(xvec_trajectory[0]))
     starting_maxxgrid = np.ceil(np.max(xvec_trajectory[0]))
     starting_maxygrid = np.ceil(np.max(pdf_trajectory[0]))

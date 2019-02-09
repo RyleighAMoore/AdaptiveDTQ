@@ -15,16 +15,16 @@ machEps = np.finfo(float).eps
 
 # Drift function
 def driftfun(x):
-    if isinstance(x, int) | isinstance(x, float):
-        return 4
-    else:
-        return np.ones(np.shape(x)) * 4
-    return x * (4 - x ** 2)
+    # if isinstance(x, int) | isinstance(x, float):
+    #     return 4
+    # else:
+    #     return np.ones(np.shape(x)) * 4
+    return x * (40 - x ** 2)
 
 
 # Diffusion function
 def difffun(x):
-    return np.repeat(.1, np.size(x))
+    return np.repeat(1, np.size(x))
 
 
 # Density, distribution function, quantile function and random generation for the
@@ -44,8 +44,8 @@ plotLargestEigenvector = False
 plotIC = False
 
 # tolerance parameters
-epsilonTolerance = -20
-minSizeGAndStillRemoveValsFromG = 60
+epsilonTolerance = -30
+minSizeGAndStillRemoveValsFromG = 100
 minMaxOfPhatAndStillRemoveValsFromG = 0.01
 
 # simulation parameters
@@ -72,10 +72,14 @@ b = np.abs(difffun(init)) * np.sqrt(h)
 
 if not autoCorrectInitialGrid:
     xvec = np.arange(xMin, xMax, k)
+    #xvec = XGrid.getRandomXgrid(-1,1,1000)
     phat = dnorm(xvec, a, b)
 
 else:
     xvec, k, phat = XGrid.correctInitialGrid(xMin, xMax, a, b, k, dnorm)
+    G = GMatrix.computeG(xvec, xvec, h, driftfun, difffun, dnorm)
+    xvec, G, phat = XGrid.addPointsToGridBasedOnGradient(xvec, phat, h, driftfun, difffun, G, dnorm)
+
 
 # Kernel matrix
 G = GMatrix.computeG(xvec, xvec, h, driftfun, difffun, dnorm)
@@ -90,6 +94,9 @@ xvec_trajectory = []
 epsilonArray = []
 G_history = []
 epsilonArray.append(Integrand.computeEpsilon(G, phat))
+steepnessArr = []
+kvec_trajectory=[]
+diff =[]
 
 if animate:
     pdf_trajectory.append(phat)  # solution after one time step from above
@@ -102,6 +109,13 @@ if animate:
         pdf = pdf_trajectory[-1]  # set up placeholder variables
         xvec = xvec_trajectory[-1]
         epsilon = Integrand.computeEpsilon(G, pdf)
+        ############################################# Densify grid
+        steepness = np.gradient(pdf, xvec)
+        steepnessArr.append(abs(steepness))
+        x = len(xvec)
+        xvec, G, pdf = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm)
+        diff.append(len(xvec) - x)
+        ############################################
 
         ############################################## removing from grid
         changedG = False
@@ -120,6 +134,7 @@ if animate:
         if changedG:
             epsilon = Integrand.computeEpsilon(G, pdf)
 
+        epsilon = Integrand.computeEpsilon(G, pdf)
         if epsilon > epsilonTolerance:
             IC = False
             if len(xvec_trajectory) < 2:  # pdf trajectory size is 1
@@ -143,18 +158,23 @@ if animate:
                 pdf_trajectory[-1] = dnorm(xvec, init + driftfun(init),
                                            np.abs(difffun(init)) * np.sqrt(h))
 
+
         if epsilon <= epsilonTolerance:  # things are going well
-            #pdf_trajectory.append(np.dot(G * k, pdf))  # Equispaced Trapezoidal Rule
-            pdf_trajectory.append(QuadRules.TrapUnequal(G, pdf, np.ones(len(pdf)-1)*k))
+            # pdf_trajectory.append(np.dot(G * k, pdf))  # Equispaced Trapezoidal Rule
+            #kvect = np.ones(len(pdf) - 1) * k
+            kvect = XGrid.getKvect(xvec)
+            kvec_trajectory.append(kvect)
+            pdf_trajectory.append(QuadRules.TrapUnequal(G, pdf, kvect))  # nonequal Trap rule
             xvec_trajectory.append(xvec)
             if animateIntegrand | plotGSizeEvolution: G_history.append(G)
             epsilonArray.append(Integrand.computeEpsilon(G, pdf))
             countSteps = countSteps + 1
+            t=0
 
     # Animate the PDF
     f1 = plt.figure()
     l = f1.add_subplot(1, 1, 1)
-    im, = l.plot([], [], 'r')
+    im, = l.plot([], [], '.k', markersize=0.5)
     NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid = AnimationTools.axis_setup(
         xvec_trajectory, pdf_trajectory)
     anim = animation.FuncAnimation(f1, AnimationTools.update_animation, len(xvec_trajectory),
@@ -228,3 +248,17 @@ if plotLargestEigenvector:
     plt.plot(xvec_trajectory[-1], np.real(largest_eigenvector), '.k', label='Eigenvector')  # blue
     plt.legend()
     plt.show()
+
+
+plotXVecEvolution = True
+if plotXVecEvolution:
+    plt.figure()
+    for i in range(len(xvec_trajectory)):
+        plt.plot(xvec_trajectory[i],np.ones(len(xvec_trajectory[i]))*i, '.', markersize=0.1)
+        #plt.plot(kvec_trajectory[i])
+        #plt.plot(xvec_trajectory[i])
+
+    plt.show()
+
+
+

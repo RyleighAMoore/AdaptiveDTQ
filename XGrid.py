@@ -1,4 +1,7 @@
 import numpy as np
+import GMatrix
+import matplotlib.pyplot as plt
+
 
 
 # Adds the new value to the xvec grid in the correct location based on numerical order
@@ -31,3 +34,40 @@ def correctInitialGrid(xMin, xMax, a, b, k, dnorm):
         numNonzero = np.sum(phat > machEps)
 
     return xvec, k, phat
+
+
+def getKvect(xvec):
+    kvec = []
+    for i in range(1, len(xvec)):
+        kvec.append(xvec[i] - xvec[i - 1])
+    return np.asarray(kvec)
+
+
+def getRandomXgrid(beg, end, numVals):
+    xvec = (end - beg) * np.random.rand(numVals) + beg
+    xvec.sort()
+    return xvec
+
+
+def addPointsToGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm):
+    gradVect = np.abs(np.gradient(pdf, xvec))
+    for i in reversed(range(1, len(gradVect))):  # all points except last one
+        if gradVect[i] > 0:
+            curr = xvec[i]
+            left = xvec[i - 1]
+            grad = np.ceil(gradVect[i])
+            if (curr-left > 0.0001):
+                grad = min(grad,10)
+                valsToAdd = []
+                for count in range(int(grad)-1):
+                    val = left + np.abs((count + 1) * ((curr - left) / grad))
+                    valsToAdd.append(val)
+                for add in valsToAdd:
+                    xnewLoc, xvecNew = addValueToXvec(xvec, add)
+                    G = GMatrix.addGridValueToG(xvec, add, h, driftfun, difffun, G, xnewLoc, dnorm)
+                    pdf = np.insert(pdf, xnewLoc, 0)
+                    xvec = xvecNew
+    # plt.figure()
+    # plt.plot(xvec, '.')
+    # plt.show()
+    return xvec, G, pdf
