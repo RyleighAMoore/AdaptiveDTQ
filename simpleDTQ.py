@@ -16,9 +16,9 @@ machEps = np.finfo(float).eps
 # Drift function
 def driftfun(x):
     # if isinstance(x, int) | isinstance(x, float):
-    #     return 1
+    #     return 2
     # else:
-    #     return np.ones(np.shape(x)) * 1
+    #     return np.ones(np.shape(x)) * 2
     return x * (4 - x ** 2)
 
 
@@ -63,7 +63,7 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 # define spatial grid
 k = h ** s
 xMin = -1
-xMax = 3
+xMax = 1
 ################################################################################
 
 # pdf after one time step with Dirac delta(x-init) initial condition
@@ -72,10 +72,11 @@ b = np.abs(difffun(init)) * np.sqrt(h)
 
 if not autoCorrectInitialGrid:
     xvec = np.arange(xMin, xMax, k)
-    #xvec = XGrid.getRandomXgrid(-1,1,1000)
+    xvec = XGrid.getRandomXgrid(xMin,xMax,1000)
     phat = dnorm(xvec, a, b)
 
 else:
+    xvec = XGrid.getRandomXgrid(xMin,xMax,1000)
     xvec, k, phat = XGrid.correctInitialGrid(xMin, xMax, a, b, k, dnorm)
     G = GMatrix.computeG(xvec, xvec, h, driftfun, difffun, dnorm)
     xvec, G, phat = XGrid.addPointsToGridBasedOnGradient(xvec, phat, h, driftfun, difffun, G, dnorm)
@@ -83,6 +84,7 @@ else:
 
 # Kernel matrix
 G = GMatrix.computeG(xvec, xvec, h, driftfun, difffun, dnorm)
+
 
 if plotIC:
     plt.figure()
@@ -117,9 +119,11 @@ if animate:
             xvec, G, pdf = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm)
             diff.append(len(xvec) - x)
         ############################################
-
+        # plt.figure()
+        # plt.plot(xvec, '.')
+        # plt.show()
+        xvec, G, pdf = XGrid.removePointsFromGridBasedOnGradient(xvec, pdf, k, G)
         ############################################## removing from grid
-        changedG = False
         if RemoveFromG & (len(G) > minSizeGAndStillRemoveValsFromG) & (countSteps > 10):
             valsToRemove = GMatrix.checkReduceG(G, pdf)  # Remove if val is -inf
             if -np.inf in valsToRemove:
@@ -128,12 +132,9 @@ if animate:
                             np.max(pdf > minMaxOfPhatAndStillRemoveValsFromG)) & (
                             len(G) > minSizeGAndStillRemoveValsFromG):
                         G = GMatrix.removeGridValuesFromG(ind_w, G)
-                        changedG = True
                         xvec = np.delete(xvec, ind_w)
                         pdf = np.delete(pdf, ind_w)
             ############################################################
-        if changedG:
-            epsilon = Integrand.computeEpsilon(G, pdf)
 
         epsilon = Integrand.computeEpsilon(G, pdf)
         if epsilon > epsilonTolerance:

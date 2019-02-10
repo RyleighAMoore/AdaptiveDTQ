@@ -59,8 +59,8 @@ def addPointsToGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm):
             curr = xvec[i]
             left = xvec[i - 1]
             grad = np.ceil(gradVect[i])
-            if (curr-left > 0.001):
-                grad = min(grad+1, 3)
+            if (curr-left > 0.001) & (left not in xvec):
+                grad = min(grad+1, 8)
                 valsToAdd = []
                 for count in range(int(grad)-1):
                     val = left + np.abs((count + 1) * ((curr - left) / grad))
@@ -74,14 +74,15 @@ def addPointsToGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm):
     return xvec, G, pdf
 
 
-def removePointsFromGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm):
+def removePointsFromGridBasedOnGradient(xvec, pdf, k, G):
     gradVect = np.abs(np.gradient(pdf, xvec))
-    for i in reversed(range(1, len(gradVect))):  # all points except last one
-        if gradVect[i] < 0.25:
+    if len(G)>100:
+        for i in reversed(range(len(gradVect)-2)):  # all points except last one
             curr = xvec[i]
-            left = xvec[i - 1]
-            G = GMatrix.removeGridValuesFromG(left, G)
-            xvec = np.delete(xvec, i-1)
-            pdf = np.delete(pdf, i-1)
-
+            right2 = xvec[i + 2]
+            q = (curr - right2) / 2
+            if (gradVect[i] < 0.1) & ((right2-curr) < k) & (len(G)>100):
+                G = GMatrix.removeGridValuesFromG(i+1, G)
+                xvec = np.delete(xvec, i+1)
+                pdf = np.delete(pdf, i+1)
     return xvec, G, pdf
