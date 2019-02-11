@@ -51,26 +51,31 @@ def getRandomXgrid(beg, end, numVals):
 
 def addPointsToGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm):
     gradVect = np.abs(np.gradient(pdf, xvec))
-    # plt.figure()
-    # plt.plot(pdf)
-    # plt.show()
-    for i in reversed(range(1, len(gradVect))):  # all points except last one
+    xOrig = xvec
+    valsAdded = 0
+    for i in (range(1, len(xOrig))):  # all points except last one
         if gradVect[i] > 2:
-            curr = xvec[i]
-            left = xvec[i - 1]
+            curr = xOrig[i]
+            left = xOrig[i - 1]
             grad = np.ceil(gradVect[i])
-            if (curr-left > 0.001) & (left not in xvec):
-                grad = min(grad+1, 8)
+            if (curr-left > 0.0001):
+                grad = min(grad+1, 4)
                 valsToAdd = []
                 for count in range(int(grad)-1):
-                    val = left + np.abs((count + 1) * ((curr - left) / grad))
-                    valsToAdd.append(val)
+                    val = curr - np.abs((count + 1) * ((curr - left) / grad))
+                    if (val not in xvec):
+                        valsToAdd.append(val)
+                        valsAdded += 1
                 for add in valsToAdd:
                     xnewLoc, xvecNew = addValueToXvec(xvec, add)
                     G = GMatrix.addGridValueToG(xvec, add, h, driftfun, difffun, G, xnewLoc, dnorm)
-                    pdf = np.insert(pdf, xnewLoc, 0)
+                    mid = np.round((pdf[xnewLoc - 1] + pdf[xnewLoc]) / 2)
+                    pdf = np.insert(pdf, xnewLoc, mid)
                     xvec = xvecNew
 
+    # plt.figure()
+    # plt.plot(xvec)
+    # plt.show()
     return xvec, G, pdf
 
 

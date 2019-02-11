@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 # This function is used to determine if more rows are needed in the kernel matrix G.
 # Basically, it checks that we are maintaining zero at the boundaries of the integrand.
@@ -25,4 +27,14 @@ def calculateIntegrand(G, phat):
     for i in range(np.size(G, 1)):
         val[:, i] = G[i, :] * phat[i]
     r = np.sum(val, 0)
+    return val
+
+def plotIntegrand(G, phat,xvec):
+    plt.figure()
+    val = np.zeros([np.size(G, 0), np.size(G, 1)])
+    for i in range(np.size(G, 1)):
+        val[:, i] = G[i, :] * phat[i]
+        plt.plot(xvec, val[:,i])
+    r = np.sum(val, 0)
+    plt.show()
     return val
