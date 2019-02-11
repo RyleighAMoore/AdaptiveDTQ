@@ -58,8 +58,8 @@ def addPointsToGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm):
             curr = xOrig[i]
             left = xOrig[i - 1]
             grad = np.ceil(gradVect[i])
-            if (curr-left > 0.0001):
-                grad = min(grad+1, 4)
+            if (curr-left > 0.001):
+                grad = min(grad+1, 2)
                 valsToAdd = []
                 for count in range(int(grad)-1):
                     val = curr - np.abs((count + 1) * ((curr - left) / grad))
@@ -86,7 +86,7 @@ def removePointsFromGridBasedOnGradient(xvec, pdf, k, G):
             curr = xvec[i]
             right2 = xvec[i + 2]
             q = (curr - right2) / 2
-            if (gradVect[i] < 0.1) & ((right2-curr) < k) & (len(G)>100):
+            if (gradVect[i] < 1) & ((right2-curr) < k) & (len(G)>100):
                 G = GMatrix.removeGridValuesFromG(i+1, G)
                 xvec = np.delete(xvec, i+1)
                 pdf = np.delete(pdf, i+1)

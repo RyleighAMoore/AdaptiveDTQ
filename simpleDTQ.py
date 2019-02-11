@@ -15,16 +15,16 @@ machEps = np.finfo(float).eps
 
 # Drift function
 def driftfun(x):
-    if isinstance(x, int) | isinstance(x, float):
-        return 2
-    else:
-        return np.ones(np.shape(x)) * 2
+    # if isinstance(x, int) | isinstance(x, float):
+    #     return 2
+    # else:
+    #     return np.ones(np.shape(x)) * 2
     return x * (40 - x ** 2)
 
 
 # Diffusion function
 def difffun(x):
-    return np.repeat(.1, np.size(x))
+    return np.repeat(1, np.size(x))
 
 
 # Density, distribution function, quantile function and random generation for the
@@ -40,7 +40,7 @@ plotEvolution = False
 plotEps = False
 animateIntegrand = True
 plotGSizeEvolution = True
-plotLargestEigenvector = True
+plotLargestEigenvector = False
 plotIC = False
 
 # tolerance parameters
@@ -62,8 +62,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-xMin = -1
-xMax = 1
+xMin = -4
+xMax = 4
 ################################################################################
 
 # pdf after one time step with Dirac delta(x-init) initial condition
@@ -116,17 +116,17 @@ if animate:
         xvec = xvec_trajectory[-1]
         epsilon = Integrand.computeEpsilon(G, pdf)
         ############################################# Densify grid
-        # if countSteps > 0:
-        #     steepness = np.gradient(pdf, xvec)
-        #     steepnessArr.append(abs(steepness))
-        #     x = len(xvec)
-        #     xvec, G, pdf = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm)
-        #     diff.append(len(xvec) - x)
-        # ############################################
-        # # plt.figure()
-        # # plt.plot(xvec, '.')
-        # # plt.show()
-        # xvec, G, pdf = XGrid.removePointsFromGridBasedOnGradient(xvec, pdf, k, G)
+        if countSteps > 0:
+            steepness = np.gradient(pdf, xvec)
+            steepnessArr.append(abs(steepness))
+            x = len(xvec)
+            xvec, G, pdf = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm)
+            diff.append(len(xvec) - x)
+        ############################################
+        # plt.figure()
+        # plt.plot(xvec, '.')
+        # plt.show()
+        xvec, G, pdf = XGrid.removePointsFromGridBasedOnGradient(xvec, pdf, k, G)
         ############################################## removing from grid
         if RemoveFromG & (len(G) > minSizeGAndStillRemoveValsFromG) & (countSteps > 10):
             valsToRemove = GMatrix.checkReduceG(G, pdf)  # Remove if val is -inf
