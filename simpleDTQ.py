@@ -9,28 +9,10 @@ import AnimationTools
 import GMatrix
 import XGrid
 import QuadRules
+import Functions as fun
 
 machEps = np.finfo(float).eps
 
-
-# Drift function
-def driftfun(x):
-    # if isinstance(x, int) | isinstance(x, float):
-    #     return 2
-    # else:
-    #     return np.ones(np.shape(x)) * 2
-    return x * (40 - x ** 2)
-
-
-# Diffusion function
-def difffun(x):
-    return np.repeat(1, np.size(x))
-
-
-# Density, distribution function, quantile function and random generation for the
-# normal distribution with mean equal to mu and standard deviation equal to sigma.
-def dnorm(x, mu, sigma):
-    return np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
 
 
 # visualization parameters ############################################################
@@ -40,7 +22,7 @@ plotEvolution = False
 plotEps = False
 animateIntegrand = True
 plotGSizeEvolution = True
-plotLargestEigenvector = False
+plotLargestEigenvector = True
 plotIC = False
 
 # tolerance parameters
@@ -52,7 +34,7 @@ minMaxOfPhatAndStillRemoveValsFromG = 0.01
 autoCorrectInitialGrid = True
 RemoveFromG = True
 AddToG = True
-T = 1.00  # final time, code computes PDF of X_T
+T = 1  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
@@ -66,29 +48,29 @@ xMin = -4
 xMax = 4
 ################################################################################
 
-# pdf after one time step with Dirac delta(x-init) initial condition
-a = init + driftfun(init)
-b = np.abs(difffun(init)) * np.sqrt(h)
+a = init + fun.driftfun(init)
+b = np.abs(fun.difffun(init)) * np.sqrt(h)
 
 if not autoCorrectInitialGrid:
     xvec = np.arange(xMin, xMax, k)
-    #xvec = XGrid.getRandomXgrid(xMin,xMax,1000)
-    phat = dnorm(xvec, a, b)
-    #G = GMatrix.computeG(xvec, xvec, h, driftfun, difffun, dnorm)
-    #xvec, G, phat = XGrid.addPointsToGridBasedOnGradient(xvec, phat, h, driftfun, difffun, G, dnorm)
+    xvec = XGrid.getRandomXgrid(xMin,xMax,4000)
+    phat = fun.dnorm(xvec, a, b)
+    G = GMatrix.computeG(xvec, xvec, h)
+    xvec, G, phat = XGrid.addPointsToGridBasedOnGradient(xvec, phat, h, G)
 
 
 else:
-    xvec = XGrid.getRandomXgrid(xMin,xMax,2000)
-    phat = dnorm(xvec, a, b)
-    xvec, k, phat = XGrid.correctInitialGrid(xMin, xMax, a, b, k, dnorm)
-    G = GMatrix.computeG(xvec, xvec, h, driftfun, difffun, dnorm)
-    xvec, G, phat = XGrid.addPointsToGridBasedOnGradient(xvec, phat, h, driftfun, difffun, G, dnorm)
+    xvec = XGrid.getRandomXgrid(xMin, xMax, 5000)
+    phat = fun.dnorm(xvec, a, b)
+    xvec, k, phat = XGrid.correctInitialGrid(xMin, xMax, a, b, k)
+    G = GMatrix.computeG(xvec, xvec, h)
+    xvec, G, phat, gradVal = XGrid.addPointsToGridBasedOnGradient(xvec, phat, h, G)
 
 
 # Kernel matrix
-G = GMatrix.computeG(xvec, xvec, h, driftfun, difffun, dnorm)
-phat = dnorm(xvec, a, b)
+G = GMatrix.computeG(xvec, xvec, h)
+phat = fun.dnorm(xvec, a, b) # pdf after one time step with Dirac delta(x-init) initial condition
+
 
 if plotIC:
     plt.figure()
@@ -101,13 +83,15 @@ epsilonArray = []
 G_history = []
 epsilonArray.append(Integrand.computeEpsilon(G, phat))
 steepnessArr = []
-kvec_trajectory=[]
-diff =[]
+kvec_trajectory = []
+diff = []
+grad = []
 
 if animate:
     pdf_trajectory.append(phat)  # solution after one time step from above
     xvec_trajectory.append(xvec)
     if animateIntegrand | plotGSizeEvolution: G_history.append(G)
+    grad.append(gradVal)
 
     countSteps = 0
     while countSteps < numsteps - 1:  # since one time step is computed above
@@ -115,19 +99,16 @@ if animate:
         pdf = pdf_trajectory[-1]  # set up placeholder variables
         xvec = xvec_trajectory[-1]
         epsilon = Integrand.computeEpsilon(G, pdf)
-        ############################################# Densify grid
+        ############################################ Densify grid
         if countSteps > 0:
             steepness = np.gradient(pdf, xvec)
             steepnessArr.append(abs(steepness))
             x = len(xvec)
-            xvec, G, pdf = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, driftfun, difffun, G, dnorm)
+            xvec, G, pdf, gradVal = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, G)
             diff.append(len(xvec) - x)
         ############################################
-        # plt.figure()
-        # plt.plot(xvec, '.')
-        # plt.show()
-        xvec, G, pdf = XGrid.removePointsFromGridBasedOnGradient(xvec, pdf, k, G)
-        ############################################## removing from grid
+        xvec, G, pdf = XGrid.removePointsFromGridBasedOnGradient(xvec, pdf, k, G,h)
+        ############################################# removing from grid
         if RemoveFromG & (len(G) > minSizeGAndStillRemoveValsFromG) & (countSteps > 10):
             valsToRemove = GMatrix.checkReduceG(G, pdf)  # Remove if val is -inf
             if -np.inf in valsToRemove:
@@ -148,10 +129,10 @@ if animate:
                 ############################################## adding to grid
                 leftEnd = xvec[0] - k
                 rightEnd = xvec[-1] + k
-                G = GMatrix.addGridValueToG(xvec, leftEnd, h, driftfun, difffun, G, 0, dnorm)
+                G = GMatrix.addGridValueToG(xvec, leftEnd, h, G, 0)
                 xLoc, xvec = XGrid.addValueToXvec(xvec, leftEnd)
                 pdf = np.insert(pdf, xLoc, 0)
-                G = GMatrix.addGridValueToG(xvec, rightEnd, h, driftfun, difffun, G, len(G), dnorm)
+                G = GMatrix.addGridValueToG(xvec, rightEnd, h, G, len(G))
                 xLoc, xvec = XGrid.addValueToXvec(xvec, rightEnd)
                 pdf = np.insert(pdf, xLoc, 0)
                 epsilon = Integrand.computeEpsilon(G, G * pdf)
@@ -160,20 +141,21 @@ if animate:
                 ################################################
             # recompute ICs with new xvec. "restart"
             if IC:
-                pdf_trajectory[-1] = dnorm(xvec, init + driftfun(init),
-                                           np.abs(difffun(init)) * np.sqrt(h))
+                pdf_trajectory[-1] = fun.dnorm(xvec, init + fun.driftfun(init),
+                                           np.abs(fun.difffun(init)) * np.sqrt(h))
 
         if epsilon <= epsilonTolerance:  # things are going well
             # pdf_trajectory.append(np.dot(G * k, pdf))  # Equispaced Trapezoidal Rule
-            #kvect = np.ones(len(pdf) - 1) * k
+            # kvect = np.ones(len(pdf) - 1) * k
             kvect = XGrid.getKvect(xvec)
             kvec_trajectory.append(kvect)
             pdf_trajectory.append(QuadRules.TrapUnequal(G, pdf, kvect))  # nonequal Trap rule
             xvec_trajectory.append(xvec)
+            grad.append(gradVal)
             if animateIntegrand | plotGSizeEvolution: G_history.append(G)
             epsilonArray.append(Integrand.computeEpsilon(G, pdf))
             countSteps = countSteps + 1
-            t=0
+            t = 0
 
     # Animate the PDF
     f1 = plt.figure()
@@ -247,24 +229,24 @@ if plotGSizeEvolution:
 if plotLargestEigenvector:
     vals, vects = np.linalg.eig(G_history[-1])
     largest_eigenvector = GMatrix.scaleEigenvector(vects[:, 0], k * np.ones(len(vects[:, 0])))
+    w = np.real(vals)
     plt.figure()
     plt.plot(xvec_trajectory[-1], pdf_trajectory[-1], label='PDF')
     plt.plot(xvec_trajectory[-1], np.real(largest_eigenvector), '.k', label='Eigenvector')  # blue
     plt.legend()
     plt.show()
 
-
 plotXVecEvolution = True
 if plotXVecEvolution:
     plt.figure()
     for i in range(len(xvec_trajectory)):
-        plt.plot(xvec_trajectory[i],np.ones(len(xvec_trajectory[i]))*i, '.', markersize=0.1)
-        #plt.plot(kvec_trajectory[i])
-        #plt.plot(xvec_trajectory[i])
+        plt.plot(xvec_trajectory[i], np.ones(len(xvec_trajectory[i])) * i, '.', markersize=0.1)
+        # plt.plot(kvec_trajectory[i])
+        # plt.plot(xvec_trajectory[i])
 
     plt.show()
 
-plt.figure()
-plt.plot(xvec_trajectory[0],pdf_trajectory[0], '.')
-plt.show()
-Integrand.plotIntegrand(G_history[1],pdf_trajectory[1],xvec_trajectory[1])
+# plt.figure()
+# plt.plot(xvec_trajectory[0],pdf_trajectory[0], '.')
+# plt.show()
+# Integrand.plotIntegrand(G_history[1],pdf_trajectory[1],xvec_trajectory[1])
