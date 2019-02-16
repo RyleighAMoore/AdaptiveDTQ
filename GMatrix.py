@@ -1,6 +1,8 @@
 import numpy as np
 import Integrand
 import Functions as fun
+import XGrid
+import QuadRules
 
 # Takes in the unscaled eigenvector and the vector of step sizes
 # to return an eigenvector with area one underneath.
@@ -49,13 +51,18 @@ def addRowToG(xvec, newVal, h, G, rowIndex):
     return Gnew
 
 
-def getNewPhatWithNewValue(xvec, newVal, h, phat, phatOld, xnewLoc, spacing):
-    mu = xvec + fun.driftfun(xvec) * h
-    sigma = abs(fun.difffun(xvec)) * np.sqrt(h)
-    xrep = np.ones(len(mu)) * newVal
-    newRow = fun.dnorm(xrep, mu, sigma)
-    phatNewVal = spacing*np.dot(newRow, phatOld)
+def getNewPhatWithNewValue(xvecOld, newVal, h, phat, phatOld, xnewLoc, Gold):
+    Gm = addRowToG(xvecOld, newVal, h, Gold, xnewLoc)
+    kvect = XGrid.getKvect(xvecOld)
+    pdfnew = (QuadRules.TrapUnequal(Gm, phatOld, kvect))
+    phatNewVal = pdfnew[xnewLoc]
     phat = np.insert(phat, xnewLoc, phatNewVal)
+    # mu = xvec + fun.driftfun(xvec) * h
+    # sigma = abs(fun.difffun(xvec)) * np.sqrt(h)
+    # xrep = np.ones(len(mu)) * newVal
+    # newRow = fun.dnorm(xrep, mu, sigma)
+    # phatNewVal = spacing*np.dot(newRow, phatOld)
+    # phat = np.insert(phat, xnewLoc, phatNewVal)
     return phat
 
 

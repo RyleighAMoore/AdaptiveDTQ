@@ -50,13 +50,12 @@ def getRandomXgrid(beg, end, numVals):
     return xvec
 
 
-def addPointsToGridBasedOnGradient(xvec, pdf, h, G, pdfOld, xvecOld):
+def addPointsToGridBasedOnGradient(xvec, pdf, h, G, pdfOld, xvecOld, Gold):
     Gx = GMatrix.computeG_partialx(xvec, xvec, h)
     kvect = getKvect(xvec)
     gradVect = abs(QuadRules.TrapUnequal(Gx, pdf, kvect))
-    # plt.figure()
-    # plt.plot(xvec, gradient)
-    # plt.show()
+    plt.figure()
+    plt.plot(xvec, pdf, '.')
     xOrig = xvec
     tol = 10
     addedLeftAlready = False
@@ -71,7 +70,7 @@ def addPointsToGridBasedOnGradient(xvec, pdf, h, G, pdfOld, xvecOld):
                 xnewLoc, xvecNew = addValueToXvec(xvec, valLeft)
                 G = GMatrix.addGridValueToG(xvec, valLeft, h, G, xnewLoc)
                 mid = np.round((pdf[xnewLoc - 1] + pdf[xnewLoc]) / 2)
-                pdf = GMatrix.getNewPhatWithNewValue(xvecOld, valLeft, h, pdf, pdfOld, xnewLoc, curr - left)
+                pdf = GMatrix.getNewPhatWithNewValue(xvecOld, valLeft, h, pdf, pdfOld, xnewLoc, Gold)
                 #pdf = np.insert(pdf, xnewLoc, mid)
                 xvec = xvecNew
 
@@ -81,13 +80,15 @@ def addPointsToGridBasedOnGradient(xvec, pdf, h, G, pdfOld, xvecOld):
                 xnewLoc, xvecNew = addValueToXvec(xvec, valRight)
                 G = GMatrix.addGridValueToG(xvec, valRight, h, G, xnewLoc)
                 mid = np.round((pdf[xnewLoc - 1] + pdf[xnewLoc]) / 2)
-                pdf = GMatrix.getNewPhatWithNewValue(xvecOld, valRight, h,pdf, pdfOld, xnewLoc, right - curr)
+                pdf = GMatrix.getNewPhatWithNewValue(xvecOld, valRight, h,pdf, pdfOld, xnewLoc, Gold)
                 #pdf = np.insert(pdf, xnewLoc, mid)
                 xvec = xvecNew
                 i=i+1 # go one further because the
             elif right - curr <= h:
                 addedLeftAlready = False
         i=i+1 # next step
+    plt.plot(xvec, pdf, '.')
+    plt.show()
     return xvec, G, pdf, gradVect
 
 

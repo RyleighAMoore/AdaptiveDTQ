@@ -34,7 +34,7 @@ autoCorrectInitialGrid = False
 RandomXvec = False # if autoCorrectInitialGrid is True this has no effect.
 
 RemoveFromG = False  # Also want AddToG to be true if true
-IncGridDensity = False
+IncGridDensity = True
 DecGridDensity = False
 AddToG = False
 
@@ -48,7 +48,6 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-k = 0.01
 xMin = -5
 xMax = 5
 ################################################################################
@@ -108,7 +107,7 @@ if animate:
             steepness = np.gradient(pdf, xvec)
             steepnessArr.append(abs(steepness))
             x = len(xvec)
-            xvec, G, pdf, gradVal = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, G, pdf_trajectory[-2], xvec_trajectory[-2])
+            xvec, G, pdf, gradVal = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, G, pdf_trajectory[-2], xvec_trajectory[-2], G_history[-2])
             diff.append(len(xvec) - x)
         # ############################################
         if DecGridDensity:
