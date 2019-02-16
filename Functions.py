@@ -6,7 +6,7 @@ def driftfun(x):
     #     return 2
     # else:
     #     return np.ones(np.shape(x)) * 2
-    return x * (40 - x ** 2)
+    return x * (4 - x ** 2)
 
 
 # Diffusion function

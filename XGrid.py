@@ -50,7 +50,7 @@ def getRandomXgrid(beg, end, numVals):
     return xvec
 
 
-def addPointsToGridBasedOnGradient(xvec, pdf, h, G):
+def addPointsToGridBasedOnGradient(xvec, pdf, h, G, pdfOld, xvecOld):
     Gx = GMatrix.computeG_partialx(xvec, xvec, h)
     kvect = getKvect(xvec)
     gradVect = abs(QuadRules.TrapUnequal(Gx, pdf, kvect))
@@ -71,7 +71,8 @@ def addPointsToGridBasedOnGradient(xvec, pdf, h, G):
                 xnewLoc, xvecNew = addValueToXvec(xvec, valLeft)
                 G = GMatrix.addGridValueToG(xvec, valLeft, h, G, xnewLoc)
                 mid = np.round((pdf[xnewLoc - 1] + pdf[xnewLoc]) / 2)
-                pdf = np.insert(pdf, xnewLoc, mid)
+                pdf = GMatrix.getNewPhatWithNewValue(xvecOld, valLeft, h, pdf, pdfOld, xnewLoc, curr - left)
+                #pdf = np.insert(pdf, xnewLoc, mid)
                 xvec = xvecNew
 
             if right - curr > h:  # Add right value
@@ -80,7 +81,8 @@ def addPointsToGridBasedOnGradient(xvec, pdf, h, G):
                 xnewLoc, xvecNew = addValueToXvec(xvec, valRight)
                 G = GMatrix.addGridValueToG(xvec, valRight, h, G, xnewLoc)
                 mid = np.round((pdf[xnewLoc - 1] + pdf[xnewLoc]) / 2)
-                pdf = np.insert(pdf, xnewLoc, mid)
+                pdf = GMatrix.getNewPhatWithNewValue(xvecOld, valRight, h,pdf, pdfOld, xnewLoc, right - curr)
+                #pdf = np.insert(pdf, xnewLoc, mid)
                 xvec = xvecNew
                 i=i+1 # go one further because the
             elif right - curr <= h:

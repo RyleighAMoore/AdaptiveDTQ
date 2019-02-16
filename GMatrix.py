@@ -2,7 +2,8 @@ import numpy as np
 import Integrand
 import Functions as fun
 
-
+# Takes in the unscaled eigenvector and the vector of step sizes
+# to return an eigenvector with area one underneath.
 def scaleEigenvector(eigenvector, stepSizes):
     scale = np.real(np.matmul(eigenvector, stepSizes))
     scale = 1 / scale
@@ -22,7 +23,7 @@ def computeG(xvec, yvec, h):
     test = fun.dnorm(Y, mu, sigma)
     return test
 
-
+# Computes G_x(x,y)
 def computeG_partialx(xvec, yvec, h):
     Y = np.zeros((len(yvec), len(yvec)))
     for i in range(len(yvec)):
@@ -36,8 +37,9 @@ def computeG_partialx(xvec, yvec, h):
     return test
 
 
-
 # This adds a N dimensional row to a M by N dimensional G
+# takes in the old xvec, the new grid value to add,
+# the temporal time step h, the matrix G, and the rowIndex of the new value
 def addRowToG(xvec, newVal, h, G, rowIndex):
     mu = xvec + fun.driftfun(xvec) * h
     sigma = abs(fun.difffun(xvec)) * np.sqrt(h)
@@ -47,7 +49,19 @@ def addRowToG(xvec, newVal, h, G, rowIndex):
     return Gnew
 
 
+def getNewPhatWithNewValue(xvec, newVal, h, phat, phatOld, xnewLoc, spacing):
+    mu = xvec + fun.driftfun(xvec) * h
+    sigma = abs(fun.difffun(xvec)) * np.sqrt(h)
+    xrep = np.ones(len(mu)) * newVal
+    newRow = fun.dnorm(xrep, mu, sigma)
+    phatNewVal = spacing*np.dot(newRow, phatOld)
+    phat = np.insert(phat, xnewLoc, phatNewVal)
+    return phat
+
+
 # This adds a M dimensional column to a M by N dimensional G
+# Takes in the old xvec, the new grid value to add,
+# the temporal time step h, the matrix G, and the column index of the new value
 def addColumnToG(xvec, newVal, h, G, colIndex):
     mu = np.ones(len(G)) * (newVal + fun.driftfun(newVal) * h)
     w = np.ones(len(G)) * newVal
@@ -60,6 +74,8 @@ def addColumnToG(xvec, newVal, h, G, colIndex):
 
 
 # This adds a new grid value to G
+# Takes in the old xvec, the new grid value to add,
+# the temporal time step h, the matrix G, and the row index of the new value
 def addGridValueToG(xvec, newVal, h,  G, rowIndex):
     G = addRowToG(xvec, newVal, h, G, rowIndex)
     G = addColumnToG(xvec, newVal, h, G, rowIndex)

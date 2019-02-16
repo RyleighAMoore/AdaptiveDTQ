@@ -10,10 +10,9 @@ import GMatrix
 import XGrid
 import QuadRules
 import Functions as fun
+import pickle
 
 machEps = np.finfo(float).eps
-
-
 
 # visualization parameters ############################################################
 finalGraph = False
@@ -31,9 +30,14 @@ minSizeGAndStillRemoveValsFromG = 100
 minMaxOfPhatAndStillRemoveValsFromG = 0.01
 
 # simulation parameters
-autoCorrectInitialGrid = True
-RemoveFromG = True
-AddToG = True
+autoCorrectInitialGrid = False
+RandomXvec = False # if autoCorrectInitialGrid is True this has no effect.
+
+RemoveFromG = False  # Also want AddToG to be true if true
+IncGridDensity = False
+DecGridDensity = False
+AddToG = False
+
 T = 1  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
@@ -44,32 +48,34 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-xMin = -4
-xMax = 4
+k = 0.01
+xMin = -5
+xMax = 5
 ################################################################################
 
 a = init + fun.driftfun(init)
 b = np.abs(fun.difffun(init)) * np.sqrt(h)
 
 if not autoCorrectInitialGrid:
-    xvec = np.arange(xMin, xMax, k)
-    xvec = XGrid.getRandomXgrid(xMin,xMax,4000)
+    if not RandomXvec: xvec = np.arange(xMin, xMax, k)
+    if RandomXvec: xvec = XGrid.getRandomXgrid(xMin, xMax, 2000)
     phat = fun.dnorm(xvec, a, b)
     G = GMatrix.computeG(xvec, xvec, h)
-    xvec, G, phat = XGrid.addPointsToGridBasedOnGradient(xvec, phat, h, G)
+    #if IncGridDensity: xvec, G, phat = XGrid.addPointsToGridBasedOnGradient(xvec, phat, h, G)
 
 
 else:
-    xvec = XGrid.getRandomXgrid(xMin, xMax, 5000)
+    xvec = np.arange(xMin, xMax, k)
     phat = fun.dnorm(xvec, a, b)
     xvec, k, phat = XGrid.correctInitialGrid(xMin, xMax, a, b, k)
     G = GMatrix.computeG(xvec, xvec, h)
-    xvec, G, phat, gradVal = XGrid.addPointsToGridBasedOnGradient(xvec, phat, h, G)
+    #if IncGridDensity: xvec, G, phat, gradVal = XGrid.addPointsToGridBasedOnGradient(xvec, phat, h, G)
 
-
-# Kernel matrix
-G = GMatrix.computeG(xvec, xvec, h)
-phat = fun.dnorm(xvec, a, b) # pdf after one time step with Dirac delta(x-init) initial condition
+# xvec = pickle.load(open("xvec.p", "rb"))
+# t = np.min(np.diff(xvec))
+# # Kernel matrix
+# G = GMatrix.computeG(xvec, xvec, h)
+# phat = fun.dnorm(xvec, a, b)  # pdf after one time step with Dirac delta(x-init) initial condition
 
 
 if plotIC:
@@ -85,13 +91,11 @@ epsilonArray.append(Integrand.computeEpsilon(G, phat))
 steepnessArr = []
 kvec_trajectory = []
 diff = []
-grad = []
 
 if animate:
     pdf_trajectory.append(phat)  # solution after one time step from above
     xvec_trajectory.append(xvec)
     if animateIntegrand | plotGSizeEvolution: G_history.append(G)
-    grad.append(gradVal)
 
     countSteps = 0
     while countSteps < numsteps - 1:  # since one time step is computed above
@@ -100,14 +104,15 @@ if animate:
         xvec = xvec_trajectory[-1]
         epsilon = Integrand.computeEpsilon(G, pdf)
         ############################################ Densify grid
-        if countSteps > 0:
+        if (countSteps > 0) & IncGridDensity:
             steepness = np.gradient(pdf, xvec)
             steepnessArr.append(abs(steepness))
             x = len(xvec)
-            xvec, G, pdf, gradVal = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, G)
+            xvec, G, pdf, gradVal = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, G, pdf_trajectory[-2], xvec_trajectory[-2])
             diff.append(len(xvec) - x)
-        ############################################
-        xvec, G, pdf = XGrid.removePointsFromGridBasedOnGradient(xvec, pdf, k, G,h)
+        # ############################################
+        if DecGridDensity:
+            xvec, G, pdf = XGrid.removePointsFromGridBasedOnGradient(xvec, pdf, k, G,h)
         ############################################# removing from grid
         if RemoveFromG & (len(G) > minSizeGAndStillRemoveValsFromG) & (countSteps > 10):
             valsToRemove = GMatrix.checkReduceG(G, pdf)  # Remove if val is -inf
@@ -151,7 +156,6 @@ if animate:
             kvec_trajectory.append(kvect)
             pdf_trajectory.append(QuadRules.TrapUnequal(G, pdf, kvect))  # nonequal Trap rule
             xvec_trajectory.append(xvec)
-            grad.append(gradVal)
             if animateIntegrand | plotGSizeEvolution: G_history.append(G)
             epsilonArray.append(Integrand.computeEpsilon(G, pdf))
             countSteps = countSteps + 1
@@ -226,13 +230,21 @@ if plotGSizeEvolution:
         r'Size of G at each time step for $f(x)=x(4-x^2), g(x)=1, k \approx 0.032$, starting interval [-1,1], tol = -100')
     plt.show()
 
+
 if plotLargestEigenvector:
+    index = -1
+    kvect = XGrid.getKvect(xvec)
+    kvect = np.insert(kvect,50,0.1)
     vals, vects = np.linalg.eig(G_history[-1])
-    largest_eigenvector = GMatrix.scaleEigenvector(vects[:, 0], k * np.ones(len(vects[:, 0])))
+    vals = np.real(vals)
+    largest_eigenvector_unscaled = vects[:, 0]
+    largest_eigenvector = GMatrix.scaleEigenvector(vects[:,1], kvect * np.ones(len(vects[:, 0])))
+    largest_eigenvector1 = GMatrix.scaleEigenvector(vects[:,2], kvect * np.ones(len(vects[:, 0])))
     w = np.real(vals)
     plt.figure()
     plt.plot(xvec_trajectory[-1], pdf_trajectory[-1], label='PDF')
-    plt.plot(xvec_trajectory[-1], np.real(largest_eigenvector), '.k', label='Eigenvector')  # blue
+    plt.plot(xvec_trajectory[-1],np.real(largest_eigenvector), '.k', label='Eigenvector')  # blue
+    plt.plot(xvec_trajectory[-1],np.real(largest_eigenvector1), '.k', label='Eigenvector')  # blue
     plt.legend()
     plt.show()
 
@@ -246,7 +258,22 @@ if plotXVecEvolution:
 
     plt.show()
 
+# file = open('trueSoln.p', 'wb')
+# pickle.dump(pdf_trajectory[-1], file)
+# file.close()
+# file = open('trueSolnX.p', 'wb')
+# pickle.dump(xvec_trajectory[-1], file)
+# file.close()
+
 # plt.figure()
 # plt.plot(xvec_trajectory[0],pdf_trajectory[0], '.')
 # plt.show()
 # Integrand.plotIntegrand(G_history[1],pdf_trajectory[1],xvec_trajectory[1])
+
+randSoln = pickle.load(open("trueSoln.p", "rb"))
+randX = pickle.load(open("trueSolnX.p", "rb"))
+
+plt.figure()
+plt.plot(randX,randSoln)
+plt.plot(xvec_trajectory[-1], pdf_trajectory[-1])
+plt.show()
