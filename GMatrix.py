@@ -51,18 +51,12 @@ def addRowToG(xvec, newVal, h, G, rowIndex):
     return Gnew
 
 
-def getNewPhatWithNewValue(xvecOld, newVal, h, phat, phatOld, xnewLoc, Gold):
-    Gm = addRowToG(xvecOld, newVal, h, Gold, xnewLoc)
+def getNewPhatWithNewValue(xvecOld, newVal, h, phat, phatOld, xnewLoc, Gold, xoldLoc):
+    Gm = addRowToG(xvecOld, newVal, h, Gold, xoldLoc)
     kvect = XGrid.getKvect(xvecOld)
     pdfnew = (QuadRules.TrapUnequal(Gm, phatOld, kvect))
-    phatNewVal = pdfnew[xnewLoc]
+    phatNewVal = pdfnew[xoldLoc]
     phat = np.insert(phat, xnewLoc, phatNewVal)
-    # mu = xvec + fun.driftfun(xvec) * h
-    # sigma = abs(fun.difffun(xvec)) * np.sqrt(h)
-    # xrep = np.ones(len(mu)) * newVal
-    # newRow = fun.dnorm(xrep, mu, sigma)
-    # phatNewVal = spacing*np.dot(newRow, phatOld)
-    # phat = np.insert(phat, xnewLoc, phatNewVal)
     return phat
 
 
@@ -100,5 +94,5 @@ def removeGridValuesFromG(xValIndexToRemove, G):
 def checkReduceG(G, phat):
     machEps = np.finfo(float).eps
     integrandMaxes = Integrand.computeIntegrandArray(G, phat)
-    integrandMaxes[(integrandMaxes < machEps) & (phat < machEps)] = -np.inf
+    integrandMaxes[(integrandMaxes <= machEps) & (phat <= machEps)] = -np.inf
     return integrandMaxes

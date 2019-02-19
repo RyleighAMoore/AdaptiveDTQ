@@ -27,16 +27,16 @@ plotIC = False
 # tolerance parameters
 epsilonTolerance = -30
 minSizeGAndStillRemoveValsFromG = 100
-minMaxOfPhatAndStillRemoveValsFromG = 0.01
+minMaxOfPhatAndStillRemoveValsFromG = 0.0001
 
 # simulation parameters
 autoCorrectInitialGrid = False
-RandomXvec = False # if autoCorrectInitialGrid is True this has no effect.
+RandomXvec = False  # if autoCorrectInitialGrid is True this has no effect.
 
-RemoveFromG = False  # Also want AddToG to be true if true
+RemoveFromG = True  # Also want AddToG to be true if true
 IncGridDensity = True
 DecGridDensity = False
-AddToG = False
+AddToG = True
 
 T = 1  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
@@ -57,11 +57,14 @@ b = np.abs(fun.difffun(init)) * np.sqrt(h)
 
 if not autoCorrectInitialGrid:
     if not RandomXvec: xvec = np.arange(xMin, xMax, k)
-    if RandomXvec: xvec = XGrid.getRandomXgrid(xMin, xMax, 2000)
+    if RandomXvec:
+        xvec = XGrid.getRandomXgrid(xMin, xMax, 2000)
+    xvec = XGrid.densifyGridAroundDirac(xvec, a, k)
+    plt.figure()
+    plt.plot(xvec, '.', markersize=0.5)
+    plt.show()
     phat = fun.dnorm(xvec, a, b)
     G = GMatrix.computeG(xvec, xvec, h)
-    #if IncGridDensity: xvec, G, phat = XGrid.addPointsToGridBasedOnGradient(xvec, phat, h, G)
-
 
 else:
     xvec = np.arange(xMin, xMax, k)
@@ -110,7 +113,7 @@ if animate:
             xvec, G, pdf, gradVal = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, G, pdf_trajectory[-2], xvec_trajectory[-2], G_history[-2])
             diff.append(len(xvec) - x)
         # ############################################
-        if DecGridDensity:
+        if DecGridDensity & (countSteps >10):
             xvec, G, pdf = XGrid.removePointsFromGridBasedOnGradient(xvec, pdf, k, G,h)
         ############################################# removing from grid
         if RemoveFromG & (len(G) > minSizeGAndStillRemoveValsFromG) & (countSteps > 10):
@@ -163,7 +166,7 @@ if animate:
     # Animate the PDF
     f1 = plt.figure()
     l = f1.add_subplot(1, 1, 1)
-    im, = l.plot([], [], '.k', markersize=0.5)
+    im, = l.plot([], [], '.r', markersize=3)
     NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid = AnimationTools.axis_setup(
         xvec_trajectory, pdf_trajectory)
     anim = animation.FuncAnimation(f1, AnimationTools.update_animation, len(xvec_trajectory),
