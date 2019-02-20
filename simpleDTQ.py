@@ -35,7 +35,7 @@ RandomXvec = False  # if autoCorrectInitialGrid is True this has no effect.
 
 RemoveFromG = True  # Also want AddToG to be true if true
 IncGridDensity = True
-DecGridDensity = False
+DecGridDensity = True
 AddToG = True
 
 T = 1  # final time, code computes PDF of X_T
@@ -63,7 +63,8 @@ if not autoCorrectInitialGrid:
     plt.figure()
     plt.plot(xvec, '.', markersize=0.5)
     plt.show()
-    phat = fun.dnorm(xvec, a, b)
+    phat = fun.dnorm(xvec, a, b) # pdf after one time step with Dirac \delta(x-init) initial condition
+
     G = GMatrix.computeG(xvec, xvec, h)
 
 else:
@@ -240,13 +241,13 @@ if plotLargestEigenvector:
     vals, vects = np.linalg.eig(G_history[-1])
     vals = np.real(vals)
     largest_eigenvector_unscaled = vects[:, 0]
-    largest_eigenvector = GMatrix.scaleEigenvector(vects[:,1], kvect * np.ones(len(vects[:, 0])))
-    largest_eigenvector1 = GMatrix.scaleEigenvector(vects[:,2], kvect * np.ones(len(vects[:, 0])))
+    #largest_eigenvector = GMatrix.scaleEigenvector(vects[:,1], kvect * np.ones(len(vects[:, 0])))
+    #largest_eigenvector1 = GMatrix.scaleEigenvector(vects[:,2], kvect * np.ones(len(vects[:, 0])))
     w = np.real(vals)
     plt.figure()
     plt.plot(xvec_trajectory[-1], pdf_trajectory[-1], label='PDF')
-    plt.plot(xvec_trajectory[-1],np.real(largest_eigenvector), '.k', label='Eigenvector')  # blue
-    plt.plot(xvec_trajectory[-1],np.real(largest_eigenvector1), '.k', label='Eigenvector')  # blue
+    plt.plot(xvec_trajectory[-1],np.real(largest_eigenvector_unscaled), '.k', label='Eigenvector')  # blue
+    #plt.plot(xvec_trajectory[-1],np.real(largest_eigenvector1), '.k', label='Eigenvector')  # blue
     plt.legend()
     plt.show()
 

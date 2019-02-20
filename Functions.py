@@ -2,16 +2,16 @@ import numpy as np
 
 # Drift function
 def driftfun(x):
-    # if isinstance(x, int) | isinstance(x, float):
-    #     return 1
-    # else:
-    #     return np.ones(np.shape(x)) *1
+    if isinstance(x, int) | isinstance(x, float):
+        return 2
+    else:
+        return np.ones(np.shape(x)) *2
     return x * (4 - x ** 2)
 
 
 # Diffusion function
 def difffun(x):
-    return np.repeat(1, np.size(x))
+    return np.repeat(.1, np.size(x))
 
 
 # Density, distribution function, quantile function and random generation for the

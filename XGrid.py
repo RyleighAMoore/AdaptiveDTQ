@@ -103,7 +103,7 @@ def removePointsFromGridBasedOnGradient(xvec, pdf, k, G, h):
         for i in reversed(range(2, len(xOrig)-2)):  # all points except last one
             curr = xOrig[i]
             right2 = xOrig[i + 2]
-            left2 = xOrig[i-2]
+            left2 = xOrig[i - 2]
             if (gradVect[i] < 10**(-15)) & ((right2 - curr) / 2 < k) & ((curr - left2) / 2 < k) & (len(G) > 200):
                 xnewLoc = np.searchsorted(xvec, xOrig[i])
                 G = GMatrix.removeGridValuesFromG(xnewLoc, G)
