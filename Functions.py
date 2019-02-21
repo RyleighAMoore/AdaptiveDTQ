@@ -5,7 +5,7 @@ def driftfun(x):
     if isinstance(x, int) | isinstance(x, float):
         return 2
     else:
-        return np.ones(np.shape(x)) *2
+        return np.ones(np.shape(x)) * 2
     return x * (4 - x ** 2)
 
 

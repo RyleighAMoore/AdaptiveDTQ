@@ -27,10 +27,10 @@ plotIC = False
 # tolerance parameters
 epsilonTolerance = -30
 minSizeGAndStillRemoveValsFromG = 100
-minMaxOfPhatAndStillRemoveValsFromG = 0.0001
+minMaxOfPhatAndStillRemoveValsFromG = 0.001
 
 # simulation parameters
-autoCorrectInitialGrid = False
+autoCorrectInitialGrid = True
 RandomXvec = False  # if autoCorrectInitialGrid is True this has no effect.
 
 RemoveFromG = True  # Also want AddToG to be true if true
@@ -38,7 +38,7 @@ IncGridDensity = True
 DecGridDensity = True
 AddToG = True
 
-T = 1  # final time, code computes PDF of X_T
+T = 1 # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
@@ -48,8 +48,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-xMin = -5
-xMax = 5
+xMin =-1
+xMax = 1
 ################################################################################
 
 a = init + fun.driftfun(init)
@@ -59,10 +59,10 @@ if not autoCorrectInitialGrid:
     if not RandomXvec: xvec = np.arange(xMin, xMax, k)
     if RandomXvec:
         xvec = XGrid.getRandomXgrid(xMin, xMax, 2000)
-    xvec = XGrid.densifyGridAroundDirac(xvec, a, k)
-    plt.figure()
-    plt.plot(xvec, '.', markersize=0.5)
-    plt.show()
+    #xvec = XGrid.densifyGridAroundDirac(xvec, a, k)
+    # plt.figure()
+    # plt.plot(xvec, '.', markersize=0.5)
+    # plt.show()
     phat = fun.dnorm(xvec, a, b) # pdf after one time step with Dirac \delta(x-init) initial condition
 
     G = GMatrix.computeG(xvec, xvec, h)
@@ -105,30 +105,23 @@ if animate:
         print(countSteps)
         pdf = pdf_trajectory[-1]  # set up placeholder variables
         xvec = xvec_trajectory[-1]
-        epsilon = Integrand.computeEpsilon(G, pdf)
-        ############################################ Densify grid
-        if (countSteps > 0) & IncGridDensity:
-            steepness = np.gradient(pdf, xvec)
-            steepnessArr.append(abs(steepness))
-            x = len(xvec)
-            xvec, G, pdf, gradVal = XGrid.addPointsToGridBasedOnGradient(xvec, pdf, h, G, pdf_trajectory[-2], xvec_trajectory[-2], G_history[-2])
-            diff.append(len(xvec) - x)
-        # ############################################
-        if DecGridDensity & (countSteps >10):
-            xvec, G, pdf = XGrid.removePointsFromGridBasedOnGradient(xvec, pdf, k, G,h)
+        if countSteps > 0:
+            xvec, pdf, G = XGrid.adjustGrid(xvec, pdf, G, k,h, xvec_trajectory[-2], pdf_trajectory[-2], G_history[-2], countSteps)
         ############################################# removing from grid
-        if RemoveFromG & (len(G) > minSizeGAndStillRemoveValsFromG) & (countSteps > 10):
-            valsToRemove = GMatrix.checkReduceG(G, pdf)  # Remove if val is -inf
-            if -np.inf in valsToRemove:
-                for ind_w in reversed(range(len(valsToRemove))):  # reversed to avoid index problems
-                    if (valsToRemove[ind_w] == -np.inf) & (
-                            np.max(pdf > minMaxOfPhatAndStillRemoveValsFromG)) & (
-                            len(G) > minSizeGAndStillRemoveValsFromG):
-                        G = GMatrix.removeGridValuesFromG(ind_w, G)
-                        xvec = np.delete(xvec, ind_w)
-                        pdf = np.delete(pdf, ind_w)
+        # if RemoveFromG & (len(G) > minSizeGAndStillRemoveValsFromG) & (countSteps > 10):
+        #     valsToRemove = GMatrix.checkReduceG(G, pdf)  # Remove if val is -inf
+        #     if -np.inf in valsToRemove:
+        #         for ind_w in reversed(range(len(valsToRemove))):  # reversed to avoid index problems
+        #             if (valsToRemove[ind_w] == -np.inf) & (
+        #                     np.max(pdf > minMaxOfPhatAndStillRemoveValsFromG)) & (
+        #                     len(G) > minSizeGAndStillRemoveValsFromG):
+        #                 G = GMatrix.removeGridValueIndexFromG(ind_w, G)
+        #                 xvec = np.delete(xvec, ind_w)
+        #                 pdf = np.delete(pdf, ind_w)
             ############################################################
+
         epsilon = Integrand.computeEpsilon(G, pdf)
+        print(epsilon)
         if epsilon > epsilonTolerance:
             IC = False
             if len(xvec_trajectory) < 2:  # pdf trajectory size is 1

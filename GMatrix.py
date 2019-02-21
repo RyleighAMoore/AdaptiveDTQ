@@ -3,6 +3,7 @@ import Integrand
 import Functions as fun
 import XGrid
 import QuadRules
+import matplotlib.pyplot as plt
 
 # Takes in the unscaled eigenvector and the vector of step sizes
 # to return an eigenvector with area one underneath.
@@ -51,12 +52,14 @@ def addRowToG(xvec, newVal, h, G, rowIndex):
     return Gnew
 
 
-def getNewPhatWithNewValue(xvecOld, newVal, h, phat, phatOld, xnewLoc, Gold, xoldLoc):
-    Gm = addRowToG(xvecOld, newVal, h, Gold, xoldLoc)
-    kvect = XGrid.getKvect(xvecOld)
-    pdfnew = (QuadRules.TrapUnequal(Gm, phatOld, kvect))
-    phatNewVal = pdfnew[xoldLoc]
+def getNewPhatWithNewValue(xvecPrev, newVal, h, phat, phatPrev, xnewLoc, Gold):
+    xvecPrevLoc = np.searchsorted(xvecPrev, newVal)
+    Gm = addRowToG(xvecPrev, newVal, h, Gold, xvecPrevLoc)
+    kvect = XGrid.getKvect(xvecPrev)
+    pdfnew = (QuadRules.TrapUnequal(Gm, phatPrev, kvect))
+    phatNewVal = pdfnew[xvecPrevLoc]
     phat = np.insert(phat, xnewLoc, phatNewVal)
+    # temp, xvecNew = XGrid.addValueToXvec(xvecPrev, newVal)
     return phat
 
 
@@ -84,7 +87,7 @@ def addGridValueToG(xvec, newVal, h,  G, rowIndex):
 
 
 # This removes a new grid value from G
-def removeGridValuesFromG(xValIndexToRemove, G):
+def removeGridValueIndexFromG(xValIndexToRemove, G):
     G = np.delete(G, xValIndexToRemove, 0)
     G = np.delete(G, xValIndexToRemove, 1)
     return G
@@ -96,3 +99,5 @@ def checkReduceG(G, phat):
     integrandMaxes = Integrand.computeIntegrandArray(G, phat)
     integrandMaxes[(integrandMaxes <= machEps) & (phat <= machEps)] = -np.inf
     return integrandMaxes
+
+

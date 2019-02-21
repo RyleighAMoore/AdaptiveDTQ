@@ -65,14 +65,14 @@ def addPointsToGridBasedOnGradient(xvec, pdf, h, G, pdfOld, xvecOld, Gold):
             curr = xOrig[i]
             left = xOrig[i - 1]
             right = xOrig[i + 1]
-            if (curr - left > h) & (not addedLeftAlready): # Add left value
+            if (curr - left > h) & (not addedLeftAlready):  # Add left value
                 valLeft = curr - (curr - left) / 2
                 xnewLoc, xvecNew = addValueToXvec(xvec, valLeft)
                 xoldLoc, temp = addValueToXvec(xvecOld, valLeft)
                 G = GMatrix.addGridValueToG(xvec, valLeft, h, G, xnewLoc)
                 mid = np.round((pdf[xnewLoc - 1] + pdf[xnewLoc]) / 2)
                 pdf = GMatrix.getNewPhatWithNewValue(xvecOld, valLeft, h, pdf, pdfOld, xnewLoc, Gold, xoldLoc)
-                #pdf = np.insert(pdf, xnewLoc, mid)
+                # pdf = np.insert(pdf, xnewLoc, mid)
                 xvec = xvecNew
 
             if right - curr > h:  # Add right value
@@ -83,12 +83,12 @@ def addPointsToGridBasedOnGradient(xvec, pdf, h, G, pdfOld, xvecOld, Gold):
                 G = GMatrix.addGridValueToG(xvec, valRight, h, G, xnewLoc)
                 mid = np.round((pdf[xnewLoc - 1] + pdf[xnewLoc]) / 2)
                 pdf = GMatrix.getNewPhatWithNewValue(xvecOld, valRight, h, pdf, pdfOld, xnewLoc, Gold, xoldLoc)
-                #pdf = np.insert(pdf, xnewLoc, mid)
+                # pdf = np.insert(pdf, xnewLoc, mid)
                 xvec = xvecNew
-                i=i+1 # go one further because the
+                i = i + 1  # go one further because the
             elif right - curr <= h:
                 addedLeftAlready = False
-        i = i+1 # next step
+        i = i + 1  # next step
     # plt.plot(xvec, pdf, '.')
     # plt.show()
     return xvec, G, pdf, gradVect
@@ -100,11 +100,11 @@ def removePointsFromGridBasedOnGradient(xvec, pdf, k, G, h):
     gradVect = abs(QuadRules.TrapUnequal(Gx, pdf, kvect))
     xOrig = xvec
     if len(G) > 200:
-        for i in reversed(range(2, len(xOrig)-2)):  # all points except last one
+        for i in reversed(range(2, len(xOrig) - 2)):  # all points except last one
             curr = xOrig[i]
             right2 = xOrig[i + 2]
             left2 = xOrig[i - 2]
-            if (gradVect[i] < 10**(-15)) & ((right2 - curr) / 2 < k) & ((curr - left2) / 2 < k) & (len(G) > 200):
+            if (gradVect[i] < 10 ** (-10)) & ((right2 - curr) / 2 < k) & ((curr - left2) / 2 < k) & (len(G) > 200):
                 xnewLoc = np.searchsorted(xvec, xOrig[i])
                 G = GMatrix.removeGridValuesFromG(xnewLoc, G)
                 xvec = np.delete(xvec, xnewLoc)
@@ -116,8 +116,93 @@ def removePointsFromGridBasedOnGradient(xvec, pdf, k, G, h):
 def densifyGridAroundDirac(xvec, center_a, k):
     left = center_a - 1
     right = center_a + 1
-    denser = np.arange(left+k/4, right-k/4, k/4)
-    xvec = np.concatenate((xvec,denser),axis=0)
+    div=16
+    denser = np.arange(left + k / div, right - k / div, k / div)
+    xvec = np.concatenate((xvec, denser), axis=0)
     xvec.sort(axis=0)
     return xvec
 
+
+def adjustGrid(xvec, pdf, G, k, h, xvecPrev, pdfPrev, GPrev, countSteps):
+    # plt.figure()
+    # plt.plot(xvec, pdf, '.')
+    # plt.show()
+    removeArr = GMatrix.checkReduceG(G, pdf)
+    Gx = GMatrix.computeG_partialx(xvec, xvec, h)
+    kvect = getKvect(xvec)
+    gradVect = abs(QuadRules.TrapUnequal(Gx, pdf, kvect))
+    xvecOrig = xvec
+    gradTol = 10
+    maxPdfTol = 0.000001
+    GMinTol = 0
+    for x in xvecOrig[1:-1]:
+        if x in xvec:
+            xvecLoc = np.where(xvec == x)
+            t = np.size(xvecLoc)
+            assert t < 2, 'Returned same value in list twice'
+            xvecLoc = xvecLoc[0][0]
+            xvecOrigLoc = np.where(xvecOrig == x)
+            assert np.size(xvecLoc) < 2, 'Returned same value in list twice'
+            xvecOrigLoc = xvecOrigLoc[0][0]
+            if np.size(xvecLoc) == 1:
+                if (countSteps > 10) & (removeArr[xvecOrigLoc] == -np.inf) & (np.max(pdf) > maxPdfTol) & (
+                        len(G) > GMinTol):  # Remove b/c value is zero
+                    if xvecLoc == np.size(xvec)-2:
+                        G = GMatrix.removeGridValueIndexFromG(np.size(xvec)-1, G)
+                        xvec = np.delete(xvec, np.size(xvec)-1)
+                        pdf = np.delete(pdf, np.size(xvec)-1)
+                    G = GMatrix.removeGridValueIndexFromG(xvecLoc, G)
+                    xvec = np.delete(xvec, xvecLoc)
+                    pdf = np.delete(pdf, xvecLoc)
+                    t = 0
+                    if xvecLoc == 1:
+                        G = GMatrix.removeGridValueIndexFromG(0, G)
+                        xvec = np.delete(xvec, 0)
+                        pdf = np.delete(pdf, 0)
+                    print('deleting zero val')
+                elif (countSteps > 10) & (gradVect[xvecOrigLoc] <= 1) & (
+                        xvec[xvecLoc + 1] - xvec[xvecLoc - 1] < 2 * k):  # remove values due to gradient
+                    # G = GMatrix.removeGridValueIndexFromG(xvecLoc, G)
+                    # xvec = np.delete(xvec, xvecLoc)
+                    # pdf = np.delete(pdf, xvecLoc)
+                    print('deleting b/c grad')
+                elif (gradVect[xvecOrigLoc] > gradTol):  # Add values left and right
+                    xvecLoc = np.where(xvec == x)
+                    t = np.size(xvecLoc)
+                    assert t < 2, 'Returned same value in list twice'
+                    xvecLoc = xvecLoc[0][0]
+                    xvecOrigLoc = np.where(xvecOrig == x)
+                    assert np.size(xvecLoc) < 2, 'Returned same value in list twice'
+                    xvecOrigLoc = xvecOrigLoc[0][0]
+                    left = xvecOrig[xvecOrigLoc - 1]
+                    right = xvecOrig[xvecOrigLoc + 1]
+                    valLeft = x - (x - left) / 2
+                    valRight = x + (right - x) / 2
+                    # plt.figure()
+                    # plt.plot(xvec, pdf, '.')
+                    # plt.show()
+                    if (valRight not in xvec) & ((xvec[xvecLoc + 1]-x) > k/4):
+                        ################### Add right val
+                        G = GMatrix.addGridValueToG(xvec, valRight, h, G, xvecLoc + 1)
+                        #pdf = np.insert(pdf, xvecLoc + 1, (pdf[xvecLoc] + pdf[xvecLoc + 1]) / 2)
+                        val2 = (pdf[xvecLoc] + pdf[xvecLoc + 1]) / 2
+                        pdf = GMatrix.getNewPhatWithNewValue(xvecPrev, valRight, h, pdf, pdfPrev, xvecLoc, GPrev)
+                        temp, xvecNew = addValueToXvec(xvec, valRight)
+                        xvec = xvecNew
+                        # plt.figure()
+                        # plt.plot(xvec, pdf, '.')
+                        # plt.show()
+                        print('adding right')
+                    if (valLeft not in xvec) & ((x - xvec[xvecLoc - 1]) > k/4):
+                        ################### Add left val
+                        G = GMatrix.addGridValueToG(xvec, valLeft, h, G, xvecLoc - 1)
+                        # pdf = np.insert(pdf, xvecLoc + 1, (pdf[xvecLoc] + pdf[xvecLoc - 1]) / 2)
+                        pdf = GMatrix.getNewPhatWithNewValue(xvecPrev, valLeft, h, pdf, pdfPrev, xvecLoc, GPrev)
+                        temp, xvecNew = addValueToXvec(xvec, valLeft)
+                        xvec = xvecNew
+                        # plt.figure()
+                        # plt.plot(xvec, pdf, '.')
+                        # plt.show()
+
+                        # print('adding left')
+    return xvec, pdf, G
