@@ -228,22 +228,9 @@ if plotGSizeEvolution:
 
 
 if plotLargestEigenvector:
-    index = -1
     kvect = XGrid.getKvect(xvec)
     Gk = QuadRules.Unequal_Gk(G_history[-1],kvect, xvec_trajectory[-1], h)
-    vals, vects = np.linalg.eig(Gk)
-    #vals, vects = np.linalg.eig(G_history[-1])
-    vals = np.real(vals)
-    largest_eigenvector_unscaled = vects[:, 1]
-    #largest_eigenvector = GMatrix.scaleEigenvector(vects[:,1], kvect * np.ones(len(vects[:, 0])))
-    #largest_eigenvector1 = GMatrix.scaleEigenvector(vects[:,2], kvect * np.ones(len(vects[:, 0])))
-    w = np.real(vals)
-    plt.figure()
-    plt.plot(xvec_trajectory[-1], pdf_trajectory[-1], label='PDF')
-    plt.plot(xvec_trajectory[-1],np.real(largest_eigenvector_unscaled), '.k', label='Eigenvector')  # blue
-    #plt.plot(xvec_trajectory[-1],np.real(largest_eigenvector1), '.k', label='Eigenvector')  # blue
-    plt.legend()
-    plt.show()
+
 
 plotXVecEvolution = True
 if plotXVecEvolution:
