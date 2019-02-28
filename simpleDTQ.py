@@ -19,7 +19,7 @@ finalGraph = False
 animate = True
 plotEvolution = False
 plotEps = False
-animateIntegrand = True
+animateIntegrand = False
 plotGSizeEvolution = True
 plotLargestEigenvector = True
 plotIC = False
@@ -30,7 +30,7 @@ minSizeGAndStillRemoveValsFromG = 100
 minMaxOfPhatAndStillRemoveValsFromG = 0.001
 
 # simulation parameters
-autoCorrectInitialGrid = True
+autoCorrectInitialGrid = False
 RandomXvec = False  # if autoCorrectInitialGrid is True this has no effect.
 
 RemoveFromG = True  # Also want AddToG to be true if true
@@ -38,7 +38,7 @@ IncGridDensity = True
 DecGridDensity = True
 AddToG = True
 
-T = 1 # final time, code computes PDF of X_T
+T = 0.2  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
@@ -48,8 +48,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-xMin =-1
-xMax = 1
+xMin =-4
+xMax =4
 ################################################################################
 
 a = init + fun.driftfun(init)
@@ -59,7 +59,7 @@ if not autoCorrectInitialGrid:
     if not RandomXvec: xvec = np.arange(xMin, xMax, k)
     if RandomXvec:
         xvec = XGrid.getRandomXgrid(xMin, xMax, 2000)
-    #xvec = XGrid.densifyGridAroundDirac(xvec, a, k)
+    xvec = XGrid.densifyGridAroundDirac(xvec, a, k)
     # plt.figure()
     # plt.plot(xvec, '.', markersize=0.5)
     # plt.show()
@@ -230,10 +230,11 @@ if plotGSizeEvolution:
 if plotLargestEigenvector:
     index = -1
     kvect = XGrid.getKvect(xvec)
-    kvect = np.insert(kvect,50,0.1)
-    vals, vects = np.linalg.eig(G_history[-1])
+    Gk = QuadRules.Unequal_Gk(G_history[-1],kvect, xvec_trajectory[-1], h)
+    vals, vects = np.linalg.eig(Gk)
+    #vals, vects = np.linalg.eig(G_history[-1])
     vals = np.real(vals)
-    largest_eigenvector_unscaled = vects[:, 0]
+    largest_eigenvector_unscaled = vects[:, 1]
     #largest_eigenvector = GMatrix.scaleEigenvector(vects[:,1], kvect * np.ones(len(vects[:, 0])))
     #largest_eigenvector1 = GMatrix.scaleEigenvector(vects[:,2], kvect * np.ones(len(vects[:, 0])))
     w = np.real(vals)
