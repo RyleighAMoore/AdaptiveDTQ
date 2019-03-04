@@ -27,18 +27,18 @@ def Unequal_Gk(G, kvect, xvec, h):
     KB = np.concatenate((0, kvect), axis=None)
     K = (KA + KB)*0.5
     KDiag = np.diag(K, 0)
-    GA = np.matmul(KDiag, G)
+    GA = np.matmul(G,KDiag)
     colSums = np.sum(GA, axis=0)
     vals, vects = np.linalg.eig(GA)
-    vals = np.real(vals)
+    vals = np.abs(vals)
     largest_eigenvector_unscaled = vects[:, 0]
     largest_eigenvector_unscaled1 = vects[:, 1]
 
     vals = np.real(vals)
     # scaled_eigvect = GMatrix.scaleEigenvector(largest_eigenvector_unscaled,kvect)
     plt.figure()
-    plt.plot(xvec, largest_eigenvector_unscaled)
-    plt.plot(xvec, largest_eigenvector_unscaled1)
+    plt.plot(xvec, abs(largest_eigenvector_unscaled))
+    plt.plot(xvec, abs(largest_eigenvector_unscaled1))
 
     plt.show()
     return GA

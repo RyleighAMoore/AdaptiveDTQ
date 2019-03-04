@@ -94,8 +94,10 @@ def removeGridValueIndexFromG(xValIndexToRemove, G):
 
 
 # Check if we should remove values from G because they are "zero"
-def checkReduceG(G, phat):
-    machEps = np.finfo(float).eps
+def checkReduceG(G, phat, tolerance):
+    if tolerance == 0:
+        machEps = np.finfo(float).eps
+    else: machEps = tolerance
     integrandMaxes = Integrand.computeIntegrandArray(G, phat)
     integrandMaxes[(integrandMaxes <= machEps) & (phat <= machEps)] = -np.inf
     return integrandMaxes
