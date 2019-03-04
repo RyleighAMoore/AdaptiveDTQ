@@ -27,7 +27,7 @@ def Unequal_Gk(G, kvect, xvec, h):
     KB = np.concatenate((0, kvect), axis=None)
     K = (KA + KB)*0.5
     KDiag = np.diag(K, 0)
-    GA = np.matmul(G,KDiag)
+    GA = np.matmul(KDiag,G)
     colSums = np.sum(GA, axis=0)
     vals, vects = np.linalg.eig(GA)
     vals = np.abs(vals)
