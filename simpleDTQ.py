@@ -22,7 +22,7 @@ plotEps = False
 animateIntegrand = False
 plotGSizeEvolution = True
 plotLargestEigenvector = True
-plotIC = False
+plotIC = True
 
 # tolerance parameters
 epsilonTolerance = -30
@@ -38,7 +38,7 @@ IncGridDensity = True
 DecGridDensity = True
 AddToG = True
 
-T = 0.2  # final time, code computes PDF of X_T
+T =1  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
@@ -48,8 +48,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-xMin =-4
-xMax =4
+xMin =-2
+xMax =2
 ################################################################################
 
 a = init + fun.driftfun(init)
@@ -58,7 +58,7 @@ b = np.abs(fun.difffun(init)) * np.sqrt(h)
 if not autoCorrectInitialGrid:
     if not RandomXvec: xvec = np.arange(xMin, xMax, k)
     if RandomXvec:
-        xvec = XGrid.getRandomXgrid(xMin, xMax, 2000)
+        xvec = XGrid.getRandomXgrid(xMin, xMax, 1000)
     xvec = XGrid.densifyGridAroundDirac(xvec, a, k)
     # plt.figure()
     # plt.plot(xvec, '.', markersize=0.5)
@@ -127,7 +127,7 @@ if animate:
             if len(xvec_trajectory) < 2:  # pdf trajectory size is 1
                 IC = True
             while AddToG & (epsilon >= epsilonTolerance):
-                ############################################## adding to grid
+                ############################################# adding to grid
                 leftEnd = xvec[0] - k
                 rightEnd = xvec[-1] + k
                 G = GMatrix.addGridValueToG(xvec, leftEnd, h, G, 0)
@@ -138,6 +138,10 @@ if animate:
                 pdf = np.insert(pdf, xLoc, 0)
                 epsilon = Integrand.computeEpsilon(G, G * pdf)
                 epsilonArray.append(epsilon)
+                # plt.figure()
+                # plt.plot(xvec,pdf)
+                # plt.plot(xvec,pdf, '.r')
+                # plt.show()
                 print(epsilon)
                 ################################################
             # recompute ICs with new xvec. "restart"
@@ -160,7 +164,7 @@ if animate:
     # Animate the PDF
     f1 = plt.figure()
     l = f1.add_subplot(1, 1, 1)
-    im, = l.plot([], [], '.r', markersize=3)
+    im, = l.plot([], [], '.r', markersize=1)
     NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid = AnimationTools.axis_setup(
         xvec_trajectory, pdf_trajectory)
     anim = animation.FuncAnimation(f1, AnimationTools.update_animation, len(xvec_trajectory),
