@@ -30,15 +30,15 @@ minSizeGAndStillRemoveValsFromG = 100
 minMaxOfPhatAndStillRemoveValsFromG = 0.001
 
 # simulation parameters
-autoCorrectInitialGrid = False
-RandomXvec = True  # if autoCorrectInitialGrid is True this has no effect.
+autoCorrectInitialGrid = True
+RandomXvec = False  # if autoCorrectInitialGrid is True this has no effect.
 
 RemoveFromG = True  # Also want AddToG to be true if true
 IncGridDensity = True
 DecGridDensity = True
 AddToG = True
 
-T = 1 # final time, code computes PDF of X_T
+T = 1  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
@@ -58,7 +58,7 @@ b = np.abs(fun.difffun(init)) * np.sqrt(h)
 if not autoCorrectInitialGrid:
     if not RandomXvec: xvec = np.arange(xMin, xMax, k)
     if RandomXvec:
-        xvec = XGrid.getRandomXgrid(xMin, xMax, 500)
+        xvec = XGrid.getRandomXgrid(xMin, xMax, 2000)
     xvec = XGrid.densifyGridAroundDirac(xvec, a, k)
     # plt.figure()
     # plt.plot(xvec, '.', markersize=0.5)
