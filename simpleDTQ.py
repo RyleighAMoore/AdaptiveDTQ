@@ -38,7 +38,7 @@ IncGridDensity = True
 DecGridDensity = True
 AddToG = True
 
-T = 1  # final time, code computes PDF of X_T
+T = .5  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
@@ -48,8 +48,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-xMin = -4
-xMax = 4
+xMin = -2
+xMax = 2
 ################################################################################
 
 a = init + fun.driftfun(init)

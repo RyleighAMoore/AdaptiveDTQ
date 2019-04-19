@@ -3,7 +3,7 @@ import numpy as np
 A = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
 
 A_rav = np.ravel(A)
-
+A_rav2 = np.flatten(A)
 A_unrav = np.unravel_index(A_rav, (3, 3))
 
 arr = np.array([[0, 0, 0], [0, 1, 2], [0, 2, 3], [0, 1, 1]])
