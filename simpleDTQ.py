@@ -52,11 +52,12 @@ xMin = -2
 xMax = 2
 ################################################################################
 
-a = init + fun.driftfun(init)
+a = init + fun.driftfun(init)*h
 b = np.abs(fun.difffun(init)) * np.sqrt(h)
 
 if not autoCorrectInitialGrid:
-    if not RandomXvec: xvec = np.arange(xMin, xMax, k)
+    if not RandomXvec:
+        xvec = np.arange(xMin, xMax, k)
     if RandomXvec:
         xvec = XGrid.getRandomXgrid(xMin, xMax, 2000)
     xvec = XGrid.densifyGridAroundDirac(xvec, a, k)
@@ -116,8 +117,8 @@ if animate:
                 IC = True
             while AddToG & (epsilon >= epsilonTolerance):
                 #############################################  adding to grid exterior
-                leftEnd = xvec[0]-(xvec[1]-xvec[0])
-                rightEnd = xvec[-1] + (xvec[-1]-xvec[-2])
+                leftEnd = xvec[0] - (xvec[1] - xvec[0])
+                rightEnd = xvec[-1] + (xvec[-1] - xvec[-2])
                 G = GMatrix.addGridValueToG(xvec, leftEnd, h, G, 0)
                 xLoc, xvec = XGrid.addValueToXvec(xvec, leftEnd)
                 pdf = np.insert(pdf, xLoc, 0)
