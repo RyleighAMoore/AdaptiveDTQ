@@ -3,15 +3,20 @@ import Integrand
 import Functions as fun
 import XGrid
 import QuadRules
+import scipy as sp
 import matplotlib.pyplot as plt
 
 # Takes in the unscaled eigenvector and the vector of step sizes
 # to return an eigenvector with area one underneath.
-def scaleEigenvector(eigenvector, stepSizes):
-    scale = np.real(np.matmul(eigenvector, stepSizes))
+def scaleEigenvector_equispaced(eigenvector, k):
+    scale = k*np.real(np.sum(eigenvector))
     scale = 1 / scale
-    return (scale) * eigenvector
+    return scale * eigenvector
 
+
+def computeEigenvector(Gk):
+    vals, vects = np.linalg.eig(Gk)
+    return np.real(vects[:,0])
 
 #  Function that returns the kernel matrix G(x,y)
 def computeG(xvec, yvec, h):
