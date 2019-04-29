@@ -20,7 +20,7 @@ def axis_setup(xvec_trajectory, pdf_trajectory):
         starting_maxxgrid = MaxX
         starting_minxgrid = MinX
         NeedToChangeXAxes = False
-    return NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid
+    return NeedToChangeXAxes, NeedToChangeYAxes, starting_minxgrid, starting_maxxgrid, starting_maxygrid+10
 
 
 def update_y_axis(pdf_trajectory, step, starting_minxgrid,

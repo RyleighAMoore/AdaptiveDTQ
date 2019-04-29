@@ -62,27 +62,16 @@ diff = []
 
 if fun.difffun(np.random) == 0:
     xvec = np.arange(xMin, xMax, k)
-    countSteps =0
-    def phat0(xx):
-        y = np.zeros(len(xx))
-        for i in range(len(xx)):
-            y[i] = 1 * (1 / k) * ((xx[i] > - 2*k) & (xx[i] < 2*k))
-        return y
+    countSteps = 0
+    phat0 = lambda xx: 1 * (1 / k) * ((xx > - k) & (xx < k))
     pdf_trajectory.append(np.copy(phat0(xvec)))
     xvec_trajectory.append(np.copy(xvec))
-    countSteps = 0
-    #plt.figure()
     while countSteps < numsteps - 1:
         xvec = xvec+fun.driftfun(xvec) * h
         xvec_trajectory.append(np.copy(xvec))
-        r= fun.driftfun(xvec) * h
         pdf = phat0(xvec_trajectory[0])
-        # plt.plot(xvec, pdf)
         pdf_trajectory.append(np.copy(pdf))
-
         countSteps += 1
-    #plt.show()
-
 
 else:
     a = init + fun.driftfun(init)

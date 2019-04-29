@@ -21,13 +21,13 @@ def find_nearest(array, value):
 
 def f1(x, y):
     r = np.sqrt(x ** 2 + y ** 2)
-    return x*(0.4-r**2)
+    return x*(2-r**2)
     return y*(1-y**2)
 
 def f2(x, y):
     r = np.sqrt(x ** 2 + y ** 2)
     #return 0
-    return x*(0.4-r**2)
+    return x*(-r**2)
 
 # def g(x, y):
 #     return 2
@@ -67,9 +67,9 @@ phat[w, w] = 1*(1/kstep**2)
 
 t = 0
 surfaces = []
-surfaces.append(phat)
+surfaces.append(np.matrix.transpose(np.copy(phat)))
 w=[]
-while t < 10:
+while t < 20:
     print(t)
     for (ind_i, i) in enumerate(x1):
         #print(i)
@@ -84,7 +84,7 @@ while t < 10:
                 result2 += kstep*result
             pdf[ind_i, ind_j] = result2
     phat = pdf
-    surfaces.append(copy(pdf))
+    surfaces.append(np.matrix.transpose(copy(pdf)))
     t += 1
 
 t=0
