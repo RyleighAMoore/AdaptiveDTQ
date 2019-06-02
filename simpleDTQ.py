@@ -10,6 +10,8 @@ import GMatrix
 import XGrid
 import QuadRules
 import Functions as fun
+import polynomial_interoplation as interp
+from polynomial_families import JacobiPolynomials
 import pickle
 
 machEps = np.finfo(float).eps
@@ -25,20 +27,20 @@ plotLargestEigenvector_equispaced = False
 plotIC = False
 
 # tolerance parameters
-epsilonTolerance = -30
+epsilonTolerance = 0
 minSizeGAndStillRemoveValsFromG = 100
 minMaxOfPhatAndStillRemoveValsFromG = 0.001
 
 # simulation parameters
-autoCorrectInitialGrid = True
+autoCorrectInitialGrid = False
 RandomXvec = False  # if autoCorrectInitialGrid is True this has no effect.
 
-RemoveFromG = True  # Also want AddToG to be true if true
-IncGridDensity = True
-DecGridDensity = True
-AddToG = True
+RemoveFromG = False  # Also want AddToG to be true if true
+IncGridDensity = False
+DecGridDensity = False
+AddToG = False
 
-T = 1.  # final time, code computes PDF of X_T
+T = 0.08  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
@@ -47,9 +49,9 @@ numsteps = int(np.ceil(T / h))
 assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
-k = h ** s
-xMin = -2
-xMax = 2
+k = 3*h ** s
+xMin = -4
+xMax = 4
 ################################################################################
 
 pdf_trajectory = []
@@ -61,16 +63,28 @@ kvec_trajectory = []
 diff = []
 
 if fun.difffun(np.random) == 0:
+    alpha = 0.
+    beta = 0.
+    J = JacobiPolynomials(alpha=alpha, beta=beta)
+
+    # Grid for computing errors
+    N = 200
+
+    # Compute interpolation grid
+    x, w = J.gauss_quadrature(N)
     xvec = np.arange(xMin, xMax, k)
     countSteps = 0
     phat0 = lambda xx: 1 * (1 / k) * ((xx > - k) & (xx < k))
-    pdf_trajectory.append(np.copy(phat0(xvec)))
-    xvec_trajectory.append(np.copy(xvec))
+    phat0 = lambda xx: np.exp(-100*x**2)
+    pdf = phat0(x)
     while countSteps < numsteps - 1:
-        xvec = xvec+fun.driftfun(xvec) * h
-        xvec_trajectory.append(np.copy(xvec))
-        pdf = phat0(xvec_trajectory[0])
+        pdf, x = interp.interpolate(40, pdf, fun.driftfun, h, N)
         pdf_trajectory.append(np.copy(pdf))
+        xvec_trajectory.append(np.copy(x))
+        # plt.figure()
+        # plt.plot(x,pdf)
+        # plt.show()
+
         countSteps += 1
 
 else:
@@ -81,7 +95,7 @@ else:
         if not RandomXvec: xvec = np.arange(xMin, xMax, k)
         if RandomXvec:
             xvec = XGrid.getRandomXgrid(xMin, xMax, 2000)
-        xvec = XGrid.densifyGridAroundDirac(xvec, a, k)
+        #xvec = XGrid.densifyGridAroundDirac(xvec, a, k)
         # plt.figure()
         # plt.plot(xvec, '.', markersize=0.5)
         # plt.show()
@@ -117,7 +131,7 @@ else:
         print(countSteps)
         pdf = pdf_trajectory[-1]  # set up placeholder variables
         xvec = xvec_trajectory[-1]
-        if countSteps > 0:  # Editing grid interior
+        if (countSteps > 0) & IncGridDensity:  # Editing grid interior
             xvec, pdf, G = XGrid.adjustGrid(xvec, pdf, G, k, h, xvec_trajectory[-2], pdf_trajectory[-2],
                                             G_history[-2],
                                             countSteps)
@@ -160,6 +174,7 @@ else:
             epsilonArray.append(Integrand.computeEpsilon(G, pdf))
             countSteps = countSteps + 1
             t = 0
+            print(np.max(pdf_trajectory[-1]))
 
     # Animate the PDF
 if animate:

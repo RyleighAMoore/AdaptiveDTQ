@@ -1,20 +1,15 @@
-1/7/19
-- change the quadrature rule when the grid evolves
-
-1/14/19
-DONE
-
 1/28/19
 - Make plot titles dynamic
 - Make Integrand animation better for the Y axis
 - Write some unit tests
 
 2/4/19
-- Update quadrature rule to use a non equidistant trapezoidal rule
-- Look for way to determine how to update a grid (coarser in some areas and finer in others)
-using a derivative (gradient)
-- Numerically enforce eigenvalue to have density 1 and add to animation as the solution.
 - Look into possible spectral orth. poly method if bored someday to (most likely) eliminate it as
  a good idea. I.e. this will most likely not work.
-- Clean up the latex doc a bit and make quadrature rule notation better.
+
+5/1/19
+- Fix the Boolean in simpleDTQ to not break the code.
+- Check for ways to avoid removing and adding the same value back to the grid. Possibly use the epsilon value to do this?
+- Figure out Orth Poly interpolation on [a,b].
+- Figure out why the 2D method is drifting to one direction.
 
