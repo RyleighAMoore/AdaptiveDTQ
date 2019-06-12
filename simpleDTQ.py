@@ -40,7 +40,7 @@ IncGridDensity = False
 DecGridDensity = False
 AddToG = False
 
-T = 0.08  # final time, code computes PDF of X_T
+T = 1.01  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
 init = 0  # initial condition X_0
@@ -49,7 +49,7 @@ numsteps = int(np.ceil(T / h))
 assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
-k = 3*h ** s
+k = h ** s
 xMin = -4
 xMax = 4
 ################################################################################

@@ -15,15 +15,15 @@ def find_nearest(array, value):
 
 def f1(x, y):
     r = np.sqrt(x ** 2 + y ** 2)
-    return x * (4 - x ** 2)
-#    return x * (4-x ** 2)
+    #return 1
+    #return x * (1 - x ** 2)
+    return x * (4 - r ** 2)
 
 
 def f2(x, y):
     r = np.sqrt(x ** 2 + y ** 2)
     # return 0.1
-    #return 0
-    return x * (4 - y ** 2)
+    return y * (4 - r ** 2)
 
 # def g(x, y):
 #     return 2
@@ -51,89 +51,69 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 # define spatial grid
 kstep = h ** s
 kstep = 0.15
-xMin = -2
-xMax = 2
+# kstep = 0.1
+xMin = -3
+xMax = 3
 
-x1 = np.arange(xMin, xMax, kstep)
-x2 = np.arange(xMin, xMax, kstep)
-#x1 = np.linspace(xMin, xMax, 23)
-#x2 = np.linspace(xMin, xMax, 23)
 #x1 = [0]
 #x2 = [0]
-#for step in range(1, 15):
+#for step in range(1, 30):
 #     x1.append(0 + kstep * step)
 #     x1.append(0 - kstep * step)
 #x1 = np.sort(np.asarray(x1))
 #x2 = x1
 
+x1 = np.arange(xMin, xMax, kstep)
+x2 = np.arange(xMin, xMax, kstep)
+
 X, Y = np.meshgrid(x1, x2)
-phat = np.zeros([len(x1), len(x2)])
-pdf = np.zeros([len(x1), len(x2)])
-print(size(pdf, 1))
 
-#le = int(np.ceil(len(x1) / 2)) - 1
 w = find_nearest(x1, 0)
-#ww = x1[w]
-# phat[w+1, w] = 1*(1/(3*kstep**2))
-# phat[w-1, w] = 1*(1/(3*kstep**2))
-#phat[w, w] = (1 / (kstep ** 2))
-# phat[w+1, w+20] = (1 / (2 * kstep ** 2))
-# phat[w-1, w-20] = (1 / (2 * kstep ** 2))
 
+phat = np.zeros([len(x1), len(x2)])
 a = init + f1(init,0)
 b = np.abs(g1 * np.sqrt(h))
 phat0 = fun.dnorm(x1, a, b)  # pdf after one time step with Dirac \delta(x-init)
 phat[:, w] = phat0
 
-#plt.figure()
-#plt.plot(x1, phat[:, w] ,'.')
-#plt.show()
-#phat[:,w] = np.exp(-10*x1**2)
-
-t = 0
 surfaces = []
-qvals  = np.zeros([len(x1), len(x2)])
 
-
-vals = []
-vals2=[]
 surfaces.append(np.matrix.transpose(np.copy(phat)))
-if g2 == 0:
-    ee = 0
-    while ee < 1:
-        print(np.max(phat))
-        print(ee)
-        for (ind_i, i) in enumerate(x1):
-            for (ind_j, j) in enumerate(x2):
-                result = 0
-                for (ind_k, k) in enumerate(x1):
-                    p=G1D(i, j, k, g1)
-                    vals.append(p)
-                    q = G1D(i, j, k, g1) * phat[ind_k, ind_j]
-                    vals2.append(q)
-                    result = result + q
-                pdf[ind_i, ind_j] = np.copy(kstep*result)
-        phat = np.copy(pdf)
-        surfaces.append(np.matrix.transpose(copy(pdf)))
-        ee += 1
 
+
+inds = np.asarray(list(range(0, np.size(phat))))
+phat_rav = np.ravel(phat)
+
+inds_unrav = np.unravel_index(inds, (len(phat), len(phat)))
+
+Gmat = np.zeros([len(inds), len(inds)])
+val = []
+val2=[]
+if g2 == 0:
+    print(0)
+    for i in range(0, len(inds_unrav[0])): # I
+        print(i)
+        print(len(inds_unrav[0]))            
+        for k in range(0, len(inds_unrav[0])): # K
+            val.append(G1D(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]],g1))
+            Gmat[i,k]=kstep*G1D(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]],g1)
+            
 else:
-    t = 0
-    while t < 40:
-        print(t)
-        for (ind_i, i) in enumerate(x1):
-            #print(i)
-            for (ind_j, j) in enumerate(x2):
-                result2 = 0
-                for (ind_k, k) in enumerate(x1):
-                    result = 0
-                    for (ind_l, l) in enumerate(x2):
-                        result += kstep * G(i, j, k, l, h) * phat[ind_k, ind_l]
-                    result2 += kstep * result
-                pdf[ind_i, ind_j] = np.copy(result2)
-        phat = np.copy(pdf)
-        surfaces.append(np.matrix.transpose(copy(pdf)))
-        t += 1
+    for i in range(0, len(inds_unrav[0])): # I
+        print(i)
+        print(len(inds_unrav[0]))            
+        for k in range(0, len(inds_unrav[0])): # K
+            Gmat[i,k]=kstep**2*G(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]], h)
+
+
+t=0
+while t < 140:
+    print(t)
+    phat_rav = np.matmul(Gmat, phat_rav)
+    phatMat = np.reshape(phat_rav,(len(x1),len(x2))) 
+    t = t+1
+    surfaces.append(np.matrix.transpose(np.copy(phatMat)))
+    
 
 
 def update_plot(frame_number, surfaces, plot):
@@ -146,12 +126,12 @@ ax = fig.add_subplot(111, projection='3d')
 fps = 10  # frame per sec
 frn = len(surfaces)  # frame number of the animation
 
-plot = [ax.plot_surface(X, Y, surfaces[1], color='0.75', rstride=1, cstride=1)]
+plot = [ax.plot_surface(X, Y, surfaces[10], color='0.75', rstride=1, cstride=1)]
 plt.xlabel('x')
 plt.ylabel('y')
-ax.set_zlim(0, np.max(np.max(surfaces[3])))
+ax.set_zlim(0, np.max(np.max(surfaces[10])))
 ani = animation.FuncAnimation(fig, update_plot, frn, fargs=(surfaces, plot), interval=1000 / fps)
-
+plt.title('f1=x(4-r^2), f2=y(4-r^2), g1=g2=1')
 plt.show()
 print(np.max(surfaces[-1]))
 t = 0
