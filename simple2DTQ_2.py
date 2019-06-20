@@ -20,6 +20,7 @@ def f1(x, y):
 
 
 def f2(x, y):
+    return 0
     r = np.sqrt(x ** 2 + y ** 2)
     # return 0.1
     #return 0
@@ -28,7 +29,7 @@ def f2(x, y):
 # def g(x, y):
 #     return 2
 g1 = 1
-g2 = 1
+g2 = 0
 
 
 def G(x1, x2, y1, y2, h):
@@ -37,7 +38,8 @@ def G(x1, x2, y1, y2, h):
 
 
 def G1D(x1, x2, y1, gamma1):
-    return (1 / (np.sqrt(2 * np.pi * gamma1**2 * h))) * np.exp((-(x1 - y1 - h * f1(y1, x2)) ** 2) / (2 * gamma1 ** 2 * h))
+    return (1 / (np.sqrt(2 * np.pi * gamma1**2 * h))) * np.exp((-(x1 - y1 - h * f1(y1, x2+f2(x1,x2))) ** 2) / (2 * gamma1 ** 2 * h))
+
 
 
 T = 0.01  # final time, code computes PDF of X_T
@@ -50,7 +52,7 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 kstep = h ** s
-kstep = 0.15
+kstep = 0.1
 xMin = -2
 xMax = 2
 
@@ -96,11 +98,13 @@ qvals  = np.zeros([len(x1), len(x2)])
 
 
 vals = []
-vals2=[]
+vals2 = []
 surfaces.append(np.matrix.transpose(np.copy(phat)))
+Gm  = np.zeros([len(x1), len(x1)])
+
 if g2 == 0:
     ee = 0
-    while ee < 1:
+    while ee < 20:
         print(np.max(phat))
         print(ee)
         for (ind_i, i) in enumerate(x1):
@@ -119,7 +123,7 @@ if g2 == 0:
 
 else:
     t = 0
-    while t < 40:
+    while t < 1:
         print(t)
         for (ind_i, i) in enumerate(x1):
             #print(i)
@@ -149,7 +153,7 @@ frn = len(surfaces)  # frame number of the animation
 plot = [ax.plot_surface(X, Y, surfaces[1], color='0.75', rstride=1, cstride=1)]
 plt.xlabel('x')
 plt.ylabel('y')
-ax.set_zlim(0, np.max(np.max(surfaces[3])))
+ax.set_zlim(0, np.max(np.max(surfaces[0])))
 ani = animation.FuncAnimation(fig, update_plot, frn, fargs=(surfaces, plot), interval=1000 / fps)
 
 plt.show()

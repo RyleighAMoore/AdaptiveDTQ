@@ -17,18 +17,18 @@ def f1(x, y):
     r = np.sqrt(x ** 2 + y ** 2)
     #return 1
     #return x * (1 - x ** 2)
-    return x * (4 - r ** 2)
+    return x * (4 - x ** 2)
 
 
 def f2(x, y):
     r = np.sqrt(x ** 2 + y ** 2)
-    # return 0.1
-    return y * (4 - r ** 2)
+    return 1
+    return y * (4 - y ** 2)
 
 # def g(x, y):
 #     return 2
 g1 = 1
-g2 = 1
+g2 = 0
 
 
 def G(x1, x2, y1, y2, h):
@@ -37,7 +37,7 @@ def G(x1, x2, y1, y2, h):
 
 
 def G1D(x1, x2, y1, gamma1):
-    return (1 / (np.sqrt(2 * np.pi * gamma1**2 * h))) * np.exp((-(x1 - y1 - h * f1(y1, x2)) ** 2) / (2 * gamma1 ** 2 * h))
+    return (1 / (np.sqrt(2 * np.pi * gamma1**2 * h))) * np.exp((-(x1 - y1 - h * f1(y1, x2 + f2(x1,x2))) ** 2) / (2 * gamma1 ** 2 * h))
 
 
 T = 0.01  # final time, code computes PDF of X_T
@@ -80,39 +80,45 @@ surfaces = []
 
 surfaces.append(np.matrix.transpose(np.copy(phat)))
 
-
 inds = np.asarray(list(range(0, np.size(phat))))
-phat_rav = np.ravel(phat)
+phat_rav = np.ravel(phat.T)
 
 inds_unrav = np.unravel_index(inds, (len(phat), len(phat)))
 
-Gmat = np.zeros([len(inds), len(inds)])
 val = []
 val2=[]
 if g2 == 0:
+    Gmat = np.zeros([len(x1), len(x2)])
     print(0)
-    for i in range(0, len(inds_unrav[0])): # I
+    for i in range(0, len(x1)):
         print(i)
         print(len(inds_unrav[0]))            
-        for k in range(0, len(inds_unrav[0])): # K
-            val.append(G1D(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]],g1))
-            Gmat[i,k]=kstep*G1D(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]],g1)
+        for k in range(0, len(x1)):
+            Gmat[i,k]=kstep*G1D(x1[i], x2[i], x1[k], g1)
+            
+    t=0
+    while t < 50:
+        print(t)
+        phatMat = np.matmul(Gmat, phat)
+        phat = phatMat
+        t = t+1
+        surfaces.append(np.matrix.transpose(np.copy(phatMat)))
             
 else:
+    Gmat = np.zeros([len(inds_unrav[0]), len(inds_unrav[1])])
     for i in range(0, len(inds_unrav[0])): # I
         print(i)
         print(len(inds_unrav[0]))            
         for k in range(0, len(inds_unrav[0])): # K
             Gmat[i,k]=kstep**2*G(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]], h)
 
-
-t=0
-while t < 140:
-    print(t)
-    phat_rav = np.matmul(Gmat, phat_rav)
-    phatMat = np.reshape(phat_rav,(len(x1),len(x2))) 
-    t = t+1
-    surfaces.append(np.matrix.transpose(np.copy(phatMat)))
+    t=0
+    while t < 140:
+        print(t)
+        phat_rav = np.matmul(Gmat, phat_rav)
+        phatMat = np.reshape(phat_rav,(len(x1),len(x2))) 
+        t = t+1
+        surfaces.append(np.matrix.transpose(np.copy(phatMat)))
     
 
 
@@ -126,10 +132,10 @@ ax = fig.add_subplot(111, projection='3d')
 fps = 10  # frame per sec
 frn = len(surfaces)  # frame number of the animation
 
-plot = [ax.plot_surface(X, Y, surfaces[10], color='0.75', rstride=1, cstride=1)]
+plot = [ax.plot_surface(X, Y, surfaces[20], color='0.75', rstride=1, cstride=1)]
 plt.xlabel('x')
 plt.ylabel('y')
-ax.set_zlim(0, np.max(np.max(surfaces[10])))
+ax.set_zlim(0, np.max(np.max(surfaces[20])))
 ani = animation.FuncAnimation(fig, update_plot, frn, fargs=(surfaces, plot), interval=1000 / fps)
 plt.title('f1=x(4-r^2), f2=y(4-r^2), g1=g2=1')
 plt.show()
