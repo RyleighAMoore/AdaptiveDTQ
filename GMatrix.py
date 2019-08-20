@@ -61,7 +61,7 @@ def getNewPhatWithNewValue(xvecPrev, newVal, h, phat, phatPrev, xnewLoc, Gold):
     xvecPrevLoc = np.searchsorted(xvecPrev, newVal)
     Gm = addRowToG(xvecPrev, newVal, h, Gold, xvecPrevLoc)
     kvect = XGrid.getKvect(xvecPrev)
-    pdfnew = (QuadRules.TrapUnequal(Gm, phatPrev, kvect))
+    pdfnew = QuadRules.TrapUnequal(Gm, phatPrev, kvect)
     phatNewVal = pdfnew[xvecPrevLoc]
     phat = np.insert(phat, xnewLoc, phatNewVal)
     # temp, xvecNew = XGrid.addValueToXvec(xvecPrev, newVal)

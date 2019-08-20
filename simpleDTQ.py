@@ -27,18 +27,18 @@ plotLargestEigenvector_equispaced = False
 plotIC = False
 
 # tolerance parameters
-epsilonTolerance = 0
+epsilonTolerance = -5
 minSizeGAndStillRemoveValsFromG = 100
 minMaxOfPhatAndStillRemoveValsFromG = 0.001
 
 # simulation parameters
-autoCorrectInitialGrid = False
-RandomXvec = False  # if autoCorrectInitialGrid is True this has no effect.
+autoCorrectInitialGrid = True
+RandomXvec = True  # if autoCorrectInitialGrid is True this has no effect.
 
-RemoveFromG = False  # Also want AddToG to be true if true
-IncGridDensity = False
-DecGridDensity = False
-AddToG = False
+RemoveFromG = True  # Also want AddToG to be true if true
+IncGridDensity = True
+DecGridDensity = True
+AddToG = True
 
 T = 1.01  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
@@ -50,8 +50,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-xMin = -4
-xMax = 4
+xMin = -2
+xMax = 2
 ################################################################################
 
 pdf_trajectory = []
@@ -62,7 +62,7 @@ steepnessArr = []
 kvec_trajectory = []
 diff = []
 
-if fun.difffun(np.random) == 0:
+if fun.difffun(np.random) == 0: #probably should make this a bit better
     alpha = 0.
     beta = 0.
     J = JacobiPolynomials(alpha=alpha, beta=beta)
@@ -96,9 +96,6 @@ else:
         if RandomXvec:
             xvec = XGrid.getRandomXgrid(xMin, xMax, 2000)
         #xvec = XGrid.densifyGridAroundDirac(xvec, a, k)
-        # plt.figure()
-        # plt.plot(xvec, '.', markersize=0.5)
-        # plt.show()
         phat = fun.dnorm(xvec, a, b)  # pdf after one time step with Dirac \delta(x-init) initial condition
 
         G = GMatrix.computeG(xvec, xvec, h)
@@ -108,13 +105,7 @@ else:
         phat = fun.dnorm(xvec, a, b)
         xvec, k, phat = XGrid.correctInitialGrid(xMin, xMax, a, b, k)
         G = GMatrix.computeG(xvec, xvec, h)
-        # if IncGridDensity: xvec, G, phat, gradVal = XGrid.addPointsToGridBasedOnGradient(xvec, phat, h, G)
-
-    # xvec = pickle.load(open("xvec.p", "rb"))
-    # t = np.min(np.diff(xvec))
-    # # Kernel matrix
-    # G = GMatrix.computeG(xvec, xvec, h)
-    # phat = fun.dnorm(xvec, a, b)  # pdf after one time step with Dirac delta(x-init) initial condition
+       
 
     if plotIC:
         plt.figure()

@@ -13,3 +13,7 @@
 - Figure out Orth Poly interpolation on [a,b].
 - Figure out why the 2D method is drifting to one direction.
 
+6/22/19
+- Accomodate g1=0 case. 
+- Accodomdate cases with no diffusion in one direction but drift is still in both directions.
+
