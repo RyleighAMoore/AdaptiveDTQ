@@ -1,7 +1,7 @@
 import numpy as np
 
-# Drift function
-def driftfun(x):
+# Drift ction
+def drift(x):
 #     if isinstance(x, int) | isinstance(x, float):
 #         return 1
 #     else:
@@ -9,12 +9,12 @@ def driftfun(x):
     return x * (4 - x ** 2)
 
 
-# Diffusion function
-def difffun(x):
+# Diffusion ction
+def diff(x):
     return np.repeat(1, np.size(x))
 
 
-# Density, distribution function, quantile function and random generation for the
+# Density, distribution ction, quantile ction and random generation for the
 # normal distribution with mean equal to mu and standard deviation equal to sigma.
 def dnorm(x, mu, sigma):
     return np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
@@ -22,3 +22,29 @@ def dnorm(x, mu, sigma):
 
 def dnorm_partialx(x, mu, sigma):
     return np.divide(-x+mu,sigma**2)*np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
+
+
+def f1(x, y):
+    r = np.sqrt(x ** 2 + y ** 2)
+    #return 1
+    return x * (4 - r ** 2)
+
+
+def f2(x, y):
+    r = np.sqrt(x ** 2 + y ** 2)
+    #return 0
+    return y * (4 - r ** 2)
+
+def g1():
+    return 1
+
+def g2():
+    return 1
+
+def G(x1, x2, y1, y2, h):
+    return ((2 * np.pi * g1() ** 2 * h) ** (-1 / 2) * np.exp(-(x1 - y1 - h * f1(y1, y2)) ** 2 / (2 * g1() ** 2 * h))) * (
+                (2 * np.pi * g2() ** 2 * h) ** (-1 / 2) * np.exp(-(x2 - y2 - h * f2(y1, y2)) ** 2 / (2 * g2() ** 2 * h)))
+
+def G1D(x1, x2, y1, gamma1, h):
+    return (1 / (np.sqrt(2 * np.pi * gamma1**2 * h))) * np.exp((-(x1 - y1 - h * f1(y1, x2 + f2(x1,x2))) ** 2) / (2 * gamma1 ** 2 * h))
+
