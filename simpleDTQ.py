@@ -73,7 +73,7 @@ G_history.append(G)
 
 countSteps = 0
 while countSteps < numsteps - 1:  # since one time step is computed above
-    countSteps, G, AddToG, pdf_trajectory, xvec_trajectory, IncGridDensity, G_history, epsilonTolerance, epsilonArray, init, kvec_trajectory, k, h = XGrid.stepForwardInTime(countSteps, G, AddToG, pdf_trajectory, xvec_trajectory,IncGridDensity, G_history, epsilonTolerance, epsilonArray, init, kvec_trajectory, k, h)
+    countSteps, G, pdf_trajectory, xvec_trajectory, G_history, epsilonArray, kvec_trajectory = XGrid.stepForwardInTime(countSteps, G, AddToG, pdf_trajectory, xvec_trajectory,IncGridDensity, G_history, epsilonTolerance, epsilonArray, init, kvec_trajectory, k, h)
 
     # Animate the PDF
 if animate:

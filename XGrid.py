@@ -177,4 +177,4 @@ def stepForwardInTime(countSteps, G, AddToG, pdf_trajectory, xvec_trajectory,Inc
         G_history.append(G)
         epsilonArray.append(Integrand.computeEpsilon(G, pdf))
         countSteps = countSteps + 1
-        return countSteps, G, AddToG, pdf_trajectory, xvec_trajectory,IncGridDensity, G_history, epsilonTolerance, epsilonArray, init, kvec_trajectory, k, h
+        return countSteps, G, pdf_trajectory, xvec_trajectory, G_history, epsilonArray, kvec_trajectory

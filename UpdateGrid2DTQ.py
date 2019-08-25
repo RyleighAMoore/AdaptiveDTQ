@@ -33,6 +33,26 @@ epsilonTol = -20
 x1 = np.arange(xMin1, xMax1, kstep)
 x2 = np.arange(xMin2, xMax2, kstep)
 
+#########################################################################################
+animate = True
+finalGraph = True
+
+# tolerance parameters
+epsilonTolerance = -10
+minSizeGAndStillRemoveValsFromG = 100
+minMaxOfPhatAndStillRemoveValsFromG = 0.001
+
+# simulation parameters
+autoCorrectInitialGrid = True
+RandomXvec = True  # if autoCorrectInitialGrid is True this has no effect.
+
+RemoveFromG = True  # Also want AddToG to be true if true
+IncGridDensity = True
+DecGridDensity = True
+AddToG = True
+###############################################################################################
+
+
 xList = [] # Create list of xvalues for each slice
 for i in range(len(x2)):
     xList.append(np.copy(x1))
@@ -58,9 +78,7 @@ for i in range(len(x2)):
 
 
 xTraj =[]
-xTraj.append(np.copy(xList))
 pdfTraj =[]
-pdfTraj.append(np.copy(phatList))
 xTraj.append(np.copy(xList))
 pdfTraj.append(np.copy(phatList))
 
@@ -82,22 +100,11 @@ t=0
 while t < 120:
     print(t)
     phat_rav = np.matmul(Gmat, phat_rav)
-    
     phatMat = np.reshape(phat_rav,(len(x1),len(x2))) 
     t = t+1
 
 
 
-#def update_graph(num):
-#    print(num)
-#    xframe, yframe, zframe = ([],[],[])
-#    for i in range(len(xTraj[num])): #I changed this to xTraj[num] for futureproofing
-#        xframe += list(xTraj[num][i])
-#        yframe += list(np.ones(len(x1))*x2[i])
-#        zframe += list(pdfTraj[num][i])
-#    ax.scatter(xframe,yframe,zframe)
-#    print(pdfTraj[num][21][20])
-#    title.set_text('3D Test, time={}'.format(num))
 def update_graph(num):
     xframe, yframe, zframe = ([],[],[])
     for i in range(len(xTraj[num])): #I changed this to xTraj[num] for futureproofing
@@ -128,21 +135,3 @@ ani = animation.FuncAnimation(fig, update_graph, frames=len(xTraj),
                                          interval=1000, blit=False)
 
 plt.show()
-
-
-#fig = plt.figure()
-#ax = fig.add_subplot(111, projection='3d')
-#title = ax.set_title('3D Test')
-#xframe, yframe, zframe = ([],[],[])
-#
-#for i in range(len(xTraj[0])):
-#    xframe += list(xTraj[0][i])
-#    yframe += list(np.ones(len(x1))*x2[i])
-#    zframe += list(pdfTraj[0][i])
-#    
-#graph = ax.scatter(xframe,yframe,zframe)
-#
-#ani = animation.FuncAnimation(fig, update_graph, frames=len(xTraj),
-#                                         interval=1000, blit=False)
-#
-#plt.show()

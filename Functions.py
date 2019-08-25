@@ -1,7 +1,7 @@
 import numpy as np
 
 # Drift ction
-def drift(x):
+def driftfun(x):
 #     if isinstance(x, int) | isinstance(x, float):
 #         return 1
 #     else:
@@ -10,7 +10,7 @@ def drift(x):
 
 
 # Diffusion ction
-def diff(x):
+def difffun(x):
     return np.repeat(1, np.size(x))
 
 
