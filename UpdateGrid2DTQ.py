@@ -7,8 +7,7 @@ import Integrand
 import Operations2D
 import XGrid
 from mpl_toolkits.mplot3d import Axes3D
-
-
+import pandas as pd
 
 
 T = 0.01  # final time, code computes PDF of X_T
@@ -34,12 +33,14 @@ epsilonTol = -20
 x1 = np.arange(xMin1, xMax1, kstep)
 x2 = np.arange(xMin2, xMax2, kstep)
 
-X, Y = np.meshgrid(x1, x2)
-
+xList = [] # Create list of xvalues for each slice
+for i in range(len(x2)):
+    xList.append(np.copy(x1))
+    
 w1 = Operations2D.find_nearest(x1, 0)
 w2 = Operations2D.find_nearest(x2, 0)
 
-
+X, Y = np.meshgrid(x1, x2) 
 phat = np.zeros([len(x1), len(x2)])
 a1 = init + fun.f1(init,0)
 b1 = np.abs(fun.g1() * np.sqrt(h))
@@ -51,78 +52,97 @@ phat1 = fun.dnorm(x2, a2, b2)  # pdf after one time step with Dirac \delta(x-ini
 phat[w1, :] = phat1
 phat[:, w2] = phat0
 
+phatList = [] # Create list of xvalues for each slice
+for i in range(len(x2)):
+    phatList.append(phat[:, i])
 
 
-surfaces = []
-surfaces.append(np.matrix.transpose(np.copy(phat)))
+xTraj =[]
+xTraj.append(np.copy(xList))
+pdfTraj =[]
+pdfTraj.append(np.copy(phatList))
+xTraj.append(np.copy(xList))
+pdfTraj.append(np.copy(phatList))
+
 
 inds = np.asarray(list(range(0, np.size(x1)*np.size(x2))))
 phat_rav = np.ravel(phat)
 
 inds_unrav = np.unravel_index(inds, (len(x1), len(x2)))
 
-val = []
-val2=[]
 
-        
-if fun.g2() == 0:
-    Gmat = np.zeros([len(x1), len(x2)])
-    print(0)
-    for i in range(0, len(x1)):
-        print(i)
-        print(len(inds_unrav[0]))            
-        for k in range(0, len(x1)):
-            Gmat[i,k]=kstep*fun.G1D(x1[i], x2[i], x1[k], fun.g1(),h)
-            
-    t=0
-    while t < 150:
-        print(t)
-        phatMat = np.matmul(Gmat, phat)
-        phat = phatMat
-        t = t+1
-        surfaces.append(np.matrix.transpose(np.copy(phatMat)))
-        
-            
-if (fun.g1() != 0) & (fun.g2() != 0):
-    Gmat = np.zeros([len(inds_unrav[0]), len(inds_unrav[1])])
-    for i in range(0, len(inds_unrav[0])): # I
-        print(i)
-        print(len(inds_unrav[0]))            
-        for k in range(0, len(inds_unrav[0])): # K
-            Gmat[i,k]=kstep**2*fun.G(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]], h)
+Gmat = np.zeros([len(inds_unrav[0]), len(inds_unrav[1])])
+for i in range(0, len(inds_unrav[0])): # I
+    print(i)
+    print(len(inds_unrav[0]))            
+    for k in range(0, len(inds_unrav[0])): # K
+        Gmat[i,k]=kstep**2*fun.G(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]], h)
 
-    t=0
-    while t < 120:
-        print(t)
-        phat_rav = np.matmul(Gmat, phat_rav)
-        phatMat = np.reshape(phat_rav,(len(x1),len(x2))) 
-        t = t+1
-        surfaces.append(np.matrix.transpose(np.copy(phatMat)))
+t=0
+while t < 120:
+    print(t)
+    phat_rav = np.matmul(Gmat, phat_rav)
     
+    phatMat = np.reshape(phat_rav,(len(x1),len(x2))) 
+    t = t+1
 
 
-def update_plot(frame_number, surfaces, plot):
-    plot[0].remove()
-    plot[0] = ax.plot_surface(X, Y, surfaces[frame_number], cmap="magma")
+
+#def update_graph(num):
+#    print(num)
+#    xframe, yframe, zframe = ([],[],[])
+#    for i in range(len(xTraj[num])): #I changed this to xTraj[num] for futureproofing
+#        xframe += list(xTraj[num][i])
+#        yframe += list(np.ones(len(x1))*x2[i])
+#        zframe += list(pdfTraj[num][i])
+#    ax.scatter(xframe,yframe,zframe)
+#    print(pdfTraj[num][21][20])
+#    title.set_text('3D Test, time={}'.format(num))
+def update_graph(num):
+    xframe, yframe, zframe = ([],[],[])
+    for i in range(len(xTraj[num])): #I changed this to xTraj[num] for futureproofing
+        xframe += list(xTraj[num][i])
+        yframe += list(np.ones(len(x1))*x2[i])
+        zframe += list(pdfTraj[num][i])
+    data=df[df['time']==num]
+    graph.set_data (xframe, yframe)
+    graph.set_3d_properties(zframe)
+    title.set_text('3D Test, time={}'.format(num))
+    return title, graph, 
 
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-fps = 10  # frame per sec
-frn = len(surfaces)  # frame number of the animation
+title = ax.set_title('3D Test')
+xframe, yframe, zframe = ([],[],[])
 
-plot = [ax.plot_surface(X, Y, surfaces[5], color='0.75', rstride=1, cstride=1)]
-plt.xlabel('x')
-plt.ylabel('y')
-ax.set_zlim(0, np.max(np.max(surfaces[5])))
-ani = animation.FuncAnimation(fig, update_plot, frn, fargs=(surfaces, plot), interval=1000 / fps)
-plt.title('fun.f1=x(4-r^2), fun.f2=y(4-r^2), fun.g1()=fun.g2()=1')
+for i in range(len(xTraj[0])):
+    xframe += list(xTraj[0][i])
+    yframe += list(np.ones(len(x1))*x2[i])
+    zframe += list(pdfTraj[0][i])
+    
+data=df[df['time']==0]
+graph, = ax.plot(xframe, yframe, zframe, linestyle="", marker="o")
+
+ani = animation.FuncAnimation(fig, update_graph, frames=len(xTraj),
+                                         interval=1000, blit=False)
+
 plt.show()
-print(np.max(surfaces[-1]))
-t = 0
-print(np.max(phat))
-# t = 0
-# fig = plt.figure()
-# ax = fig.gca(projection='3d')
-# surf = ax.plot_surface(X, Y, pdf, rstride=1, cstride=1, antialiased=True)
-# plt.show()
+
+
+#fig = plt.figure()
+#ax = fig.add_subplot(111, projection='3d')
+#title = ax.set_title('3D Test')
+#xframe, yframe, zframe = ([],[],[])
+#
+#for i in range(len(xTraj[0])):
+#    xframe += list(xTraj[0][i])
+#    yframe += list(np.ones(len(x1))*x2[i])
+#    zframe += list(pdfTraj[0][i])
+#    
+#graph = ax.scatter(xframe,yframe,zframe)
+#
+#ani = animation.FuncAnimation(fig, update_graph, frames=len(xTraj),
+#                                         interval=1000, blit=False)
+#
+#plt.show()

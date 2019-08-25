@@ -9,8 +9,6 @@ import XGrid
 from mpl_toolkits.mplot3d import Axes3D
 
 
-
-
 T = 0.01  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.01  # temporal step size
@@ -52,7 +50,6 @@ phat[w1, :] = phat1
 phat[:, w2] = phat0
 
 
-
 surfaces = []
 surfaces.append(np.matrix.transpose(np.copy(phat)))
 
@@ -81,7 +78,6 @@ if fun.g2() == 0:
         phat = phatMat
         t = t+1
         surfaces.append(np.matrix.transpose(np.copy(phatMat)))
-        
             
 if (fun.g1() != 0) & (fun.g2() != 0):
     Gmat = np.zeros([len(inds_unrav[0]), len(inds_unrav[1])])
@@ -95,6 +91,7 @@ if (fun.g1() != 0) & (fun.g2() != 0):
     while t < 120:
         print(t)
         phat_rav = np.matmul(Gmat, phat_rav)
+        
         phatMat = np.reshape(phat_rav,(len(x1),len(x2))) 
         t = t+1
         surfaces.append(np.matrix.transpose(np.copy(phatMat)))

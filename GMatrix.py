@@ -108,3 +108,11 @@ def checkReduceG(G, phat, tolerance):
     return integrandMaxes
 
 
+def generate2DG(inds_unrav, kstep, h, x1, x2):
+    Gmat = np.zeros([len(inds_unrav[0]), len(inds_unrav[1])])
+    for i in range(0, len(inds_unrav[0])): # I
+        print(i)
+        print(len(inds_unrav[0]))            
+        for k in range(0, len(inds_unrav[0])): # K
+            Gmat[i,k]=kstep**2*fun.G(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]], h)
+    return Gmat
