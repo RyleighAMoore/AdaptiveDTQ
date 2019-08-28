@@ -22,10 +22,10 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 kstep = h ** s
 kstep = 0.1
 # kstep = 0.1
-xMin1 = -1
-xMax1 = 1
-xMin2 = -1
-xMax2 = 1
+xMin1 = -2.5
+xMax1 = 2.5
+xMin2 = -2.5
+xMax2 = 2.5
 
 epsilonTol = -5
 
@@ -87,7 +87,7 @@ if (fun.g1() != 0) & (fun.g2() != 0):
             Gmat[i,k]=kstep**2*fun.G(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]], h)
 
     t=0
-    while t < 5:
+    while t < 150:
         print(t)
         phat_rav = np.matmul(Gmat, phat_rav)
         phatMat = np.reshape(phat_rav,(len(x1),len(x2))) 
@@ -106,10 +106,10 @@ ax = fig.add_subplot(111, projection='3d')
 fps = 10  # frame per sec
 frn = len(surfaces)  # frame number of the animation
 
-plot = [ax.plot_surface(X, Y, surfaces[5], color='0.75', rstride=1, cstride=1)]
+plot = [ax.plot_surface(X, Y, surfaces[10], color='0.75', rstride=1, cstride=1)]
 plt.xlabel('x')
 plt.ylabel('y')
-ax.set_zlim(0, np.max(np.max(surfaces[5])))
+ax.set_zlim(0, np.max(np.max(surfaces[10])))
 ani = animation.FuncAnimation(fig, update_plot, frn, fargs=(surfaces, plot), interval=1000 / fps)
 plt.title('fun.f1=x(4-r^2), fun.f2=y(4-r^2), fun.g1()=fun.g2()=1')
 plt.show()
