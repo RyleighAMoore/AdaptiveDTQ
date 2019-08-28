@@ -57,6 +57,7 @@ def addRowToG(xvec, newVal, h, G, rowIndex):
     return Gnew
 
 
+
 def getNewPhatWithNewValue(xvecPrev, newVal, h, phat, phatPrev, xnewLoc, Gold):
     xvecPrevLoc = np.searchsorted(xvecPrev, newVal)
     Gm = addRowToG(xvecPrev, newVal, h, Gold, xvecPrevLoc)
@@ -91,6 +92,7 @@ def addGridValueToG(xvec, newVal, h,  G, rowIndex):
     return G
 
 
+
 # This removes a new grid value from G
 def removeGridValueIndexFromG(xValIndexToRemove, G):
     G = np.delete(G, xValIndexToRemove, 0)
@@ -106,13 +108,3 @@ def checkReduceG(G, phat, tolerance):
     integrandMaxes = Integrand.computeIntegrandArray(G, phat)
     integrandMaxes[(integrandMaxes <= machEps) & (phat <= machEps)] = -np.inf
     return integrandMaxes
-
-
-def generate2DG(inds_unrav, kstep, h, x1, x2):
-    Gmat = np.zeros([len(inds_unrav[0]), len(inds_unrav[1])])
-    for i in range(0, len(inds_unrav[0])): # I
-        print(i)
-        print(len(inds_unrav[0]))            
-        for k in range(0, len(inds_unrav[0])): # K
-            Gmat[i,k]=kstep**2*fun.G(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]], h)
-    return Gmat

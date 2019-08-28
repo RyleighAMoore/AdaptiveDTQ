@@ -91,7 +91,6 @@ if (fun.g1() != 0) & (fun.g2() != 0):
     while t < 120:
         print(t)
         phat_rav = np.matmul(Gmat, phat_rav)
-        
         phatMat = np.reshape(phat_rav,(len(x1),len(x2))) 
         t = t+1
         surfaces.append(np.matrix.transpose(np.copy(phatMat)))

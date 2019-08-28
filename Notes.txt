@@ -1,7 +1,0 @@
-A few things I want to note:
-
-1)
-I don't think there is a method in Python that is equivalent to the function dnorm in R.
-I just wrote my own though that is equivalent and I believe it is fairly efficient.
-Check out scipy.stats.norm.pdf
-https://docs.scipy.org/doc/scipy-0.16.1/reference/generated/scipy.stats.norm.html

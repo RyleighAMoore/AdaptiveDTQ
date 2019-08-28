@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import QuadRules
 import Functions as fun
 import Integrand
-
+from tqdm import tqdm, trange
 
 # Returns x1 that is centered around 0 and includes (-endingVal:stepSize:endingVal)
 def getCenteredZeroXvec(stepSize, endingVal):
@@ -159,6 +159,7 @@ def stepForwardInTime(countSteps, G, AddToG, pdf_trajectory, xvec_trajectory,Inc
         while AddToG & (epsilon >= epsilonTolerance):
             #############################################  adding to grid exterior
             G, pdf, xvec, epsilon = updateGridExteriors(xvec, h, G, pdf)
+            
             epsilonArray.append(epsilon)
             print(epsilon)
             ################################################
@@ -178,3 +179,4 @@ def stepForwardInTime(countSteps, G, AddToG, pdf_trajectory, xvec_trajectory,Inc
         epsilonArray.append(Integrand.computeEpsilon(G, pdf))
         countSteps = countSteps + 1
         return countSteps, G, pdf_trajectory, xvec_trajectory, G_history, epsilonArray, kvec_trajectory
+    

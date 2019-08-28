@@ -7,6 +7,8 @@ import Integrand
 import Operations2D
 import XGrid
 from mpl_toolkits.mplot3d import Axes3D
+import QuadRules
+from tqdm import tqdm, trange
 
 T = 0.01  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
@@ -18,14 +20,14 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 kstep = h ** s
-kstep = 0.15
+kstep = 0.1
 # kstep = 0.1
-xMin1 = -3
-xMax1 = 3
-xMin2 = -3.2
-xMax2 = 3.2
+xMin1 = -1
+xMax1 = 1
+xMin2 = -1
+xMax2 = 1
 
-epsilonTol = -20
+epsilonTol = -5
 
 
 x1 = np.arange(xMin1, xMax1, kstep)
@@ -47,7 +49,6 @@ phat1 = fun.dnorm(x2, a2, b2)  # pdf after one time step with Dirac \delta(x-ini
 
 phat[w1, :] = phat1
 phat[:, w2] = phat0
-
 
 
 surfaces = []
@@ -81,14 +82,12 @@ if fun.g2() == 0:
             
 if (fun.g1() != 0) & (fun.g2() != 0):
     Gmat = np.zeros([len(inds_unrav[0]), len(inds_unrav[1])])
-    for i in range(0, len(inds_unrav[0])): # I
-        print(i)
-        print(len(inds_unrav[0]))            
+    for i in trange(0, len(inds_unrav[0])): # I
         for k in range(0, len(inds_unrav[0])): # K
             Gmat[i,k]=kstep**2*fun.G(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]], h)
 
     t=0
-    while t < 120:
+    while t < 5:
         print(t)
         phat_rav = np.matmul(Gmat, phat_rav)
         phatMat = np.reshape(phat_rav,(len(x1),len(x2))) 
