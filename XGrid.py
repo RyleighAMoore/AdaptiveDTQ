@@ -17,6 +17,19 @@ def getCenteredZeroXvec(stepSize, endingVal):
     return x
 
 
+def getCenteredXvecAroundPoint(stepSize, unitsLeft, unitsRight, centerVal):
+    numLeft = int(np.ceil(unitsLeft/(stepSize)))+1
+    numRight = int(np.ceil(unitsRight/(stepSize)))+1
+    x = [centerVal]
+    for step in range(1, max(numLeft,numRight)):
+        if step < numRight:
+            x.append(centerVal + stepSize * step)
+        if step < numLeft:
+            x.append(centerVal - stepSize * step)
+    x = np.sort(np.asarray(x))
+    return x
+
+
 # Adds the new value to the xvec grid in the correct location based on numerical order
 def addValueToXvec(xvec, newVal):
     xnewLoc = np.searchsorted(xvec, newVal)
