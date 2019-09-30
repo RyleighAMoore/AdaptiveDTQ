@@ -22,10 +22,10 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 kstep = h ** s
 kstep = 0.15
 # kstep = 0.1
-xMin1 = -1
-xMax1 = 1
-xMin2 = -1
-xMax2 = 1
+xMin1 = -2.5
+xMax1 = 2.5
+xMin2 = -2.5
+xMax2 = 2.5
 init = 0
 
 epsilonTol = -5
