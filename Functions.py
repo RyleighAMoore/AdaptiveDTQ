@@ -1,13 +1,12 @@
 import numpy as np
 
-# Drift ction
+# Drift fuction
 def driftfun(x):
 #     if isinstance(x, int) | isinstance(x, float):
 #         return 1
 #     else:
 #         return np.ones(np.shape(x)) * 1
     return x * (4 - x ** 2)
-
 
 # Diffusion ction
 def difffun(x):
@@ -24,22 +23,74 @@ def dnorm_partialx(x, mu, sigma):
     return np.divide(-x+mu,sigma**2)*np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
 
 
+# Volcano
 def f1(x, y):
     r = np.sqrt(x ** 2 + y ** 2)
     #return 1
-    return x * (4 - r ** 2)
+    return x * (1- r ** 2)
 
 
 def f2(x, y):
     r = np.sqrt(x ** 2 + y ** 2)
     #return 0
-    return y * (4 - r ** 2)
+    return y * (1 - r ** 2) 
 
 def g1():
     return 1
 
 def g2():
     return 1
+
+
+## Penguin
+#def f1(x, y):
+#    r = np.sqrt(x ** 2 + y ** 2)
+#    return np.sin(x*r)
+#
+#
+#def f2(x, y):
+#    r = np.sqrt(x ** 2 + y ** 2)
+#    return np.tan(y*r)**2
+#
+#def g1():
+#    return 1
+#
+#def g2():
+#    return 1
+    
+## Monster Truck
+#def f1(x, y):
+#    r = np.sqrt(x ** 2 + y ** 2)
+#    return np.sin(x*r)
+#
+#
+#def f2(x, y):
+#    r = np.sqrt(x ** 2 + y ** 2)
+#    return np.tan(y*r)
+#
+#def g1():
+#    return 1
+#
+#def g2():
+#    return 1
+    
+
+## XXX
+#def f1(x, y):
+#    r = np.sqrt(x ** 2 + y ** 2)
+#    return np.sin(x**2)
+#
+#
+#def f2(x, y):
+#    r = np.sqrt(x ** 2 + y ** 2)
+#    return np.sin(x*r)
+#
+#def g1():
+#    return 1
+#
+#def g2():
+#    return 1
+
 
 def G(x1, x2, y1, y2, h):
     return ((2 * np.pi * g1() ** 2 * h) ** (-1 / 2) * np.exp(-(x1 - y1 - h * f1(y1, y2)) ** 2 / (2 * g1() ** 2 * h))) * (

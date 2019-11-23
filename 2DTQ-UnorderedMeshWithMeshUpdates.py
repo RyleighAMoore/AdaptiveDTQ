@@ -12,6 +12,7 @@ from tqdm import tqdm, trange
 import random
 import UnorderedMesh as UM
 from scipy.spatial import Delaunay
+import MeshUpdates2D as MeshUp
 
 T = 0.01  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
@@ -23,12 +24,12 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 kstep = h ** s
-kstep = 0.15
+kstep = 0.2
 epsilonTol = -5
-xmin=-4.35
-xmax=4.35
-ymin=-4.35
-ymax=4.35
+xmin=-2.2
+xmax=2.3
+ymin=-2.2
+ymax=2.3
 h=0.01
 
 def generateGRow(point, allPoints, kstep, h):
@@ -44,12 +45,12 @@ def loopNewPDf(Px, Py, grid, kstep, h, interpPDF):
         val = val + kstep**2*fun.G(Px, Py, grid[i,0], grid[i,1], h)*interpPDF[i]
     return val
 
-#mesh = UM.generateOrderedGrid(xmin, xmax, ymin, ymax, kstep)      # ordered mesh  
-mesh = UM.generateRandomPoints(xmin,xmax,ymin,ymax,2000)  # unordered mesh
+mesh = UM.generateOrderedGrid(xmin, xmax, ymin, ymax, kstep)      # ordered mesh  
+#mesh = UM.generateRandomPoints(xmin,xmax,ymin,ymax,800)  # unordered mesh
 #mesh = np.vstack((mesh,mesh2))
 
 
-pdf= UM.generateICPDF(mesh[:,0],mesh[:,1], 0.1, 0.1)
+pdf= UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
 #pdf = np.zeros(len(mesh))
 
 #pdf[int(np.sqrt(len(mesh))/2 * np.sqrt(len(mesh)))]=10
@@ -59,37 +60,34 @@ pdf= UM.generateICPDF(mesh[:,0],mesh[:,1], 0.1, 0.1)
 #ax = Axes3D(fig)
 #ax.scatter(mesh[:,0], mesh[:,1], pdf, c='r', marker='.')
 
-
+Meshes = []
 PdfTraj = []
 PdfTraj.append(np.copy(pdf))
+Meshes.append(np.copy(mesh))
 
-GMat = []
-Grids = []
-Vertices = []
-VerticesNum = []
 
-for point in trange(len(mesh)):
-    tri = Delaunay(mesh)
-    grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, max(xmax-xmin, ymax-ymin), xmin,xmax,ymin,ymax)
-    Grids.append(np.copy(grid))
-    Vertices.append([])
-    VerticesNum.append([])
-    for currGridPoint in range(len(grid)):
-        vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
-#        plt.figure()
-#        plt.plot(vertices[0,0], vertices[0,1], '*k')
-#        plt.plot(vertices[1,0], vertices[1,1], '*k')
-#        plt.plot(vertices[2,0], vertices[2,1], '*k')
-#        plt.plot(grid[currGridPoint,0], grid[currGridPoint,1], '.r')
-#        plt.show()
-        
-        Vertices[point].append(np.copy(vertices))
-        VerticesNum[point].append(np.copy(indices))
-    gRow = generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
-    GMat.append(np.copy(gRow))
+def PrepareMeshInfo():
+    GMat = []
+    Grids = []
+    Vertices = []
+    VerticesNum = []
+    for point in trange(len(mesh)):
+        tri = Delaunay(mesh)
+        grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, max(xmax-xmin, ymax-ymin), xmin,xmax,ymin,ymax)
+        Grids.append(np.copy(grid))
+        Vertices.append([])
+        VerticesNum.append([])
+        for currGridPoint in range(len(grid)):
+            vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
+            Vertices[point].append(np.copy(vertices))
+            VerticesNum[point].append(np.copy(indices))
+        gRow = generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
+        GMat.append(np.copy(gRow))
+    return tri, Grids, Vertices, VerticesNum, GMat
    
-     
-for i in trange(100):
+tri, Grids, Vertices, VerticesNum, GMat = PrepareMeshInfo()
+pdf = np.copy(PdfTraj[-1])
+for i in trange(30):
     for point in range(len(mesh)):
         interpPdf = []
         #grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 3, xmin,xmax,ymin,ymax)
@@ -98,14 +96,8 @@ for i in trange(100):
             Px = grid[g,0] # (Px, Py) point to interpolate
             Py = grid[g,1]
             vertices = Vertices[point][g]
-#            plt.figure()
-#            plt.plot(vertices[0,0], vertices[0,1], '*k')
-#            plt.plot(vertices[1,0], vertices[1,1], '*k')
-#            plt.plot(vertices[2,0], vertices[2,1], '*k')
-#            plt.plot(Px, Py, '.r')
-#            plt.show()
                     
-            PDFVals = UM.getPDFForPoint(PdfTraj[-1], VerticesNum[point][g])
+            PDFVals = UM.getPDFForPoint(pdf, VerticesNum[point][g])
             interp = UM.baryInterp(Px, Py, vertices, PDFVals)
             interpPdf.append(interp)
         #gRow = generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
@@ -114,7 +106,13 @@ for i in trange(100):
         #newval2 = loopNewPDf(mesh[point,0], mesh[point,1], grid, kstep, h, interpPdf)
         pdf[point] = np.copy(newval)
     PdfTraj.append(np.copy(pdf))
-        
+    Meshes.append(np.copy(mesh))
+    if i >= 3:
+            possibleZeros = MeshUp.checkIntegrandForZeroPoints(GMat,pdf, 10**(-8))
+            GMat, mesh, Grids, Vertices, VerticesNum, pdf, ChangedBool = MeshUp.removePointsFromMesh(possibleZeros,GMat, mesh, Grids, Vertices, VerticesNum, pdf)
+            if ChangedBool ==1:
+                tri, Grids, Vertices, VerticesNum, GMat = PrepareMeshInfo()
+            xMin = min
 t=0
 #Use to check triangularization
 #plt.plot(mesh[:,0], mesh[:,1], '.k')
@@ -128,13 +126,13 @@ t=0
 #ax = Axes3D(fig)
 #ax.scatter(grid[:,0], grid[:,1], interpPdf, c='r', marker='.')
 
-fig = plt.figure()
-ax = Axes3D(fig)
-ax.scatter(mesh[:,0], mesh[:,1], PdfTraj[-1], c='r', marker='.')
+#fig = plt.figure()
+#ax = Axes3D(fig)
+#ax.scatter(mesh[:,0], mesh[:,1], PdfTraj[-1], c='r', marker='.')
 #    
 #    
 def update_graph(num):
-    graph.set_data (mesh[:,0], mesh[:,1])
+    graph.set_data (Meshes[num][:,0], Meshes[num][:,1])
     graph.set_3d_properties(PdfTraj[num])
     title.set_text('3D Test, time={}'.format(num))
     return title, graph, 
@@ -144,7 +142,7 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
-graph, = ax.plot(mesh[:,0], mesh[:,1], PdfTraj[-1], linestyle="", marker="o")
+graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
 ax.set_zlim(0, np.max(PdfTraj[15]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                          interval=1000, blit=False)

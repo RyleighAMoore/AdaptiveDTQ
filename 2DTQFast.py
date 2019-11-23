@@ -22,10 +22,10 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 kstep = h ** s
 kstep = 0.15
 # kstep = 0.1
-xMin1 = -2.5
-xMax1 = 2.5
-xMin2 = -2.5
-xMax2 = 2.5
+xMin1 = -2.1
+xMax1 =2.1
+xMin2 = -2.1
+xMax2 = 2.1
 init = 0
 
 epsilonTol = -5
@@ -42,15 +42,17 @@ w2 = Operations2D.find_nearest(x2, 0)
 
 
 phat = np.zeros([len(x1), len(x2)])
-a1 = init + fun.f1(init,0)
-b1 = np.abs(fun.g1() * np.sqrt(h))
-a2 = init + fun.f2(init,0)
-b2 = np.abs(fun.g2() * np.sqrt(h))
-phat0 = fun.dnorm(x1, a1, b1)  # pdf after one time step with Dirac \delta(x-init)
-phat1 = fun.dnorm(x2, a2, b2)  # pdf after one time step with Dirac \delta(x-init)
+#a1 = init + fun.f1(init,0)
+#b1 = np.abs(fun.g1() * np.sqrt(h))
+#a2 = init + fun.f2(init,0)
+#b2 = np.abs(fun.g2() * np.sqrt(h))
+#phat0 = fun.dnorm(x1, a1, b1)  # pdf after one time step with Dirac \delta(x-init)
+#phat1 = fun.dnorm(x2, a2, b2)  # pdf after one time step with Dirac \delta(x-init)
+#
+#phat[w1, :] = phat1
+#phat[:, w2] = phat0
 
-phat[w1, :] = phat1
-phat[:, w2] = phat0
+phat[w1,w2] = 10
 
 
 surfaces = []
@@ -124,5 +126,5 @@ print(np.max(phat))
 # t = 0
 # fig = plt.figure()
 # ax = fig.gca(projection='3d')
-# surf = ax.plot_surface(X, Y, pdf, rstride=1, cstride=1, antialiased=True)
+# surf = ax.scatter(X, Y, surfaces[0])
 # plt.show()
