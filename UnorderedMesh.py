@@ -180,7 +180,9 @@ def plotTri(tri, points):
     
 def generateOrderedGrid(xmin, xmax, ymin, ymax, kstep):
     x1 = np.arange(xmin, xmax, kstep)
+    x1 = np.append(x1, x1[0]*-1)
     x2 = np.arange(ymin, ymax, kstep)
+    x2 = np.append(x2, x2[0]*-1)
     x=[]
     y=[]
     X, Y = np.meshgrid(x1, x2)

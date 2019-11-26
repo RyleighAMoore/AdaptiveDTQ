@@ -25,10 +25,10 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 kstep = h ** s
 kstep = 0.15
 epsilonTol = -5
-xmin=-4.35
-xmax=4.35
-ymin=-4.35
-ymax=4.35
+xmin=-2.
+xmax=2.
+ymin=-2.
+ymax=2.
 h=0.01
 
 def generateGRow(point, allPoints, kstep, h):
@@ -68,8 +68,8 @@ Grids = []
 Vertices = []
 VerticesNum = []
 
+tri = Delaunay(mesh)
 for point in trange(len(mesh)):
-    tri = Delaunay(mesh)
     grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, max(xmax-xmin, ymax-ymin), xmin,xmax,ymin,ymax)
     Grids.append(np.copy(grid))
     Vertices.append([])
@@ -89,7 +89,7 @@ for point in trange(len(mesh)):
     GMat.append(np.copy(gRow))
    
      
-for i in trange(100):
+for i in trange(4):
     for point in range(len(mesh)):
         interpPdf = []
         #grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 3, xmin,xmax,ymin,ymax)
@@ -145,7 +145,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(mesh[:,0], mesh[:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[15]))
+ax.set_zlim(0, np.max(PdfTraj[3]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                          interval=1000, blit=False)
 

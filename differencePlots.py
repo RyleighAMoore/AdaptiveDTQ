@@ -11,7 +11,7 @@ val=[]
 def plotMaxDiffTrajGraph(One,Two):
     sizing = min(len(One), len(Two))
     for i in range(sizing):
-        value = np.max(np.max(abs(np.reshape(One[i],[50,50])-Two[i])))
+        value = np.max(np.max(abs(np.reshape(One[i],[61,61])-Two[i])))
         val.append(value)
         print(i)
     w = np.linspace(1, sizing,sizing)

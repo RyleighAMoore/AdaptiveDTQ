@@ -24,36 +24,30 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 kstep = h ** s
-kstep = 0.2
+kstep = 0.1
 epsilonTol = -5
-xmin=-2.2
-xmax=2.3
-ymin=-2.2
-ymax=2.3
+xmin=-3.
+xmax=3.
+ymin=-3.
+ymax=3.
 h=0.01
 
-def generateGRow(point, allPoints, kstep, h):
-    row = []
-    for i in range(len(allPoints)):
-        val = kstep**2*fun.G(point[0], point[1], allPoints[i,0], allPoints[i,1], h)
-        row.append(val)
-    return row
 
-def loopNewPDf(Px, Py, grid, kstep, h, interpPDF):
-    val = 0
-    for i in range(len(interpPDF)):
-        val = val + kstep**2*fun.G(Px, Py, grid[i,0], grid[i,1], h)*interpPDF[i]
-    return val
+#def loopNewPDf(Px, Py, grid, kstep, h, interpPDF):
+#    val = 0
+#    for i in range(len(interpPDF)):
+#        val = val + kstep**2*fun.G(Px, Py, grid[i,0], grid[i,1], h)*interpPDF[i]
+#    return val
 
 mesh = UM.generateOrderedGrid(xmin, xmax, ymin, ymax, kstep)      # ordered mesh  
 #mesh = UM.generateRandomPoints(xmin,xmax,ymin,ymax,800)  # unordered mesh
 #mesh = np.vstack((mesh,mesh2))
 
 
-pdf= UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
-#pdf = np.zeros(len(mesh))
-
-#pdf[int(np.sqrt(len(mesh))/2 * np.sqrt(len(mesh)))]=10
+#pdf= UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+pdf = np.zeros(len(mesh))
+#
+pdf[1830]=10
 #pdf[1000]=10
 
 #fig = plt.figure()
@@ -64,30 +58,59 @@ Meshes = []
 PdfTraj = []
 PdfTraj.append(np.copy(pdf))
 Meshes.append(np.copy(mesh))
+GMat = []
+Grids = []
+Vertices = []
+VerticesNum = []
+
+tri = Delaunay(mesh, incremental=True)
+for point in trange(len(mesh)):
+    grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, max(xmax-xmin, ymax-ymin), xmin,xmax,ymin,ymax)
+    Grids.append(np.copy(grid))
+    Vertices.append([])
+    VerticesNum.append([])
+    for currGridPoint in range(len(grid)):
+        vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
+        Vertices[point].append(np.copy(vertices))
+        VerticesNum[point].append(np.copy(indices))
+    gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
+    GMat.append(np.copy(gRow))
 
 
-def PrepareMeshInfo():
-    GMat = []
-    Grids = []
-    Vertices = []
-    VerticesNum = []
-    for point in trange(len(mesh)):
-        tri = Delaunay(mesh)
-        grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, max(xmax-xmin, ymax-ymin), xmin,xmax,ymin,ymax)
-        Grids.append(np.copy(grid))
-        Vertices.append([])
-        VerticesNum.append([])
-        for currGridPoint in range(len(grid)):
-            vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
-            Vertices[point].append(np.copy(vertices))
-            VerticesNum[point].append(np.copy(indices))
-        gRow = generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
-        GMat.append(np.copy(gRow))
-    return tri, Grids, Vertices, VerticesNum, GMat
+#def PrepareVerticesInfo(mesh):
+#    for point in trange(len(mesh)):
+#        Vertices.append([])
+#        VerticesNum.append([])
+#        for currGridPoint in range(len(grid)):
+#            vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
+#            Vertices[point].append(np.copy(vertices))
+#            VerticesNum[point].append(np.copy(indices))
+#    return Vertices, VerticesNum      
+    
    
-tri, Grids, Vertices, VerticesNum, GMat = PrepareMeshInfo()
 pdf = np.copy(PdfTraj[-1])
-for i in trange(30):
+for i in trange(2):
+    if i >= 20:
+            Zeros = MeshUp.checkIntegrandForZeroPoints(GMat,pdf, 10**(-12))
+            #possibleZerosIntegral = MeshUp.checkIntegralForZeroPoints(GMat, pdf, 10**(-10))
+#            Zeros = [possibleZerosIntegrand + possibleZerosIntegral == 2]
+            GMat, mesh, Grids, Vertices, VerticesNum, pdf, ChangedBool = MeshUp.removePointsFromMesh(Zeros,GMat, mesh, Grids, Vertices, VerticesNum, pdf)
+            if ChangedBool == 1:
+                tri = Delaunay(mesh, incremental=True)
+#                Grids = []
+                Vertices = []
+                VerticesNum = []
+                for point in trange(len(mesh)):
+                    grid = Grids[point]
+                    Grids.append(np.copy(grid))
+                    Vertices.append([])
+                    VerticesNum.append([])
+                    for currGridPoint in range(len(grid)):
+                        vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
+                        Vertices[point].append(np.copy(vertices))
+                        VerticesNum[point].append(np.copy(indices))
+                    #gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
+                    #GMat.append(np.copy(gRow))
     for point in range(len(mesh)):
         interpPdf = []
         #grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 3, xmin,xmax,ymin,ymax)
@@ -96,7 +119,6 @@ for i in trange(30):
             Px = grid[g,0] # (Px, Py) point to interpolate
             Py = grid[g,1]
             vertices = Vertices[point][g]
-                    
             PDFVals = UM.getPDFForPoint(pdf, VerticesNum[point][g])
             interp = UM.baryInterp(Px, Py, vertices, PDFVals)
             interpPdf.append(interp)
@@ -107,13 +129,9 @@ for i in trange(30):
         pdf[point] = np.copy(newval)
     PdfTraj.append(np.copy(pdf))
     Meshes.append(np.copy(mesh))
-    if i >= 3:
-            possibleZeros = MeshUp.checkIntegrandForZeroPoints(GMat,pdf, 10**(-8))
-            GMat, mesh, Grids, Vertices, VerticesNum, pdf, ChangedBool = MeshUp.removePointsFromMesh(possibleZeros,GMat, mesh, Grids, Vertices, VerticesNum, pdf)
-            if ChangedBool ==1:
-                tri, Grids, Vertices, VerticesNum, GMat = PrepareMeshInfo()
-            xMin = min
-t=0
+    
+    
+            
 #Use to check triangularization
 #plt.plot(mesh[:,0], mesh[:,1], '.k')
 #plt.plot(vertices[0,0], vertices[0,1], '.g', markersize=14)
@@ -128,7 +146,7 @@ t=0
 
 #fig = plt.figure()
 #ax = Axes3D(fig)
-#ax.scatter(mesh[:,0], mesh[:,1], PdfTraj[-1], c='r', marker='.')
+#ax.scatter(Meshes[4][:,0], Meshes[4][:,1], PdfTraj[4], c='r', marker='.')
 #    
 #    
 def update_graph(num):
@@ -143,7 +161,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[15]))
+ax.set_zlim(0, np.max(PdfTraj[3]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                          interval=1000, blit=False)
 
