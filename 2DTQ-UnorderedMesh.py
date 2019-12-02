@@ -25,10 +25,10 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 kstep = h ** s
 kstep = 0.15
 epsilonTol = -5
-xmin=-2.
-xmax=2.
-ymin=-2.
-ymax=2.
+xmin=-1.
+xmax=1.
+ymin=-1.
+ymax=1.
 h=0.01
 
 def generateGRow(point, allPoints, kstep, h):
@@ -89,7 +89,7 @@ for point in trange(len(mesh)):
     GMat.append(np.copy(gRow))
    
      
-for i in trange(4):
+for i in trange(20):
     for point in range(len(mesh)):
         interpPdf = []
         #grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 3, xmin,xmax,ymin,ymax)

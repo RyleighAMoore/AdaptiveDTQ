@@ -26,10 +26,10 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 kstep = h ** s
 kstep = 0.1
 epsilonTol = -5
-xmin=-3.
-xmax=3.
-ymin=-3.
-ymax=3.
+xmin=-2.
+xmax=2.
+ymin=-2.
+ymax=2.
 h=0.01
 
 
@@ -44,10 +44,10 @@ mesh = UM.generateOrderedGrid(xmin, xmax, ymin, ymax, kstep)      # ordered mesh
 #mesh = np.vstack((mesh,mesh2))
 
 
-#pdf= UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
-pdf = np.zeros(len(mesh))
+pdf= UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+#pdf = np.zeros(len(mesh))
 #
-pdf[1830]=10
+#pdf[1830]=10
 #pdf[1000]=10
 
 #fig = plt.figure()
@@ -89,8 +89,8 @@ for point in trange(len(mesh)):
     
    
 pdf = np.copy(PdfTraj[-1])
-for i in trange(2):
-    if i >= 20:
+for i in trange(3):
+    if i >= 0:
             Zeros = MeshUp.checkIntegrandForZeroPoints(GMat,pdf, 10**(-12))
             #possibleZerosIntegral = MeshUp.checkIntegralForZeroPoints(GMat, pdf, 10**(-10))
 #            Zeros = [possibleZerosIntegrand + possibleZerosIntegral == 2]
@@ -144,9 +144,9 @@ for i in trange(2):
 #ax = Axes3D(fig)
 #ax.scatter(grid[:,0], grid[:,1], interpPdf, c='r', marker='.')
 
-#fig = plt.figure()
-#ax = Axes3D(fig)
-#ax.scatter(Meshes[4][:,0], Meshes[4][:,1], PdfTraj[4], c='r', marker='.')
+fig = plt.figure()
+ax = Axes3D(fig)
+ax.scatter(Meshes[2][:,0], Meshes[2][:,1], PdfTraj[2], c='r', marker='.')
 #    
 #    
 def update_graph(num):
@@ -161,7 +161,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[3]))
+ax.set_zlim(0, np.max(PdfTraj[2]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                          interval=1000, blit=False)
 
