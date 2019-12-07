@@ -78,7 +78,14 @@ def addPointsToMesh(newPoints, Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, tr
 #Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation = addPointsToMesh(np.asarray([[0.5,0]]), mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, kstep, h, xmin, xmax, ymin, ymax)
     
 
-def alpha_shape(points, alpha, only_outer=True):
+
+
+
+
+
+
+
+def alpha_shape(points, triangulation, alpha, only_outer=True):
     """
     Compute the alpha shape (concave hull) of a set of points.
     :param points: np.array of shape (n,2) points.
@@ -104,7 +111,7 @@ def alpha_shape(points, alpha, only_outer=True):
             return
         edges.add((i, j))
 
-    tri = Delaunay(points)
+    tri = triangulation
     edges = set()
     # Loop over triangles:
     # ia, ib, ic = indices of corner points of the triangle
@@ -135,14 +142,17 @@ y = 2.0 * np.random.rand(2000) - 1.0
 inside = ((x ** 2 + y ** 2 > 1.0) & ((x - 3) ** 2 + y ** 2 > 1.0))
 
 points = np.vstack([x[inside], y[inside]]).T
+#points = mesh
+
+tri = Delaunay(points)
 
 # Computing the alpha shape
-edges = alpha_shape(points, alpha=0.25, only_outer=True)
+edges = alpha_shape(points, tri, alpha=.3, only_outer=True)
 
 # Plotting the output
 figure()
 axis('equal')
 plot(points[:, 0], points[:, 1], '.')
 for i, j in edges:
-    plot(points[[i, j], 0], points[[i, j], 1])
-show()
+    plot(points[[i, j], 0], points[[i, j], 1], 'r')
+#show()

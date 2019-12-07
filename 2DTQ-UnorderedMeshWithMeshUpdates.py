@@ -50,9 +50,6 @@ pdf= UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
 #pdf[1830]=10
 #pdf[1000]=10
 
-#fig = plt.figure()
-#ax = Axes3D(fig)
-#ax.scatter(mesh[:,0], mesh[:,1], pdf, c='r', marker='.')
 
 Meshes = []
 PdfTraj = []
