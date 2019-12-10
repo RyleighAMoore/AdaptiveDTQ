@@ -23,7 +23,7 @@ kstep = h ** s
 kstep = 0.15
 # kstep = 0.1
 xMin1 = -3.
-xMax1 =3.
+xMax1 = 3.
 xMin2 = -3.
 xMax2 = 3.
 init = 0
@@ -92,7 +92,7 @@ if (fun.g1() != 0) & (fun.g2() != 0):
 
     t=0
     Integrands = []
-    while t < 150:
+    while t < 3:
         print(t)
         integrand = Integrand.calculateIntegrand(Gmat,phat_rav)
         Integrands.append(integrand)
@@ -105,7 +105,7 @@ if (fun.g1() != 0) & (fun.g2() != 0):
 
 def update_plot(frame_number, surfaces, plot):
     plot[0].remove()
-    plot[0] = ax.plot_surface(X, Y, surfaces[frame_number], cmap="magma")
+    plot[0] = ax.scatter(X, Y, surfaces[frame_number], '.')
 
 
 fig = plt.figure()

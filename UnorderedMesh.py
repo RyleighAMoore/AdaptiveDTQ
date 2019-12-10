@@ -193,6 +193,34 @@ def generateOrderedGrid(xmin, xmax, ymin, ymax, kstep):
     mesh = np.asarray([x,y]).T
     return mesh
 
+def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep):
+    stepsX = int(np.ceil(np.ceil((abs(xmin) + abs(xmax)) / (kstep))/2))
+    x =[]
+    x.append(0)
+    for i in range(1, stepsX):
+        x.append(i*kstep)
+        x.append(-i*kstep)
+        
+    stepsY = int(np.ceil(np.ceil((abs(ymin)+ abs(ymax)) / (kstep))/2))
+    y =[]
+    y.append(0)
+    for i in range(1, stepsY):
+        y.append(i*kstep)
+        y.append(-i*kstep)
+    x = np.sort(x)
+    y= np.sort(y)
+    X, Y = np.meshgrid(x, y)
+    x1 = []
+    x2 = []
+    for i in range(len(x)):
+        for j in range(len(y)):
+            x1.append(X[i,j])
+            x2.append(Y[i,j])       
+   
+    mesh = np.asarray([x1,x2]).T
+    return mesh
+    
+
 #points = generateRandomPoints(-1,1,-1,1,1000)
 #tri = Delaunay(points)
 #vertices = getVerticesForPoint([0,0], points, tri)

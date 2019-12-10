@@ -27,13 +27,13 @@ def dnorm_partialx(x, mu, sigma):
 def f1(x, y):
     r = np.sqrt(x ** 2 + y ** 2)
     #return 1
-    return x * (2- r ** 2)
+    return x * (1- r ** 2)
 
 
 def f2(x, y):
     r = np.sqrt(x ** 2 + y ** 2)
     #return 0
-    return y * (2 - r ** 2) 
+    return y * (1 - r ** 2) 
 
 def g1():
     return 1

@@ -24,12 +24,12 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 kstep = h ** s
-kstep = 0.1
+kstep = 0.15
 epsilonTol = -5
-xmin=-2.
-xmax=2.
-ymin=-2.
-ymax=2.
+xmin=-3.
+xmax=3.
+ymin=-3.
+ymax=3.
 h=0.01
 
 
@@ -39,15 +39,37 @@ h=0.01
 #        val = val + kstep**2*fun.G(Px, Py, grid[i,0], grid[i,1], h)*interpPDF[i]
 #    return val
 
-mesh = UM.generateOrderedGrid(xmin, xmax, ymin, ymax, kstep)      # ordered mesh  
-#mesh = UM.generateRandomPoints(xmin,xmax,ymin,ymax,800)  # unordered mesh
+mesh = UM.generateOrderedGridCenteredAtZero(-1.5, 1.5, -1.5, 1.5, kstep)      # ordered mesh  
+#mesh = UM.generateRandomPoints(xmin,xmax,ymin,ymax,200)  # unordered mesh
+#circle_r = 0.7
+## center of the circle (x, y)
+#circle_x = 0
+#circle_y = 0
+#mesh2 = []
+#for r in range(100):
+#    # random angle
+#    alpha = 2 * math.pi * random.random()
+#    # random radius
+#    r = circle_r * math.sqrt(random.random())
+#    # calculating coordinates
+#    x = r * math.cos(alpha) + circle_x
+#    y = r * math.sin(alpha) + circle_y
+#    mesh2.append([x, y])
+
+#mesh2 = UM.generateOrderedGrid(-0.25, 0.25, -0.25, 0.25, 0.08)      # ordered mesh  
 #mesh = np.vstack((mesh,mesh2))
 
+#mesh = np.vstack((mesh,[0,0]))
+#mesh = np.vstack((mesh,[0.05,0.05]))
+#mesh = np.vstack((mesh,[-0.05,0.05]))
+#mesh = np.vstack((mesh,[0.05,-0.05]))
+#mesh = np.vstack((mesh,[-0.05,-0.05]))
 
-pdf= UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
 #pdf = np.zeros(len(mesh))
-#
-#pdf[1830]=10
+mesh = mesh2
+pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.5, 0.5)
+#pdf = np.zeros(len(mesh))
+#pdf[-1]=10
 #pdf[1000]=10
 
 
@@ -84,30 +106,42 @@ for point in trange(len(mesh)):
 #            VerticesNum[point].append(np.copy(indices))
 #    return Vertices, VerticesNum      
     
-   
 pdf = np.copy(PdfTraj[-1])
-for i in trange(3):
-    if i >= 0:
-            Zeros = MeshUp.checkIntegrandForZeroPoints(GMat,pdf, 10**(-12))
+adjustGrid = False
+for i in trange(50):
+    if (i >= 0) and adjustGrid:
             #possibleZerosIntegral = MeshUp.checkIntegralForZeroPoints(GMat, pdf, 10**(-10))
 #            Zeros = [possibleZerosIntegrand + possibleZerosIntegral == 2]
-            GMat, mesh, Grids, Vertices, VerticesNum, pdf, ChangedBool = MeshUp.removePointsFromMesh(Zeros,GMat, mesh, Grids, Vertices, VerticesNum, pdf)
-            if ChangedBool == 1:
+###################################################### Check if remove points
+            GMat, mesh, Grids, pdf, remBool = MeshUp.removePointsFromMesh(GMat, mesh, Grids, Vertices, VerticesNum, pdf, tri, True)
+######################################################
+            if (remBool == 1):
                 tri = Delaunay(mesh, incremental=True)
-#                Grids = []
                 Vertices = []
                 VerticesNum = []
-                for point in trange(len(mesh)):
+                for point in range(len(mesh)): # Recompute Vertices and VerticesNum matrices
                     grid = Grids[point]
-                    Grids.append(np.copy(grid))
                     Vertices.append([])
                     VerticesNum.append([])
                     for currGridPoint in range(len(grid)):
                         vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
                         Vertices[point].append(np.copy(vertices))
                         VerticesNum[point].append(np.copy(indices))
-                    #gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
-                    #GMat.append(np.copy(gRow))
+#           
+            mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, addBool = MeshUp.addPointsToMesh(mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, kstep, h, xmin, xmax, ymin, ymax)
+            if (addBool == 1):
+                Vertices = []
+                VerticesNum = []
+                for point in range(len(mesh)): # Recompute Vertices and VerticesNum matrices
+                    grid = Grids[point]
+                    Vertices.append([])
+                    VerticesNum.append([])
+                    for currGridPoint in range(len(grid)):
+                        vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
+                        Vertices[point].append(np.copy(vertices))
+                        VerticesNum[point].append(np.copy(indices))
+                        
+    print("stepping forward")
     for point in range(len(mesh)):
         interpPdf = []
         #grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 3, xmin,xmax,ymin,ymax)
@@ -126,6 +160,7 @@ for i in trange(3):
         pdf[point] = np.copy(newval)
     PdfTraj.append(np.copy(pdf))
     Meshes.append(np.copy(mesh))
+    print(len(mesh))
     
     
             
@@ -143,7 +178,7 @@ for i in trange(3):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-ax.scatter(Meshes[2][:,0], Meshes[2][:,1], PdfTraj[2], c='r', marker='.')
+ax.scatter(Meshes[0][:,0], Meshes[0][:,1], PdfTraj[0], c='r', marker='.')
 #    
 #    
 def update_graph(num):
