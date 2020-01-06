@@ -66,7 +66,7 @@ mesh = UM.generateOrderedGridCenteredAtZero(-1.5, 1.5, -1.5, 1.5, kstep)      # 
 #mesh = np.vstack((mesh,[-0.05,-0.05]))
 
 #pdf = np.zeros(len(mesh))
-mesh = mesh2
+#mesh = mesh2
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.5, 0.5)
 #pdf = np.zeros(len(mesh))
 #pdf[-1]=10
@@ -108,7 +108,7 @@ for point in trange(len(mesh)):
     
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = False
-for i in trange(50):
+for i in trange(5):
     if (i >= 0) and adjustGrid:
             #possibleZerosIntegral = MeshUp.checkIntegralForZeroPoints(GMat, pdf, 10**(-10))
 #            Zeros = [possibleZerosIntegrand + possibleZerosIntegral == 2]

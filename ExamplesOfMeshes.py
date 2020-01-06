@@ -3,6 +3,7 @@ import matplotlib.tri as tri
 import numpy as np
 import math
 
+
 circle_x = 0
 circle_y = 0
 mesh2 = []
@@ -39,3 +40,18 @@ plotTri(tri, mesh2)
 #ydata = np.cos(zdata)
 #
 #plt.plot(xline,yline, '.')
+
+
+# Concave domain
+
+from scipy.spatial import Delaunay
+import UnorderedMesh as UM
+np.random.seed(0)
+x = 3.0 * np.random.rand(2000)
+y = 2.0 * np.random.rand(2000) - 1.0
+inside = ((x ** 2 + y ** 2 > 1.0) & ((x - 3) ** 2 + y ** 2 > 1.0))
+points = np.vstack([x[inside], y[inside]]).T
+tri = Delaunay(points)
+UM.plotTri(tri, mesh2)
+
+

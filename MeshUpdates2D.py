@@ -189,19 +189,19 @@ y = 2.0 * np.random.rand(2000) - 1.0
 inside = ((x ** 2 + y ** 2 > 1.0) & ((x - 3) ** 2 + y ** 2 > 1.0))
 
 points = np.vstack([x[inside], y[inside]]).T
-    points = Meshes[0]
-    
-    tri = Delaunay(points)
-    
-    # Computing the alpha shape
-    edges = alpha_shape(points, tri, alpha=.6, only_outer=True)
-    
-    # Plotting the output
-    figure()
-    axis('equal')
-    plot(points[:, 0], points[:, 1], '.')
-    for i, j in edges:
-        plot(points[[i, j], 0], points[[i, j], 1], 'r')
+#points = Meshes[0]
+
+tri = Delaunay(points)
+
+# Computing the alpha shape
+edges = alpha_shape(points, tri, alpha=.6, only_outer=True)
+
+# Plotting the output
+figure()
+axis('equal')
+plot(points[:, 0], points[:, 1], '.')
+for i, j in edges:
+    plot(points[[i, j], 0], points[[i, j], 1], 'r')
 #show()
     
     

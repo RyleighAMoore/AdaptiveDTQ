@@ -20,7 +20,7 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 kstep = h ** s
-kstep = 0.15
+kstep = 0.1
 # kstep = 0.1
 xMin1 = -3.
 xMax1 = 3.
@@ -42,17 +42,17 @@ w2 = Operations2D.find_nearest(x2, 0)
 
 
 phat = np.zeros([len(x1), len(x2)])
-#a1 = init + fun.f1(init,0)
-#b1 = np.abs(fun.g1() * np.sqrt(h))
-#a2 = init + fun.f2(init,0)
-#b2 = np.abs(fun.g2() * np.sqrt(h))
-#phat0 = fun.dnorm(x1, a1, b1)  # pdf after one time step with Dirac \delta(x-init)
-#phat1 = fun.dnorm(x2, a2, b2)  # pdf after one time step with Dirac \delta(x-init)
-#
-#phat[w1, :] = phat1
-#phat[:, w2] = phat0
+a1 = init + fun.f1(init,0)
+b1 = np.abs(fun.g1() * np.sqrt(h))
+a2 = init + fun.f2(init,0)
+b2 = np.abs(fun.g2() * np.sqrt(h))
+phat0 = fun.dnorm(x1, a1, b1)  # pdf after one time step with Dirac \delta(x-init)
+phat1 = fun.dnorm(x2, a2, b2)  # pdf after one time step with Dirac \delta(x-init)
 
-phat[w1,w2] = 10
+phat[w1, :] = phat1
+phat[:, w2] = phat0
+
+#phat[w1,w2] = 10
 
 
 surfaces = []
@@ -77,7 +77,7 @@ if fun.g2() == 0:
             Gmat[i,k]=kstep*fun.G1D(x1[i], x2[i], x1[k], fun.g1(),h)
             
     t=0
-    while t < 150:
+    while t < 30:
         print(t)
         phatMat = np.matmul(Gmat, phat)
         phat = phatMat
@@ -92,7 +92,7 @@ if (fun.g1() != 0) & (fun.g2() != 0):
 
     t=0
     Integrands = []
-    while t < 3:
+    while t < 150:
         print(t)
         integrand = Integrand.calculateIntegrand(Gmat,phat_rav)
         Integrands.append(integrand)
@@ -105,7 +105,7 @@ if (fun.g1() != 0) & (fun.g2() != 0):
 
 def update_plot(frame_number, surfaces, plot):
     plot[0].remove()
-    plot[0] = ax.scatter(X, Y, surfaces[frame_number], '.')
+    plot[0] = ax.plot_surface(X, Y, surfaces[frame_number], color='0.75', rstride=1, cstride=1, cmap="magma")
 
 
 fig = plt.figure()
@@ -113,7 +113,7 @@ ax = fig.add_subplot(111, projection='3d')
 fps = 10  # frame per sec
 frn = len(surfaces)  # frame number of the animation
 
-plot = [ax.plot_surface(X, Y, surfaces[10], color='0.75', rstride=1, cstride=1)]
+plot = [ax.plot_surface(X, Y, surfaces[0], color='0.75', rstride=1, cstride=1, cmap="magma")]
 plt.xlabel('x')
 plt.ylabel('y')
 ax.set_zlim(0, np.max(0.1))
