@@ -55,9 +55,11 @@ def checkIntegrandForAddingPoints(GMat, PDF, tolerance, Mesh, tri, boundaryOnly)
 
 def generateGRow(point, allPoints, kstep, h):
     row = []
+    OrderA = []
     for i in range(len(allPoints)):
         val = kstep**2*fun.G(point[0], point[1], allPoints[i,0], allPoints[i,1], h)
         row.append(val)
+        OrderA.append([point[0], point[1], allPoints[i,0], allPoints[i,1]])
     return row
 
 # Removes the flagged values from the list of mesh values and in Gmat. 
@@ -180,72 +182,21 @@ def alpha_shape(points, triangulation, alpha, only_outer=True):
             add_edge(edges, ic, ia)
     return edges
 
-from matplotlib.pyplot import *
-import numpy as np
-# Constructing the input point data
-np.random.seed(0)
-x = 3.0 * np.random.rand(2000)
-y = 2.0 * np.random.rand(2000) - 1.0
-inside = ((x ** 2 + y ** 2 > 1.0) & ((x - 3) ** 2 + y ** 2 > 1.0))
-
-points = np.vstack([x[inside], y[inside]]).T
-#points = Meshes[0]
-
-tri = Delaunay(points)
-
-# Computing the alpha shape
-edges = alpha_shape(points, tri, alpha=.6, only_outer=True)
-
-# Plotting the output
-figure()
-axis('equal')
-plot(points[:, 0], points[:, 1], '.')
-for i, j in edges:
-    plot(points[[i, j], 0], points[[i, j], 1], 'r')
-#show()
-    
-    
-#import random
-#import math
-#points = []
+#from matplotlib.pyplot import *
+#import numpy as np
+## Constructing the input point data
+#np.random.seed(0)
+#x = 3.0 * np.random.rand(2000)
+#y = 2.0 * np.random.rand(2000) - 1.0
+#inside = ((x ** 2 + y ** 2 > 1.0) & ((x - 3) ** 2 + y ** 2 > 1.0))
 #
-## radius of the circle
-#circle_r = 1
-## center of the circle (x, y)
-#circle_x = 5
-#circle_y = 7
-#for r in range(1000):
-#    # random angle
-#    alpha = 2 * math.pi * random.random()
-#    # random radius
-#    r = circle_r * math.sqrt(random.random())
-#    # calculating coordinates
-#    x = r * math.cos(alpha) + circle_x
-#    y = r * math.sin(alpha) + circle_y
-#    points.append([x, y])
-#    
-## radius of the circle
-#circle_r = 1
-## center of the circle (x, y)
-#circle_x = 0
-#circle_y = 0
-#for r in range(1000):
-#    # random angle
-#    alpha = 2 * math.pi * random.random()
-#    # random radius
-#    r = circle_r * math.sqrt(random.random())
-#    # calculating coordinates
-#    x = r * math.cos(alpha) + circle_x
-#    y = r * math.sin(alpha) + circle_y
-#    points.append([x, y])
-#plt.plot(np.asarray(points)[:,0], np.asarray(points)[:,1], '.')
-#plt.show()
+#points = np.vstack([x[inside], y[inside]]).T
+##points = Meshes[0]
+#
 #tri = Delaunay(points)
 #
-#points = np.asarray(points)
-#
 ## Computing the alpha shape
-#edges = alpha_shape(points, tri, alpha=.3, only_outer=True)
+#edges = alpha_shape(points, tri, alpha=.6, only_outer=True)
 #
 ## Plotting the output
 #figure()
@@ -253,4 +204,55 @@ for i, j in edges:
 #plot(points[:, 0], points[:, 1], '.')
 #for i, j in edges:
 #    plot(points[[i, j], 0], points[[i, j], 1], 'r')
-#show()
+##show()
+#    
+#    
+##import random
+##import math
+##points = []
+##
+### radius of the circle
+##circle_r = 1
+### center of the circle (x, y)
+##circle_x = 5
+##circle_y = 7
+##for r in range(1000):
+##    # random angle
+##    alpha = 2 * math.pi * random.random()
+##    # random radius
+##    r = circle_r * math.sqrt(random.random())
+##    # calculating coordinates
+##    x = r * math.cos(alpha) + circle_x
+##    y = r * math.sin(alpha) + circle_y
+##    points.append([x, y])
+##    
+### radius of the circle
+##circle_r = 1
+### center of the circle (x, y)
+##circle_x = 0
+##circle_y = 0
+##for r in range(1000):
+##    # random angle
+##    alpha = 2 * math.pi * random.random()
+##    # random radius
+##    r = circle_r * math.sqrt(random.random())
+##    # calculating coordinates
+##    x = r * math.cos(alpha) + circle_x
+##    y = r * math.sin(alpha) + circle_y
+##    points.append([x, y])
+##plt.plot(np.asarray(points)[:,0], np.asarray(points)[:,1], '.')
+##plt.show()
+##tri = Delaunay(points)
+##
+##points = np.asarray(points)
+##
+### Computing the alpha shape
+##edges = alpha_shape(points, tri, alpha=.3, only_outer=True)
+##
+### Plotting the output
+##figure()
+##axis('equal')
+##plot(points[:, 0], points[:, 1], '.')
+##for i, j in edges:
+##    plot(points[[i, j], 0], points[[i, j], 1], 'r')
+##show()

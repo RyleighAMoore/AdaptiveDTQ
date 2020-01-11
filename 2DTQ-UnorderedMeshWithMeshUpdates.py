@@ -24,12 +24,11 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 kstep = h ** s
-kstep = 0.15
-epsilonTol = -5
-xmin=-3.
-xmax=3.
-ymin=-3.
-ymax=3.
+kstep = 0.04
+xmin=-1
+xmax=1
+ymin=-1
+ymax=1
 h=0.01
 
 
@@ -39,8 +38,41 @@ h=0.01
 #        val = val + kstep**2*fun.G(Px, Py, grid[i,0], grid[i,1], h)*interpPDF[i]
 #    return val
 
-mesh = UM.generateOrderedGridCenteredAtZero(-1.5, 1.5, -1.5, 1.5, kstep)      # ordered mesh  
-#mesh = UM.generateRandomPoints(xmin,xmax,ymin,ymax,200)  # unordered mesh
+mesh = UM.generateOrderedGridCenteredAtZero(-0.5, 0.5, -0.5, 0.5, kstep)      # ordered mesh  
+#x = np.arange(-0.2, 0.2, .01)
+#y = np.arange(-0.2, 0.2, .01)
+#xx, yy = np.meshgrid(x, y)
+#points = np.ones((np.size(xx),2))
+#points[:,0]= xx.ravel()
+#points[:,1]=yy.ravel()
+#tri1 = Delaunay(points).simplices
+#
+#
+#w = np.arange(0,len(x)-1,1)
+##w=np.sort(np.concatenate((w,w)))
+#cSimplices = []
+#for j in range(len(x)-1):
+#    for i in w:
+#        #cSimplices.append([i+j*len(x),i+1+j*len(x),i+len(x)+j*len(x)])
+#        cSimplices.append([i+j*len(x),i+1+j*len(x),i+len(x)+1+j*len(x)])
+#
+#v = np.arange(len(x),len(x)*2-1,1)
+#for j in range(0,len(x)-1):
+#    for i in v:
+#        cSimplices.append([i+j*len(x),i+1+j*len(x),i-len(x)+j*len(x)])
+#                
+#
+#s = np.asarray(cSimplices, dtype='int32')
+#tri = Delaunay(points)
+#tri.simplices = s
+#mesh = points
+#mesh = UM.generateRandomPoints(-0.2,0.2,-0.2,0.2,200)  # unordered mesh
+
+#rad =  np.sqrt(mesh[:,0]**2 + mesh[:,1]**2)
+#for i in range(len(rad)-1,-1,-1):
+#    if rad[i] > 0.3:
+#        mesh = np.delete(mesh,i,0)
+
 #circle_r = 0.7
 ## center of the circle (x, y)
 #circle_x = 0
@@ -66,8 +98,11 @@ mesh = UM.generateOrderedGridCenteredAtZero(-1.5, 1.5, -1.5, 1.5, kstep)      # 
 #mesh = np.vstack((mesh,[-0.05,-0.05]))
 
 #pdf = np.zeros(len(mesh))
-#mesh = mesh2
-pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.5, 0.5)
+#mesh2 = mesh2
+#mesh = np.vstack((mesh,mesh2))
+
+pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+#pdf = phat_rav
 #pdf = np.zeros(len(mesh))
 #pdf[-1]=10
 #pdf[1000]=10
@@ -81,10 +116,12 @@ GMat = []
 Grids = []
 Vertices = []
 VerticesNum = []
-
+#
 tri = Delaunay(mesh, incremental=True)
+#tri.simplices=s
+#order2 = []
 for point in trange(len(mesh)):
-    grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, max(xmax-xmin, ymax-ymin), xmin,xmax,ymin,ymax)
+    grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 2*max(xmax-xmin, ymax-ymin), xmin,xmax,ymin,ymax)
     Grids.append(np.copy(grid))
     Vertices.append([])
     VerticesNum.append([])
@@ -92,8 +129,9 @@ for point in trange(len(mesh)):
         vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
         Vertices[point].append(np.copy(vertices))
         VerticesNum[point].append(np.copy(indices))
-    gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
-    GMat.append(np.copy(gRow))
+    #gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
+    #order2.append(OrderA)
+    #GMat.append(np.copy(gRow))
 
 
 #def PrepareVerticesInfo(mesh):
@@ -108,7 +146,7 @@ for point in trange(len(mesh)):
     
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = False
-for i in trange(5):
+for i in trange(100):
     if (i >= 0) and adjustGrid:
             #possibleZerosIntegral = MeshUp.checkIntegralForZeroPoints(GMat, pdf, 10**(-10))
 #            Zeros = [possibleZerosIntegrand + possibleZerosIntegral == 2]
@@ -140,7 +178,7 @@ for i in trange(5):
                         vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
                         Vertices[point].append(np.copy(vertices))
                         VerticesNum[point].append(np.copy(indices))
-                        
+    G=[]                   
     print("stepping forward")
     for point in range(len(mesh)):
         interpPdf = []
@@ -150,11 +188,12 @@ for i in trange(5):
             Px = grid[g,0] # (Px, Py) point to interpolate
             Py = grid[g,1]
             vertices = Vertices[point][g]
-            PDFVals = UM.getPDFForPoint(pdf, VerticesNum[point][g])
+            PDFVals = UM.getPDFForPoint(PdfTraj[-1], VerticesNum[point][g])
             interp = UM.baryInterp(Px, Py, vertices, PDFVals)
             interpPdf.append(interp)
-        #gRow = generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
-        gRow = GMat[point]
+        gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
+        G.append(gRow)
+        #gRow = GMat[point]
         newval = np.matmul(np.asarray(gRow), np.asarray(interpPdf))
         #newval2 = loopNewPDf(mesh[point,0], mesh[point,1], grid, kstep, h, interpPdf)
         pdf[point] = np.copy(newval)
@@ -162,8 +201,10 @@ for i in trange(5):
     Meshes.append(np.copy(mesh))
     print(len(mesh))
     
-    
-            
+fig = plt.figure()
+ax = Axes3D(fig)
+ax.scatter(grid[:,0], grid[:,1], np.asarray(interpPdf), c='r', marker='.')
+#            
 #Use to check triangularization
 #plt.plot(mesh[:,0], mesh[:,1], '.k')
 #plt.plot(vertices[0,0], vertices[0,1], '.g', markersize=14)
@@ -178,7 +219,8 @@ for i in trange(5):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-ax.scatter(Meshes[0][:,0], Meshes[0][:,1], PdfTraj[0], c='r', marker='.')
+index =1
+ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 #    
 #    
 def update_graph(num):
@@ -193,8 +235,22 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[2]))
+ax.set_zlim(0, np.max(PdfTraj[1]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                          interval=1000, blit=False)
 
 plt.show()
+
+
+#gg = 0
+##inds = np.asarray(list(range(0, np.size(x1)*np.size(x2))))
+##phat_rav = np.ravel(PdfTraj[gg])
+#
+#
+#si = int(np.sqrt(len(Meshes[gg][:,0])))
+##inds_unrav = np.unravel_index(inds, (si, si))
+#
+#pdfgrid = np.zeros((si,si))
+#for i in range(si):
+#    for j in range(si):
+#        pdfgrid[i,j]=PdfTraj[0][i+j]

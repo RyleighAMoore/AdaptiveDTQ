@@ -38,7 +38,7 @@ def findNearestThreePoints(xCoord, yCoord, AllPoints):
 # spacing: step size of grid
 # span: Units around the point to make the grid.
 def makeOrderedGridAroundPoint(point, spacing, span, xmin, xmax, ymin, ymax):
-    percent = 0.1
+    percent = 0.01
     x = XGrid.getCenteredXvecAroundPoint(spacing, span, span, point[0])
     y = XGrid.getCenteredXvecAroundPoint(spacing, span, span, point[1])
     x = np.asarray(x)
@@ -79,19 +79,19 @@ def baryInterp(Px, Py, simplexPoints, degsFreePDF):
     if (Wv1 < -10**(-10)) | (Wv2 < -10**(-10)) | (Wv3 < -10**(-10)):
         #print(min(Wv1,Wv2,Wv3))
         return 0
-#        plt.figure()
-#        plt.plot(simplexPoints[0,0], simplexPoints[0,1], '*k')
-#        plt.plot(simplexPoints[1,0], simplexPoints[1,1], '*k')
-#        plt.plot(simplexPoints[2,0], simplexPoints[2,1], '*k')
-#        plt.plot(Px, Py, '.r')
-#        plt.show()
+    #    plt.figure()
+    #    plt.plot(simplexPoints[0,0], simplexPoints[0,1], '*k')
+    #    plt.plot(simplexPoints[1,0], simplexPoints[1,1], '*k')
+    #    plt.plot(simplexPoints[2,0], simplexPoints[2,1], '*k')
+    #    plt.plot(Px, Py, '.r')
+    #    plt.show()
 #    assert Wv1 >= 0, 'Weight less than 0'
 #    assert Wv2 >= 0, 'Weight less than 0'
 #    assert Wv3 >= 0, 'Weight less than 0'
 
     PDFNew = Wv1*PDF1+Wv2*PDF2+Wv3*PDF3
 #    PDF = np.exp(PDFNew)
-
+    
     return PDFNew
 
 #x = baryInterp(-0.25,-0.5, np.asarray([[-0.25,-0.5], [0,1], [1,1]]),[1,1,2])
@@ -146,7 +146,7 @@ def generateICPDF(x,y,sigma_x, sigma_y):
 # Function that finds the vertices for 
     # calculation of the barycentric interpolation.
 def getVerticesForPoint(point, allPoints, tri):
-    simplex = tri.find_simplex(point)
+    simplex = tri.find_simplex(point, bruteforce = True)
     verts = tri.simplices[simplex]
     vertices = []
     vertices.append(allPoints[verts[0]])
@@ -217,7 +217,7 @@ def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep):
             x1.append(X[i,j])
             x2.append(Y[i,j])       
    
-    mesh = np.asarray([x1,x2]).T
+    mesh = np.asarray([x2,x1]).T
     return mesh
     
 

@@ -20,12 +20,11 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 kstep = h ** s
-kstep = 0.1
-# kstep = 0.1
-xMin1 = -3.
-xMax1 = 3.
-xMin2 = -3.
-xMax2 = 3.
+kstep = 0.04
+xMin1 = -0.96
+xMax1 = 1.
+xMin2 = -0.96
+xMax2 = 1.
 init = 0
 
 epsilonTol = -5
@@ -84,12 +83,17 @@ if fun.g2() == 0:
         t = t+1
         surfaces.append(np.matrix.transpose(np.copy(phatMat)))
             
+temp = []
+order =[]
 if (fun.g1() != 0) & (fun.g2() != 0):
     Gmat = np.zeros([len(inds_unrav[0]), len(inds_unrav[1])])
     for i in trange(0, len(inds_unrav[0])): # I
         for k in range(0, len(inds_unrav[0])): # K
             Gmat[i,k]=kstep**2*fun.G(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]], h)
-
+            #print(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]])
+            temp.append([x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]]])
+        order.append(np.copy(temp))
+        temp=[]
     t=0
     Integrands = []
     while t < 150:
