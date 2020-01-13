@@ -33,6 +33,20 @@ def findNearestThreePoints(xCoord, yCoord, AllPoints):
         return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]], [AllPoints[idx[1],0], AllPoints[idx[1],1]], [AllPoints[idx[2],0], AllPoints[idx[2],1]]])
 
 
+def findNearestPoint(xCoord, yCoord, AllPoints):
+    normList = []
+    for point in range(len(AllPoints)):
+        xVal = AllPoints[point,0]
+        yVal = AllPoints[point,1]
+        normList.append(np.sqrt((xCoord-xVal)**2+(yCoord-yVal)**2))
+    idx = np.argsort(normList)
+    #print(idx)
+    if idx[0] == 0: # point is part of the set
+        return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]]])
+    else:
+        return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]])
+
+
 
 # point: Point to center grid around
 # spacing: step size of grid

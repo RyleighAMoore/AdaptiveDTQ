@@ -88,7 +88,7 @@ def g2():
 #    return 1
     
 
-## XXX
+## YXXX
 #def f1(x, y):
 #    r = np.sqrt(x ** 2 + y ** 2)
 #    return np.sin(x**2)

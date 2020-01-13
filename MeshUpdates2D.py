@@ -67,7 +67,7 @@ def generateGRow(point, allPoints, kstep, h):
 # Gmat, Mesh, Grids, Vertices, and VerticesNum are all used in the 2DTQ-UnorderedMesh method 
 # and the parts associated with the removed points need to be removed.
 def removePointsFromMesh(GMat, Mesh, Grids, Vertices, VerticesNum, Pdf, tri, boundaryOnlyBool):
-    boolZerosArray = checkIntegrandForZeroPoints(GMat,Pdf, 10**(-12),Mesh,tri, True)
+    boolZerosArray = checkIntegrandForZeroPoints(GMat,Pdf, 10**(-16),Mesh,tri, True)
     ChangedBool = 0
     if max(boolZerosArray == 1):
         for val in range(len(boolZerosArray)-1,-1,-1):
@@ -79,18 +79,18 @@ def removePointsFromMesh(GMat, Mesh, Grids, Vertices, VerticesNum, Pdf, tri, bou
 #                VerticesNum.pop(val)
                 Pdf = np.delete(Pdf, val, 0)
                 ChangedBool=1
-    print('removed # points')    
-    print(np.sum(boolZerosArray))
+    print('\nremoved # points= ', np.sum(boolZerosArray))    
     return GMat, Mesh, Grids, Pdf, ChangedBool
             
 
 # newPoints is a n by 2 vector with the x coordinates of the new mesh
 #  in the first column and the y coordinates in the second column. 
 def addPointsToMesh(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, kstep, h, xmin, xmax, ymin, ymax):
-    pointsToAddAround = checkIntegrandForAddingPoints(GMat, Pdf, 10**(-5), Mesh, triangulation, True)
+    initialSize = len(Mesh)
+    pointsToAddAround = checkIntegrandForAddingPoints(GMat, Pdf, 10**(-8), Mesh, triangulation, True)
     ChangedBool = 0
     if max(pointsToAddAround == 1): 
-        print("adding points")
+        print("adding points...")
         for val in range(len(pointsToAddAround)):
             if pointsToAddAround[val] == 1: # if we should add
                 ChangedBool = 1
@@ -111,6 +111,8 @@ def addPointsToMesh(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation
                     Pdf = np.append(Pdf, interp, axis=0)
                     gRow = generateGRow([newPoints[point,0], newPoints[point,1]], grid, kstep, h)
                     GMat.append(np.copy(gRow))
+    numPointsAdded = len(Mesh) - initialSize
+    print("# points Added = ", numPointsAdded)      
     return Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, ChangedBool 
 
         
@@ -120,13 +122,16 @@ def addPointsToMesh(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation
 
 def addPointsRadially(pointX, pointY, mesh, numPointsToAdd):
     #radius = DM.fillDistance(mesh)
-    radius = 0.1
+    radius = 0.15
     dTheta = 2*np.pi/numPointsToAdd
     points = []
     for i in range(numPointsToAdd):
         newPointX = radius*np.cos(i*dTheta)+pointX
         newPointY = radius*np.sin(i*dTheta) + pointY
-        points.append([newPointX, newPointY])
+        nearestPoint = UM.findNearestPoint(newPointX, newPointY, mesh)
+        distToNearestPoint = np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
+        if distToNearestPoint > radius/2:
+            points.append([newPointX, newPointY])
     return np.asarray(points)
     
 #points = addPointsRadially(1,-2,mesh, 50)   

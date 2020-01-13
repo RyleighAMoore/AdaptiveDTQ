@@ -19,12 +19,19 @@ numsteps = int(np.ceil(T / h))
 assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
+#kstep = h ** s
+#kstep = 0.04
+#xMin1 = -.48
+#xMax1 = 0.50
+#xMin2 = -0.48
+#xMax2 = 0.50
+init = 0
 kstep = h ** s
-kstep = 0.04
-xMin1 = -0.96
-xMax1 = 1.
-xMin2 = -0.96
-xMax2 = 1.
+kstep = 0.15
+xMin1 = -1.8
+xMax1 = 1.82
+xMin2 = -1.8
+xMax2 =1.82
 init = 0
 
 epsilonTol = -5
@@ -93,10 +100,9 @@ if (fun.g1() != 0) & (fun.g2() != 0):
             #print(x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]])
             temp.append([x1[inds_unrav[0][i]], x2[inds_unrav[1][i]], x1[inds_unrav[0][k]], x2[inds_unrav[1][k]]])
         order.append(np.copy(temp))
-        temp=[]
     t=0
     Integrands = []
-    while t < 150:
+    while t < 100:
         print(t)
         integrand = Integrand.calculateIntegrand(Gmat,phat_rav)
         Integrands.append(integrand)
