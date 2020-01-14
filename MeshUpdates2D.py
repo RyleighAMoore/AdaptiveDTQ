@@ -187,6 +187,35 @@ def alpha_shape(points, triangulation, alpha, only_outer=True):
             add_edge(edges, ic, ia)
     return edges
 
+
+def PerformGridUpdates(GMat, mesh, Grids, Vertices, VerticesNum, pdf, tri, kstep, h, xmin, xmax, ymin, ymax):
+    GMat, mesh, Grids, pdf, remBool = removePointsFromMesh(GMat, mesh, Grids, Vertices, VerticesNum, pdf, tri, True)
+    if (remBool == 1):
+        tri = Delaunay(mesh, incremental=True)
+        Vertices = []
+        VerticesNum = []
+        for point in range(len(mesh)): # Recompute Vertices and VerticesNum matrices
+            grid = Grids[point]
+            Vertices.append([])
+            VerticesNum.append([])
+            for currGridPoint in range(len(grid)):
+                vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
+                Vertices[point].append(np.copy(vertices))
+                VerticesNum[point].append(np.copy(indices))          
+    mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, addBool = addPointsToMesh(mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, kstep, h, xmin, xmax, ymin, ymax)
+    if (addBool == 1):
+        Vertices = []
+        VerticesNum = []
+        for point in range(len(mesh)): # Recompute Vertices and VerticesNum matrices
+            grid = Grids[point]
+            Vertices.append([])
+            VerticesNum.append([])
+            for currGridPoint in range(len(grid)):
+                vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
+                Vertices[point].append(np.copy(vertices))
+                VerticesNum[point].append(np.copy(indices))
+    return mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri
+
 #from matplotlib.pyplot import *
 #import numpy as np
 ## Constructing the input point data

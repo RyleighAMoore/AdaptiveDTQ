@@ -235,6 +235,25 @@ def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep):
     return mesh
     
 
+def StepForward(Vertices,point,VerticesNum, GMat, Grids,pdf,pdfNew):
+    interpPdf = []
+    #grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 3, xmin,xmax,ymin,ymax)
+    grid = Grids[point]
+    for g in range(len(grid)):
+        Px = grid[g,0] # (Px, Py) point to interpolate
+        Py = grid[g,1]
+        vertices = Vertices[point][g]
+        PDFVals = getPDFForPoint(pdf, VerticesNum[point][g])
+        interp = baryInterp(Px, Py, vertices, PDFVals)
+        interpPdf.append(interp)
+    #gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
+    #G.append(gRow)
+    gRow = GMat[point]
+    newval = np.matmul(np.asarray(gRow), np.asarray(interpPdf))
+    #newval2 = loopNewPDf(mesh[point,0], mesh[point,1], grid, kstep, h, interpPdf)
+    pdfNew[point] = np.copy(newval)
+    return pdfNew
+
 #points = generateRandomPoints(-1,1,-1,1,1000)
 #tri = Delaunay(points)
 #vertices = getVerticesForPoint([0,0], points, tri)

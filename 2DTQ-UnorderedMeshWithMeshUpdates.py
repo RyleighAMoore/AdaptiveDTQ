@@ -13,6 +13,7 @@ import random
 import UnorderedMesh as UM
 from scipy.spatial import Delaunay
 import MeshUpdates2D as MeshUp
+import pickle
 
 T = 0.01  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
@@ -145,7 +146,7 @@ for point in trange(len(mesh)):
     
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(100):
+for i in trange(5):
     if (i >= 1) and adjustGrid:
             #possibleZerosIntegral = MeshUp.checkIntegralForZeroPoints(GMat, pdf, 10**(-10))
 #            Zeros = [possibleZerosIntegrand + possibleZerosIntegral == 2]
@@ -240,15 +241,12 @@ ax.set_zlim(0, np.max(PdfTraj[20]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                          interval=1000, blit=False)
 
-# Set up formatting for the movie files
-Writer = animation.writers['ffmpeg']
-writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
-ani.save('VolWUpdates.mp4', writer=writer)
 plt.show()
 
 
 
-
+pickle.dump(PdfTraj, open( "PDF.p", "wb" ) )
+pickle.dump(Meshes, open( "Meshes.p", "wb" ) )
 
 #gg = 0
 ##inds = np.asarray(list(range(0, np.size(x1)*np.size(x2))))

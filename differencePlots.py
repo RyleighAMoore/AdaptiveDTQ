@@ -59,8 +59,8 @@ def plotL2DiffTrajGraph(One,Two):
     
 
 import pickle
-#pickle.dump(PdfTraj, open( "PDF.p", "wb" ) )
-#pickle.dump(Meshes, open( "Meshes.p", "wb" ) )
+pickle.dump(PdfTraj, open( "PDF.p", "wb" ) )
+pickle.dump(Meshes, open( "Meshes.p", "wb" ) )
 pickle_in = open("PDF.p","rb")
 PdfTraj = pickle.load(pickle_in)
 
