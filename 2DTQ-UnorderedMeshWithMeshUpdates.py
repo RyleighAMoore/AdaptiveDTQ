@@ -13,6 +13,10 @@ import random
 import UnorderedMesh as UM
 from scipy.spatial import Delaunay
 import MeshUpdates2D as MeshUp
+import pickle
+import os
+import datetime
+import time
 
 T = 0.01  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
@@ -24,11 +28,11 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 kstep = h ** s
-kstep = 0.15
-xmin=-2
-xmax=2
-ymin=-2
-ymax=2
+kstep = 0.1
+xmin=-1
+xmax=1
+ymin=-1
+ymax=1
 h=0.01
 
 
@@ -38,7 +42,7 @@ h=0.01
 #        val = val + kstep**2*fun.G(Px, Py, grid[i,0], grid[i,1], h)*interpPDF[i]
 #    return val
 
-mesh = UM.generateOrderedGridCenteredAtZero(-1.3, 1.3, -1.3, 1.3, kstep)      # ordered mesh  
+mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)      # ordered mesh  
 #x = np.arange(-0.2, 0.2, .01)
 #y = np.arange(-0.2, 0.2, .01)
 #xx, yy = np.meshgrid(x, y)
@@ -120,8 +124,10 @@ VerticesNum = []
 tri = Delaunay(mesh, incremental=True)
 #tri.simplices=s
 #order2 = []
+numSD = 8
 for point in trange(len(mesh)):
-    grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 2*max(xmax-xmin, ymax-ymin), xmin,xmax,ymin,ymax)
+   # grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, max(xmax-xmin, ymax-ymin), xmin,xmax,ymin,ymax)
+    grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, max(xmax-xmin, ymax-ymin),mesh[point,0]-numSD*np.sqrt(h)*fun.g1() ,mesh[point,0]+numSD*np.sqrt(h)*fun.g1(),mesh[point,1]-numSD*np.sqrt(h)*fun.g2(),mesh[point,1]+numSD*np.sqrt(h)*fun.g2())
     Grids.append(np.copy(grid))
     Vertices.append([])
     VerticesNum.append([])
@@ -145,12 +151,10 @@ for point in trange(len(mesh)):
     
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(100):
-    if (i >= 1) and adjustGrid:
-            #possibleZerosIntegral = MeshUp.checkIntegralForZeroPoints(GMat, pdf, 10**(-10))
-#            Zeros = [possibleZerosIntegrand + possibleZerosIntegral == 2]
+for i in trange(30):
+    if (i >= 0) and adjustGrid:
 ###################################################### Check if remove points
-            GMat, mesh, Grids, pdf, remBool = MeshUp.removePointsFromMesh(GMat, mesh, Grids, Vertices, VerticesNum, pdf, tri, True)
+            GMat, mesh, Grids, pdf, remBool = MeshUp.removePointsFromMesh(GMat, mesh, Grids, pdf, tri, True)
 ######################################################
             if (remBool == 1):
                 tri = Delaunay(mesh, incremental=True)
@@ -164,8 +168,8 @@ for i in trange(100):
                         vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
                         Vertices[point].append(np.copy(vertices))
                         VerticesNum[point].append(np.copy(indices))
-#           
-            mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, addBool = MeshUp.addPointsToMesh(mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, kstep, h, xmin, xmax, ymin, ymax)
+           
+            mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, addBool,xmin, xmax, ymin, ymax = MeshUp.addPointsToMesh(mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, kstep, h, xmin, xmax, ymin, ymax)
             if (addBool == 1):
                 Vertices = []
                 VerticesNum = []
@@ -220,7 +224,7 @@ for i in trange(100):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = 100
+index = 10
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 #    
 #    
@@ -236,17 +240,37 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[20]))
+ax.set_zlim(0, np.max(PdfTraj[10]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                          interval=1000, blit=False)
 
-# Set up formatting for the movie files
-Writer = animation.writers['ffmpeg']
-writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
-ani.save('VolWUpdates.mp4', writer=writer)
 plt.show()
 
 
+
+#timestr = time.strftime("%Y%m%d-%H%M%S")
+#
+#pkl_file = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PdfTraj-"+ timestr+".p", "wb" ) 
+#pkl_file2 = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes-"+ timestr+".p", "wb" ) 
+#
+##    
+##pickle.dump(PdfTraj, pkl_file)
+##pickle.dump(Meshes, pkl_file2)
+##pkl_file.close()
+##pkl_file2.close()
+##
+##pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PDF.p","rb")
+##PdfTraj = pickle.load(pickle_in)
+##
+##pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes.p","rb")
+##Meshes = pickle.load(pickle_in)
+##
+##
+#pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PdfTraj-20200115-100443.p","rb")
+#PdfTraj = pickle.load(pickle_in)
+#
+#pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes-20200115-100443.p","rb")
+#Meshes = pickle.load(pickle_in)
 
 
 

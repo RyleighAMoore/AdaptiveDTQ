@@ -7,6 +7,8 @@ Created on Sun Nov 10 15:10:36 2019
 import numpy as np
 import matplotlib.pyplot as plt
 val=[]
+import matplotlib.ticker as mtick
+
 
 
 def plotMaxDiffTrajGraph(One,Two):
@@ -15,8 +17,8 @@ def plotMaxDiffTrajGraph(One,Two):
     val=[]
     sizing = min(len(One), len(Two))
     for i in range(sizing):
-        value = np.max(np.max(abs(np.reshape(One[i],[25,25])-Two[i])))
-        val.append(value)
+        value = np.max(np.max(abs(One[i]-Two[i])))
+        val.append(np.abs(value))
         print(i)
     w = np.linspace(1, sizing,sizing)
     fig, ax = plt.subplots()
@@ -31,17 +33,35 @@ def plotMaxDiffTrajGraph(One,Two):
     plt.ylabel('difference', fontsize='50') 
     plt.xticks(fontsize='50')
     plt.yticks(fontsize='50')
+    ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
     plt.subplots_adjust(top=0.88,bottom=0.175,left=0.11,right=0.9,hspace=0.2,wspace=0.2)
     
     print(val)
     plt.show()
+    return val
     
-plotMaxDiffTrajGraph(PdfTraj,surfaces)
+val = plotMaxDiffTrajGraph(PdfTraj,surfaces)
+
+#avgMaxError = []
+#maxMaxError = []
+#sdCount = []
+#avgMaxError.append(np.average(val))
+#maxMaxError.append(np.max(val))
+#sdCount.append(8)
+plt.plot()
+plt.semilogy(sdCount,avgMaxError, label = "Avg. Max Error")
+plt.semilogy(sdCount,maxMaxError,label = "Maximum Max Error" )
+plt.xlabel('Number of St.Devs. for grids', fontsize='80')
+plt.ylabel('Error', fontsize='80') 
+plt.xticks(fontsize='80')
+plt.yticks(fontsize='80')
+plt.legend(fontsize='20')
+plt.show()
     
 def plotL2DiffTrajGraph(One,Two):
     sizing = min(len(One), len(Two))
     for i in range(sizing):
-        value = np.sqrt(np.sum(abs(np.reshape(One[i],[25,25])-Two[i])**2))
+        value = np.sqrt(np.sum(abs(One[i]-Two[i])**2))
         val.append(value)
         print(i)
     w = np.linspace(1, sizing,sizing)
@@ -61,8 +81,8 @@ def plotL2DiffTrajGraph(One,Two):
 import pickle
 #pickle.dump(PdfTraj, open( "PDF.p", "wb" ) )
 #pickle.dump(Meshes, open( "Meshes.p", "wb" ) )
-pickle_in = open("PDF.p","rb")
-PdfTraj = pickle.load(pickle_in)
-
-pickle_in = open("Meshes.p","rb")
-Meshes = pickle.load(pickle_in)
+#pickle_in = open("PDF.p","rb")
+#PdfTraj = pickle.load(pickle_in)
+#
+#pickle_in = open("Meshes.p","rb")
+#Meshes = pickle.load(pickle_in)

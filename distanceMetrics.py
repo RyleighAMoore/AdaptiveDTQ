@@ -4,7 +4,6 @@ Created on Tue Dec  3 11:01:58 2019
 
 @author: Ryleigh
 """
-
 import numpy as np
 #mesh : points in Nx2 array 
 def fillDistance(mesh):

@@ -19,21 +19,21 @@ import Operations2D
 #  x3   y3
 #  ...  ...
 
-def findNearestThreePoints(xCoord, yCoord, AllPoints):
+def findNearestKPoints(xCoord, yCoord, AllPoints, numNeighbors):
     normList = []
     for point in range(len(AllPoints)):
         xVal = AllPoints[point,0]
         yVal = AllPoints[point,1]
         normList.append(np.sqrt((xCoord-xVal)**2+(yCoord-yVal)**2))
     idx = np.argsort(normList)
-    print(idx)
-    if idx[0] == 0: # point is part of the set
-        return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]], [AllPoints[idx[2],0], AllPoints[idx[2],1]], [AllPoints[idx[3],0], AllPoints[idx[3],1]]])
-    else:
-        return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]], [AllPoints[idx[1],0], AllPoints[idx[1],1]], [AllPoints[idx[2],0], AllPoints[idx[2],1]]])
+    neighbors = []
+    for k in range(numNeighbors):
+        neighbors.append(np.asarray([AllPoints[idx[k],0], AllPoints[idx[k],1]]))
+    return np.asarray(neighbors)
 
+#neighbors = findNearestKPoints(-1.7, 1, Meshes[0], 4)
 
-def findNearestPoint(xCoord, yCoord, AllPoints):
+def findNearestPoint(xCoord, yCoord, AllPoints, includeIndex=False):
     normList = []
     for point in range(len(AllPoints)):
         xVal = AllPoints[point,0]
@@ -41,26 +41,31 @@ def findNearestPoint(xCoord, yCoord, AllPoints):
         normList.append(np.sqrt((xCoord-xVal)**2+(yCoord-yVal)**2))
     idx = np.argsort(normList)
     #print(idx)
-    if idx[0] == 0: # point is part of the set
-        return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]]])
+    if normList[idx[0]] == 0: # point is part of the set
+        if includeIndex:
+            return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]]]), idx[1] 
+        else:
+            return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]]])
     else:
-        return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]])
-
-
+        if includeIndex:
+            return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]]), idx[0]
+        else:
+            return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]])
+    
 
 # point: Point to center grid around
 # spacing: step size of grid
 # span: Units around the point to make the grid.
 def makeOrderedGridAroundPoint(point, spacing, span, xmin, xmax, ymin, ymax):
-    percent = 0.01
+    percent = .01
     x = XGrid.getCenteredXvecAroundPoint(spacing, span, span, point[0])
     y = XGrid.getCenteredXvecAroundPoint(spacing, span, span, point[1])
     x = np.asarray(x)
     y = np.asarray(y)
     x = x[(x>=xmin+percent*(xmax-xmin)) & (x<=xmax-percent*(xmax-xmin))]
     y = y[(y>=ymin+percent*(xmax-xmin)) & (y<=ymax-percent*(xmax-xmin))]
-    if (min(x)<xmin) | (max(x)>xmax)| (min(y)<ymin) | (max(y)>ymax):
-        print('Problem in making grid')
+#    if (min(x)<xmin) | (max(x)>xmax)| (min(y)<ymin) | (max(y)>ymax):
+#        print('Problem in making grid')
     X, Y = np.meshgrid(x, y)
     xVec = np.reshape(X,[1,np.size(X)],1).T
     yVec = np.reshape(Y,[1,np.size(Y)],1).T
@@ -105,10 +110,9 @@ def baryInterp(Px, Py, simplexPoints, degsFreePDF):
 
     PDFNew = Wv1*PDF1+Wv2*PDF2+Wv3*PDF3
 #    PDF = np.exp(PDFNew)
-    
     return PDFNew
 
-#x = baryInterp(-0.25,-0.5, np.asarray([[-0.25,-0.5], [0,1], [1,1]]),[1,1,2])
+x = baryInterp(-.1,-0.1, np.asarray([[-0.25,-0.5], [0,1], [1,1]]),[1,1,2])
 
 # generate random points from [xMin,xMax] x [yMin, yMax]
 # returns 
@@ -160,7 +164,10 @@ def generateICPDF(x,y,sigma_x, sigma_y):
 # Function that finds the vertices for 
     # calculation of the barycentric interpolation.
 def getVerticesForPoint(point, allPoints, tri):
+    #tri = Delaunay(allPoints)
     simplex = tri.find_simplex(point, bruteforce = True)
+#    if simplex == -1:
+#        print("WARNING: A point in the grid may be outside the bounds.")
     verts = tri.simplices[simplex]
     vertices = []
     vertices.append(allPoints[verts[0]])
