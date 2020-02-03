@@ -151,7 +151,7 @@ for point in trange(len(mesh)):
     
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(30):
+for i in trange(100):
     if (i >= 0) and adjustGrid:
 ###################################################### Check if remove points
             GMat, mesh, Grids, pdf, remBool = MeshUp.removePointsFromMesh(GMat, mesh, Grids, pdf, tri, True)
@@ -224,7 +224,7 @@ for i in trange(30):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = 10
+index = 1
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 #    
 #    
@@ -240,7 +240,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[10]))
+ax.set_zlim(0, np.max(PdfTraj[-1]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                          interval=1000, blit=False)
 

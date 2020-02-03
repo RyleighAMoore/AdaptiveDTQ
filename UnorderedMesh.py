@@ -27,9 +27,14 @@ def findNearestKPoints(xCoord, yCoord, AllPoints, numNeighbors):
         normList.append(np.sqrt((xCoord-xVal)**2+(yCoord-yVal)**2))
     idx = np.argsort(normList)
     neighbors = []
-    for k in range(numNeighbors):
+    for k in range(1,numNeighbors+1):
         neighbors.append(np.asarray([AllPoints[idx[k],0], AllPoints[idx[k],1]]))
-    return np.asarray(neighbors)
+    neighbors = np.asarray(neighbors)
+#    plt.figure()
+#    plt.plot(xCoord,yCoord, '*r')
+#    plt.plot(neighbors[:,0], neighbors[:,1],'.')
+#    plt.show()
+    return neighbors
 
 #neighbors = findNearestKPoints(-1.7, 1, Meshes[0], 4)
 
