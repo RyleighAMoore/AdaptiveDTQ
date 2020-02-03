@@ -12,6 +12,7 @@ import distanceMetrics as DM
 from itertools import chain
 from tqdm import tqdm, trange
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 
@@ -69,7 +70,7 @@ def generateGRow(point, allPoints, kstep, h):
 # Gmat, Mesh, Grids, Vertices, and VerticesNum are all used in the 2DTQ-UnorderedMesh method 
 # and the parts associated with the removed points need to be removed.
 def removePointsFromMesh(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
-    boolZerosArray = checkIntegrandForZeroPoints(GMat,Pdf, 10**(-36),Mesh,tri, True)
+    boolZerosArray = checkIntegrandForZeroPoints(GMat,Pdf, 10**(-52),Mesh,tri, True)
     ChangedBool = 0
     Slopes = checkAddInteriorPoints(Mesh, Pdf)
     pointsToRemove = np.asarray([np.asarray(Slopes) < 5]).T
@@ -107,16 +108,18 @@ def removePointsFromMesh(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
 # newPoints is a n by 2 vector with the x coordinates of the new mesh
 #  in the first column and the y coordinates in the second column. 
 def addPointsToMesh(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, kstep, h, xmin, xmax, ymin, ymax):
-    boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(GMat, Pdf, 10**(-6), Mesh, triangulation, True)
+    boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(GMat, Pdf, 10**(-16), Mesh, triangulation, True)
     Slopes = checkAddInteriorPoints(Mesh, Pdf)
-    interiorPointsToAddAround = np.asarray([np.asarray(Slopes) > 9]).T
+    interiorPointsToAddAround = np.asarray([np.asarray(Slopes)> 9]).T
+#    fig = plt.figure()
+#    ax = Axes3D(fig)
+#    ax.scatter(Mesh[:,0], Mesh[:,1], Slopes, c='r', marker='.')
     ChangedBool = 0
-
     numBoundaryAdded = 0
     numInteriorAdded = 0
     if max(boundaryPointsToAddAround == 1) or max(interiorPointsToAddAround == 1): 
         print("adding boundary points...")
-        for val in range(len(boundaryPointsToAddAround)):
+        for val in range(len(boundaryPointsToAddAround)-1,-1,-1):
             if boundaryPointsToAddAround[val] == 1: # if we should extend boundary
                 ChangedBool = 1
                 newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, kstep)
@@ -146,7 +149,7 @@ def addPointsToMesh(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation
                     triangulation.add_points(np.asarray([[newPoints[point,0]],[newPoints[point,1]]]).T, restart=False)
             elif interiorPointsToAddAround[val] == 1: # if we should extend boundary
                 ChangedBool = 1
-                newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, kstep) 
+                newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, kstep/2) 
                 for point in range(len(newPoints)):
                     Mesh = np.append(Mesh, np.asarray([[newPoints[point,0]],[newPoints[point,1]]]).T, axis=0)
                     #grid = UM.makeOrderedGridAroundPoint([newPoints[point,0],newPoints[point,1]],kstep, max(xmax-xmin, ymax-ymin), xmin,xmax,ymin,ymax)
@@ -193,7 +196,7 @@ def checkAddInteriorPoints(mesh, PDF):
 
 def addPointsRadially(pointX, pointY, mesh, numPointsToAdd, kstep):
     #radius = DM.fillDistance(mesh)
-    radius = kstep/2
+    radius = kstep
     dTheta = 2*np.pi/numPointsToAdd
     points = []
     for i in range(numPointsToAdd):

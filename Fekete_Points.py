@@ -80,11 +80,12 @@ def twoDFeketeSquare(a,b,stepSize, numPointsDesired):
         T = np.matmul(T,P)
         
     Q, R, perm = sp.linalg.qr(V.T, pivoting=True)
+    print(perm)
     newPointsX = points[:,0][perm[:numDesiredPoints]]
     newPointsY = points[:,1][perm[:numDesiredPoints]]
     plt.scatter(newPointsX,newPointsY, s=50)
 
-#twoDFeketeSquare(1,1,0.001, 10)
+twoDFeketeSquare(1,1,0.001, 10)
     
     
 

@@ -247,7 +247,7 @@ Py= point[0,1]
 ##lejaPoints = getLejaPointsUniform(10, None)
 #
 ##lejaPointsFinal = mapPointsBack(Px, Py, lejaPoints.T)
-lejaPointsFinal = getLejaPointsWithStartingPoints(Px, Py, 3, mesh, 2)
+lejaPointsFinal = getLejaPointsWithStartingPoints(Px, Py, 4, mesh, 4)
 
 #plt.figure()
 #plt.plot(neighbors[:,0], neighbors[:,1], '*k', label='Neighbors', markersize=14)
