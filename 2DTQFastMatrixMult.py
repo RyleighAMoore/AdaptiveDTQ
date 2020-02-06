@@ -47,7 +47,7 @@ for point in trange(len(mesh)):
 surfaces = [] 
 surfaces.append(np.copy(pdf))
 t=0
-while t < 10:
+while t < 150:
     print(t)
     pdf = np.matmul(GMat, pdf)
     surfaces.append(np.copy(pdf))

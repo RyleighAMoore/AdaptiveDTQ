@@ -13,13 +13,26 @@ from itertools import chain
 from tqdm import tqdm, trange
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import GenerateLejaPoints as LP
+
+#addPointsToBoundaryIfBiggerThanTolerance = 10**(-5)
+#removeZerosValuesIfLessThanTolerance = 10**(-30)
+##removePointsIfSlopeLessThanTolerance = 5
+##denisfyAroundPointIfSlopeLargerThanTolerance = 5
+#minDistanceBetweenPoints = 0.1
+
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-5)
+removeZerosValuesIfLessThanTolerance = 10**(-20)
+#removePointsIfSlopeLessThanTolerance = 5
+#denisfyAroundPointIfSlopeLargerThanTolerance = 5
+minDistanceBetweenPoints = 0.05
 
 
 
 def checkIntegrandForZeroPoints(GMat, PDF, tolerance, Mesh, tri, boundaryOnly):
     maxMat = 10*np.ones(len(PDF))
     if boundaryOnly:
-        edges = alpha_shape(Mesh, tri, 0.6, only_outer=True)
+        edges = alpha_shape(Mesh, tri, 0.2, only_outer=True)
         aa = list(chain(edges))
         out = [item for t in aa for item in t]
         pointsOnEdge = np.sort(out)
@@ -36,7 +49,7 @@ def checkIntegrandForZeroPoints(GMat, PDF, tolerance, Mesh, tri, boundaryOnly):
 def checkIntegrandForAddingPointsAroundBoundaryPoints(GMat, PDF, tolerance, Mesh, tri, boundaryOnly):
     maxMat = -1*np.ones(len(PDF))
     if boundaryOnly:
-        edges = alpha_shape(Mesh, tri, 0.6, only_outer=True)
+        edges = alpha_shape(Mesh, tri, 0.2, only_outer=True)
         aa = list(chain(edges))
         out = [item for t in aa for item in t]
         pointsOnEdge = np.sort(out)
@@ -70,12 +83,13 @@ def generateGRow(point, allPoints, kstep, h):
 # Gmat, Mesh, Grids, Vertices, and VerticesNum are all used in the 2DTQ-UnorderedMesh method 
 # and the parts associated with the removed points need to be removed.
 def removePointsFromMesh(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
-    boolZerosArray = checkIntegrandForZeroPoints(GMat,Pdf, 10**(-52),Mesh,tri, True)
+    boolZerosArray = checkIntegrandForZeroPoints(GMat,Pdf, removeZerosValuesIfLessThanTolerance,Mesh,tri, True)
     ChangedBool = 0
     Slopes = checkAddInteriorPoints(Mesh, Pdf)
-    pointsToRemove = np.asarray([np.asarray(Slopes) < 5]).T
+    removePointsIfSlopeLessThanTolerance = max(np.mean(Slopes)-2*np.std(Slopes),10**(-3))
+    pointsToRemove = np.asarray([np.asarray(Slopes) < removePointsIfSlopeLessThanTolerance]).T
     lessDenseCount = 0
-    if max(boolZerosArray == 1):
+    if max(boolZerosArray == 1) or max(pointsToRemove ==1):
         for val in range(len(boolZerosArray)-1,-1,-1):
             if boolZerosArray[val] == 1: # remove the point
                 GMat.pop(val)
@@ -84,13 +98,12 @@ def removePointsFromMesh(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
                 Pdf = np.delete(Pdf, val, 0)
                 ChangedBool=1
             if (pointsToRemove[val] == 1) and (boolZerosArray[val] == 0):
-                tolerance = 1
                 Px = Mesh[val,0]
                 Py = Mesh[val,1]
                 closestPoint, index = UM.findNearestPoint(Px, Py, Mesh, includeIndex=True)
                 distance = np.sqrt((Px - closestPoint[0,0])**2 + (Py - closestPoint[0,1])**2)
 #                print(distance)
-                if distance < 0.5:
+                if distance < 0.1:
                     lessDenseCount = lessDenseCount +1
                     GMat.pop(val)
                     Mesh = np.delete(Mesh, val, 0)
@@ -98,6 +111,14 @@ def removePointsFromMesh(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
                     Pdf = np.delete(Pdf, val, 0)
                     pointsToRemove[val] = 0 # So that we don't remove too many points.
                     ChangedBool=1
+                elif distance > 1:
+                    GMat.pop(val)
+                    Mesh = np.delete(Mesh, val, 0)
+                    Grids.pop(val)
+                    Pdf = np.delete(Pdf, val, 0)
+                    pointsToRemove[val] = 0 # So that we don't remove too many points.
+                    ChangedBool=1
+                    print("removed stranded point")
 
     print('\nremoved # zero points= ', np.sum(boolZerosArray))  
     print('points removed to make less dense=', lessDenseCount)
@@ -108,9 +129,10 @@ def removePointsFromMesh(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
 # newPoints is a n by 2 vector with the x coordinates of the new mesh
 #  in the first column and the y coordinates in the second column. 
 def addPointsToMesh(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, kstep, h, xmin, xmax, ymin, ymax):
-    boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(GMat, Pdf, 10**(-16), Mesh, triangulation, True)
+    boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(GMat, Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation, True)
     Slopes = checkAddInteriorPoints(Mesh, Pdf)
-    interiorPointsToAddAround = np.asarray([np.asarray(Slopes)> 9]).T
+    denisfyAroundPointIfSlopeLargerThanTolerance = np.mean(Slopes)+np.std(Slopes)
+    interiorPointsToAddAround = np.asarray([np.asarray(Slopes)> denisfyAroundPointIfSlopeLargerThanTolerance]).T
 #    fig = plt.figure()
 #    ax = Axes3D(fig)
 #    ax.scatter(Mesh[:,0], Mesh[:,1], Slopes, c='r', marker='.')
@@ -122,7 +144,9 @@ def addPointsToMesh(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation
         for val in range(len(boundaryPointsToAddAround)-1,-1,-1):
             if boundaryPointsToAddAround[val] == 1: # if we should extend boundary
                 ChangedBool = 1
-                newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, kstep)
+#                newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, kstep)
+                allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 0, Mesh, 3, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(),6)
+                newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh)
                 for point in range(len(newPoints)):
                     Mesh = np.append(Mesh, np.asarray([[newPoints[point,0]],[newPoints[point,1]]]).T, axis=0)
                     xmin = np.min(Mesh[:,0])
@@ -149,7 +173,9 @@ def addPointsToMesh(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation
                     triangulation.add_points(np.asarray([[newPoints[point,0]],[newPoints[point,1]]]).T, restart=False)
             elif interiorPointsToAddAround[val] == 1: # if we should extend boundary
                 ChangedBool = 1
-                newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, kstep/2) 
+#                newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, kstep/2) 
+                allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 0, Mesh, 4, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(), 6)
+                newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh)
                 for point in range(len(newPoints)):
                     Mesh = np.append(Mesh, np.asarray([[newPoints[point,0]],[newPoints[point,1]]]).T, axis=0)
                     #grid = UM.makeOrderedGridAroundPoint([newPoints[point,0],newPoints[point,1]],kstep, max(xmax-xmin, ymax-ymin), xmin,xmax,ymin,ymax)
@@ -204,7 +230,7 @@ def addPointsRadially(pointX, pointY, mesh, numPointsToAdd, kstep):
         newPointY = radius*np.sin(i*dTheta) + pointY
         nearestPoint = UM.findNearestPoint(newPointX, newPointY, mesh)
         distToNearestPoint = np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
-        if distToNearestPoint > radius/4:
+        if distToNearestPoint > minDistanceBetweenPoints:
             #print("adding")
             points.append([newPointX, newPointY])
     return np.asarray(points)
@@ -212,7 +238,16 @@ def addPointsRadially(pointX, pointY, mesh, numPointsToAdd, kstep):
 #points = addPointsRadially(1,-2,mesh, 50)   
 #plt.plot(points[:,0], points[:,1], '.')
 
-
+def checkIfDistToClosestPointIsOk(newPoints, Mesh):
+    points = []
+    for i in range(len(newPoints)):
+        newPointX = newPoints[i,0]
+        newPointY = newPoints[i,1]
+        nearestPoint = UM.findNearestPoint(newPointX, newPointY, Mesh)
+        distToNearestPoint = np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
+        if distToNearestPoint > minDistanceBetweenPoints:
+            points.append([newPointX, newPointY])
+    return np.asarray(points)
 
 def alpha_shape(points, triangulation, alpha, only_outer=True):
     """

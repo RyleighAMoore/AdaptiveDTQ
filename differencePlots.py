@@ -76,9 +76,18 @@ def plotL2DiffTrajGraph(One,Two):
     print(val)
     plt.show()
     
-    
+def differencePoints(surfacesUpdate, surfacesMatMult):
+    diff = []
+    for i in range(max(len(surfacesUpdate), len(surfacesMatMult))):
+        val = np.abs(surfacesUpdate[i][0]- surfacesMatMult[i][1200])
+        diff.append(np.copy(val))
+    return diff
 
-import pickle
+diff = differencePoints(PdfTraj2, surfaces)
+
+plt.semilogy(diff)
+
+#import pickle
 #pickle.dump(PdfTraj, open( "PDF.p", "wb" ) )
 #pickle.dump(Meshes, open( "Meshes.p", "wb" ) )
 #pickle_in = open("PDF.p","rb")

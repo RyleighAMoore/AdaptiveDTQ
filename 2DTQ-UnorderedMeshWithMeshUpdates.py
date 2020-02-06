@@ -17,6 +17,7 @@ import pickle
 import os
 import datetime
 import time
+import GenerateLejaPoints as LP
 
 T = 0.01  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
@@ -43,6 +44,10 @@ h=0.01
 #    return val
 
 mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)      # ordered mesh  
+mesh = LP.generateLejaMesh(300, h, 100)
+#mesh2 = UM.generateOrderedGridCenteredAtZero(-0.1, 0.1, -0.1, 0.1, kstep)
+#mesh = np.vstack((mesh,mesh2))
+
 #x = np.arange(-0.2, 0.2, .01)
 #y = np.arange(-0.2, 0.2, .01)
 #xx, yy = np.meshgrid(x, y)
@@ -151,7 +156,7 @@ for point in trange(len(mesh)):
     
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(100):
+for i in trange(150):
     if (i >= 0) and adjustGrid:
 ###################################################### Check if remove points
             GMat, mesh, Grids, pdf, remBool = MeshUp.removePointsFromMesh(GMat, mesh, Grids, pdf, tri, True)
@@ -224,7 +229,7 @@ for i in trange(100):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = 1
+index = -1
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 #    
 #    
@@ -248,29 +253,30 @@ plt.show()
 
 
 
-#timestr = time.strftime("%Y%m%d-%H%M%S")
+timestr = time.strftime("%Y%m%d-%H%M%S")
 #
-#pkl_file = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PdfTraj-"+ timestr+".p", "wb" ) 
-#pkl_file2 = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes-"+ timestr+".p", "wb" ) 
-#
-##    
-##pickle.dump(PdfTraj, pkl_file)
-##pickle.dump(Meshes, pkl_file2)
-##pkl_file.close()
-##pkl_file2.close()
+pkl_file = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PdfTraj-"+ timestr+".p", "wb" ) 
+pkl_file2 = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes-"+ timestr+".p", "wb" ) 
+
+#    
+pickle.dump(PdfTraj, pkl_file)
+pickle.dump(Meshes, pkl_file2)
+pkl_file.close()
+pkl_file2.close()
 ##
-##pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PDF.p","rb")
-##PdfTraj = pickle.load(pickle_in)
-##
-##pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes.p","rb")
-##Meshes = pickle.load(pickle_in)
-##
-##
-#pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PdfTraj-20200115-100443.p","rb")
+#pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PDF.p","rb")
 #PdfTraj = pickle.load(pickle_in)
 #
-#pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes-20200115-100443.p","rb")
+#pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes.p","rb")
 #Meshes = pickle.load(pickle_in)
+#
+#
+import pickle
+pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PdfTraj-20200205-191728.p","rb")
+PdfTraj2 = pickle.load(pickle_in)
+
+pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes-20200205-191728.p","rb")
+Meshes2 = pickle.load(pickle_in)
 
 
 

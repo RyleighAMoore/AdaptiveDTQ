@@ -48,7 +48,10 @@ def findNearestPoint(xCoord, yCoord, AllPoints, includeIndex=False):
     #print(idx)
     if normList[idx[0]] == 0: # point is part of the set
         if includeIndex:
-            return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]]]), idx[1] 
+            try:
+                return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]]]), idx[1]
+            except: 
+                t=0
         else:
             return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]]])
     else:
@@ -246,10 +249,3 @@ def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep):
     mesh = np.asarray([x2,x1]).T
     return mesh
     
-
-#points = generateRandomPoints(-1,1,-1,1,1000)
-#tri = Delaunay(points)
-#vertices = getVerticesForPoint([0,0], points, tri)
-#
-#
-#plotTri(tri, points)
