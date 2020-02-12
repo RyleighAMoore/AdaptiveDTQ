@@ -26,63 +26,8 @@ import matplotlib.pyplot as plt
 import UnorderedMesh as UM
 import numpy as np
 import Functions  as fun
+plt.rcParams['text.usetex'] = False
 
-
-#def getLejaPointsUniform(num_leja_samples, initial_samples, num_candidate_samples =10000, dimensions=2):
-#    num_vars=2
-#    degree=3
-#    
-#    poly = PolynomialChaosExpansion()
-#    var_trans = define_iid_random_variable_transformation(
-#        uniform(),num_vars)
-#    opts = define_poly_options_from_variable_transformation(var_trans)
-#    poly.configure(opts)
-#    indices = compute_hyperbolic_indices(num_vars,degree,1.0)
-#    poly.set_indices(indices)
-#    
-#    # candidates must be generated in canonical PCE space
-#    num_candidate_samples = 10000
-#    generate_candidate_samples=lambda n: np.cos(
-#        np.random.uniform(0.,np.pi,(num_vars,n)))
-#    
-#    
-#    
-#    # enforcing lu interpolation to interpolate a set of initial points
-#    # before selecting best samples from candidates can cause ill conditioning
-#    # to avoid this issue build a leja sequence and use this as initial
-#    # samples and then recompute sequence with different candidates
-#    
-#    # must use canonical_basis_matrix to generate basis matrix
-#    
-#    num_initial_samples = len(initial_samples.T)
-#    
-#    precond_func = lambda matrix, samples: christoffel_weights(matrix)
-#    
-#    #initial_samples, data_structures = get_lu_leja_samples(
-#    #    poly.canonical_basis_matrix,generate_candidate_samples,
-#    #    num_candidate_samples,num_initial_samples,
-#    #    preconditioning_function=precond_func,
-#    #    initial_samples=initial_samples)
-#
-#    samples, data_structures = get_lu_leja_samples(
-#    poly.canonical_basis_matrix,generate_candidate_samples,
-#    num_candidate_samples,num_leja_samples,
-#    preconditioning_function=precond_func,
-#    initial_samples=initial_samples)
-#
-#
-#    samples = var_trans.map_from_canonical_space(samples)
-#    plot = True
-#    if plot: 
-#        plt.plot(samples.T[:,0], samples.T[:,1], '*r')
-#        plt.plot(initial_samples.T[:,0], initial_samples.T[:,1], '.k')
-#        plt.show()
-#        
-#    return samples[:, num_initial_samples:]
-
-#degree = np.sqrt(2*9)
-#generate_candidate_samples = lambda n: np.sqrt(2*degree)*np.random.normal(0, 1, (2, n))
-#candidate_samples = generate_candidate_samples(10000)  
 
 def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samples = 5000, dimensions=2):
     num_vars=2
@@ -91,8 +36,7 @@ def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samp
     poly = PolynomialChaosExpansion()
     var_trans = define_iid_random_variable_transformation(
         norm(loc=0,scale=.1),num_vars)
-#    var_transY = define_iid_random_variable_transformation(
-#        norm(loc=initial_samples[1,0],scale=0.1),num_vars)
+    
     opts = define_poly_options_from_variable_transformation(var_trans)
     poly.configure(opts)
     indices = compute_hyperbolic_indices(num_vars,degree,1.0)
@@ -236,7 +180,7 @@ def mapPointsBack(Px, Py, allPoints, scaleX, scaleY):
     scaleVec = np.hstack((scaleX,scaleY))
     return (scaleVec)*np.asarray(allPoints) + delta
 
-def getLejaPointsWithStartingPoints(Px, Py, numNeighbors, mesh, numNewLejaPoints, scaleX, scaleY, numBasis):
+def getLejaPointsWithStartingPoints(Px, Py, numNeighbors, mesh, numNewLejaPoints, scaleX, scaleY, numBasis, numSamples):
     neighbors = UM.findNearestKPoints(Px, Py, mesh, numNeighbors) 
     if len(neighbors > 0): 
         neighbors = np.vstack((neighbors,[Px,Py]))
@@ -244,10 +188,10 @@ def getLejaPointsWithStartingPoints(Px, Py, numNeighbors, mesh, numNewLejaPoints
         neighbors = np.asarray([[Px],[Py]]).T
         
     intialPoints = mapPointsTo(Px,Py,neighbors, 1/scaleX,1/scaleY)
-    lejaPointsFinal, newLeja = getLejaPoints(numNewLejaPoints+numNeighbors+1, intialPoints.T, numBasis)
+    lejaPointsFinal, newLeja = getLejaPoints(numNewLejaPoints+numNeighbors+1, intialPoints.T, numBasis,num_candidate_samples=numSamples)
     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, scaleX, scaleY)
     newLeja = mapPointsBack(Px,Py,newLeja,scaleX,scaleY)
-    plot= False
+    plot= True
     if plot:
         plt.figure()
         plt.plot(neighbors[:,0], neighbors[:,1], '*k', label='Neighbors', markersize=14)
@@ -267,15 +211,15 @@ def generateLejaMesh(numPoints, h, numBasis):
 
 
         
-#mesh = UM.generateOrderedGridCenteredAtZero(-1.8, 1.8, -1.8, 1.8, 0.1)      # ordered mesh 
-#mesh = UM.generateRandomPoints(-0.2,0.2,-0.2,0.2,200)  # unordered mesh
-#
-#num = 0
-#point = np.asarray(mesh[num:num+1,:])
-#Px = point[0,0]
-#Py= point[0,1]
-#
-#lejaPointsFinal, newLeja = getLejaPointsWithStartingPoints(Px, Py,4, mesh, 100, 0.1, 0.5)
+mesh = UM.generateOrderedGridCenteredAtZero(-1.8, 1.8, -1.8, 1.8, 0.1)      # ordered mesh 
+# mesh = UM.generateRandomPoints(-0.2,0.2,-0.2,0.2,200)  # unordered mesh
+
+num = 0
+point = np.asarray(mesh[num:num+1,:])
+Px = point[0,0]
+Py= point[0,1]
+
+lejaPointsFinal, newLeja = getLejaPointsWithStartingPoints(Px, Py,4, mesh, 10, 0.1, 0.5, 15, 1000)
 
 
 #lejaPoints = generateLejaMesh(10)
