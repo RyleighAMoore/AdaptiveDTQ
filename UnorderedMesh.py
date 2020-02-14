@@ -75,8 +75,8 @@ def makeOrderedGridAroundPoint(point, spacing, span, xmin, xmax, ymin, ymax):
 #    if (min(x)<xmin) | (max(x)>xmax)| (min(y)<ymin) | (max(y)>ymax):
 #        print('Problem in making grid')
     X, Y = np.meshgrid(x, y)
-    xVec = np.reshape(X,[1,np.size(X)],1).T
-    yVec = np.reshape(Y,[1,np.size(Y)],1).T
+    xVec = np.reshape(X,[1,np.size(X)],order='C').T
+    yVec = np.reshape(Y,[1,np.size(Y)],order='C').T
     points = np.hstack((xVec,yVec))
     return points
 

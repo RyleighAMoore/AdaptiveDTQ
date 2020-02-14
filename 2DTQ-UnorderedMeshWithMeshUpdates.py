@@ -18,6 +18,7 @@ import os
 import datetime
 import time
 import GenerateLejaPoints as LP
+import pickle
 
 T = 0.01  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
@@ -37,14 +38,29 @@ ymax=1
 h=0.01
 
 
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
+# pickle.dump(mesh, pkl_file)
+# pkl_file.close()
+
+# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
+# mesh = pickle.load(pickle_in)
+
 #def loopNewPDf(Px, Py, grid, kstep, h, interpPDF):
 #    val = 0
 #    for i in range(len(interpPDF)):
 #        val = val + kstep**2*fun.G(Px, Py, grid[i,0], grid[i,1], h)*interpPDF[i]
 #    return val
 
-mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)      # ordered mesh  
-mesh = LP.generateLejaMesh(300, h, 100)
+#mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)      # ordered mesh  
+mesh = LP.generateLejaMesh(300, 0.1, 0.1, 50)
+
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
+# pickle.dump(mesh, pkl_file)
+# pkl_file.close()
+
+# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
+# mesh = pickle.load(pickle_in)
+
 #mesh2 = UM.generateOrderedGridCenteredAtZero(-0.1, 0.1, -0.1, 0.1, kstep)
 #mesh = np.vstack((mesh,mesh2))
 
@@ -110,7 +126,7 @@ mesh = LP.generateLejaMesh(300, h, 100)
 #mesh2 = mesh2
 #mesh = np.vstack((mesh,mesh2))
 
-pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+pdf = 0.1*UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
 #pdf = phat_rav
 #pdf = np.zeros(len(mesh))
 #pdf[-1]=10
@@ -153,7 +169,6 @@ for point in trange(len(mesh)):
 #            Vertices[point].append(np.copy(vertices))
 #            VerticesNum[point].append(np.copy(indices))
 #    return Vertices, VerticesNum      
-    
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
 for i in trange(150):
@@ -229,7 +244,7 @@ for i in trange(150):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = -1
+index = 22
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 #    
 #    
@@ -245,7 +260,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[-1]))
+ax.set_zlim(0, np.max(PdfTraj[20]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                          interval=1000, blit=False)
 
@@ -253,16 +268,16 @@ plt.show()
 
 
 
-timestr = time.strftime("%Y%m%d-%H%M%S")
-#
-pkl_file = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PdfTraj-"+ timestr+".p", "wb" ) 
-pkl_file2 = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes-"+ timestr+".p", "wb" ) 
+# timestr = time.strftime("%Y%m%d-%H%M%S")
+# #
+# pkl_file = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PdfTraj-"+ timestr+".p", "wb" ) 
+# pkl_file2 = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes-"+ timestr+".p", "wb" ) 
 
-#    
-pickle.dump(PdfTraj, pkl_file)
-pickle.dump(Meshes, pkl_file2)
-pkl_file.close()
-pkl_file2.close()
+# #    
+# pickle.dump(PdfTraj, pkl_file)
+# pickle.dump(Meshes, pkl_file2)
+# pkl_file.close()
+# pkl_file2.close()
 ##
 #pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PDF.p","rb")
 #PdfTraj = pickle.load(pickle_in)
@@ -270,13 +285,13 @@ pkl_file2.close()
 #pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes.p","rb")
 #Meshes = pickle.load(pickle_in)
 #
-#
-import pickle
-pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PdfTraj-20200205-191728.p","rb")
-PdfTraj2 = pickle.load(pickle_in)
+# #
+# import pickle
+# pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PdfTraj-20200205-191728.p","rb")
+# PdfTraj2 = pickle.load(pickle_in)
 
-pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes-20200205-191728.p","rb")
-Meshes2 = pickle.load(pickle_in)
+# pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes-20200205-191728.p","rb")
+# Meshes2 = pickle.load(pickle_in)
 
 
 

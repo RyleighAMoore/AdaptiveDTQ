@@ -27,6 +27,7 @@ import UnorderedMesh as UM
 import numpy as np
 import Functions  as fun
 plt.rcParams['text.usetex'] = False
+import matplotlib.animation as animation
 
 
 def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samples = 5000, dimensions=2):
@@ -35,7 +36,7 @@ def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samp
     
     poly = PolynomialChaosExpansion()
     var_trans = define_iid_random_variable_transformation(
-        norm(loc=0,scale=.1),num_vars)
+        norm(loc=0,scale=1),num_vars)
     
     opts = define_poly_options_from_variable_transformation(var_trans)
     poly.configure(opts)
@@ -191,7 +192,7 @@ def getLejaPointsWithStartingPoints(Px, Py, numNeighbors, mesh, numNewLejaPoints
     lejaPointsFinal, newLeja = getLejaPoints(numNewLejaPoints+numNeighbors+1, intialPoints.T, numBasis,num_candidate_samples=numSamples)
     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, scaleX, scaleY)
     newLeja = mapPointsBack(Px,Py,newLeja,scaleX,scaleY)
-    plot= True
+    plot= False
     if plot:
         plt.figure()
         plt.plot(neighbors[:,0], neighbors[:,1], '*k', label='Neighbors', markersize=14)
@@ -203,27 +204,46 @@ def getLejaPointsWithStartingPoints(Px, Py, numNeighbors, mesh, numNewLejaPoints
     return lejaPointsFinal, newLeja
 
 
-def generateLejaMesh(numPoints, h, numBasis):
+def generateLejaMesh(numPoints, sigmaX, sigmaY, numBasis):
 #    lejaPoints, newPoints = getLejaPointsWithStartingPoints(0, 0, 0,[], numPoints, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(),40)
-     lejaPoints, newPoints = getLejaPointsWithStartingPoints(0, 0, 0,[], numPoints, 0.1,0.1,40)
+     lejaPoints, newPoints = getLejaPointsWithStartingPoints(0, 0, 0,[], numPoints, sigmaX,sigmaY,numBasis, 10000)
 
      return lejaPoints
 
 
         
-mesh = UM.generateOrderedGridCenteredAtZero(-1.8, 1.8, -1.8, 1.8, 0.1)      # ordered mesh 
-# mesh = UM.generateRandomPoints(-0.2,0.2,-0.2,0.2,200)  # unordered mesh
+# mesh = UM.generateOrderedGridCenteredAtZero(-1.8, 1.8, -1.8, 1.8, 0.1)      # ordered mesh 
+# # mesh = UM.generateRandomPoints(-0.2,0.2,-0.2,0.2,200)  # unordered mesh
 
-num = 0
-point = np.asarray(mesh[num:num+1,:])
-Px = point[0,0]
-Py= point[0,1]
+# num = 0
+# point = np.asarray(mesh[num:num+1,:])
+# Px = point[0,0]
+# Py= point[0,1]
 
-lejaPointsFinal, newLeja = getLejaPointsWithStartingPoints(Px, Py,4, mesh, 10, 0.1, 0.5, 15, 1000)
+# lejaPointsFinal, newLeja = getLejaPointsWithStartingPoints(0, 0,0, mesh, 100, 1, 1, 15, 1000)
+
+# def update_graph(num):
+#     graph.set_data(lejaPointsFinal[0:num,0], lejaPointsFinal[0:num,1])
+#     # graph.set_3d_properties(PdfTraj[num])
+#     # title.set_text('3D Test, time={}'.format(num))
+#     return graph
 
 
-#lejaPoints = generateLejaMesh(10)
+# fig = plt.figure()
+# ax = fig.add_subplot()
+# # title = ax.set_title('3D Test')
+    
+# graph, = ax.plot(lejaPointsFinal[0,0], lejaPointsFinal[0,1], linestyle="", marker="o")
+# ax.set_xlim(-10, 10)
+# ax.set_ylim(-10, 10)
+
+# ani = animation.FuncAnimation(fig, update_graph, frames=len(lejaPointsFinal),
+#                                           interval=100, blit=False)
+
+# plt.show()
+
+# lejaPoints = generateLejaMesh(10)
 
 
-#
+
 

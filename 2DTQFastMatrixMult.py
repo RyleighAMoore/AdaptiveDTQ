@@ -28,11 +28,11 @@ numsteps = int(np.ceil(T / h))
 assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 kstep = h ** s
-kstep = 0.1
-xmin=-2
-xmax=2
-ymin=-2
-ymax=2
+kstep = 0.15
+xmin=-3
+xmax=3
+ymin=-3
+ymax=3
 h=0.01
 
 
@@ -71,7 +71,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(surfaces[5]))
+ax.set_zlim(0, np.max(surfaces[-1]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
                                          interval=100, blit=False)
 
