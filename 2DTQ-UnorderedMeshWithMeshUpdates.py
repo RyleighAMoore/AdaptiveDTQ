@@ -42,8 +42,9 @@ h=0.01
 # pickle.dump(mesh, pkl_file)
 # pkl_file.close()
 
-# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
+# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesBimodal.p","rb")
 # mesh = pickle.load(pickle_in)
+# mesh = mesh[-1]
 
 #def loopNewPDf(Px, Py, grid, kstep, h, interpPDF):
 #    val = 0
@@ -52,14 +53,14 @@ h=0.01
 #    return val
 
 #mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)      # ordered mesh  
-mesh = LP.generateLejaMesh(300, 0.1, 0.1, 50)
+# mesh = LP.generateLejaMesh(500, 0.1, 0.1, 50)
 
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
 # pickle.dump(mesh, pkl_file)
 # pkl_file.close()
 
-# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
-# mesh = pickle.load(pickle_in)
+pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
+mesh = pickle.load(pickle_in)
 
 #mesh2 = UM.generateOrderedGridCenteredAtZero(-0.1, 0.1, -0.1, 0.1, kstep)
 #mesh = np.vstack((mesh,mesh2))
@@ -126,7 +127,10 @@ mesh = LP.generateLejaMesh(300, 0.1, 0.1, 50)
 #mesh2 = mesh2
 #mesh = np.vstack((mesh,mesh2))
 
-pdf = 0.1*UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal.p","rb")
+# pdf = pickle.load(pickle_in)
+# pdf = pdf[-1]
 #pdf = phat_rav
 #pdf = np.zeros(len(mesh))
 #pdf[-1]=10
@@ -168,62 +172,79 @@ for point in trange(len(mesh)):
 #            vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
 #            Vertices[point].append(np.copy(vertices))
 #            VerticesNum[point].append(np.copy(indices))
-#    return Vertices, VerticesNum      
+#    return Vertices, VerticesNum 
+SlopesMax = []  
+SlopesMin = []
+SlopesMean = []  
+Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(150):
+for i in trange(100):
+    Slope = MeshUp.checkAddInteriorPoints(mesh, pdf)
+    SlopesMean.append(np.mean(Slope))
+    SlopesMin.append(np.min(Slope))
+    SlopesMax.append(np.max(Slope))
+    Slopes.append(Slope)
     if (i >= 0) and adjustGrid:
+        assert np.max(PdfTraj[-1]<10), "PDF Blew up"
 ###################################################### Check if remove points
+        if (i>=1):
             GMat, mesh, Grids, pdf, remBool = MeshUp.removePointsFromMesh(GMat, mesh, Grids, pdf, tri, True)
-######################################################
+    ######################################################
             if (remBool == 1):
-                tri = Delaunay(mesh, incremental=True)
-                Vertices = []
-                VerticesNum = []
-                for point in range(len(mesh)): # Recompute Vertices and VerticesNum matrices
-                    grid = Grids[point]
-                    Vertices.append([])
-                    VerticesNum.append([])
-                    for currGridPoint in range(len(grid)):
-                        vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
-                        Vertices[point].append(np.copy(vertices))
-                        VerticesNum[point].append(np.copy(indices))
-           
-            mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, addBool,xmin, xmax, ymin, ymax = MeshUp.addPointsToMesh(mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, kstep, h, xmin, xmax, ymin, ymax)
-            if (addBool == 1):
-                Vertices = []
-                VerticesNum = []
-                for point in range(len(mesh)): # Recompute Vertices and VerticesNum matrices
-                    grid = Grids[point]
-                    Vertices.append([])
-                    VerticesNum.append([])
-                    for currGridPoint in range(len(grid)):
-                        vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
-                        Vertices[point].append(np.copy(vertices))
-                        VerticesNum[point].append(np.copy(indices))
-    pdfNew = np.copy(pdf)                   
-    print("stepping forward...")
-    for point in range(len(mesh)):
-        interpPdf = []
-        #grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 3, xmin,xmax,ymin,ymax)
-        grid = Grids[point]
-        for g in range(len(grid)):
-            Px = grid[g,0] # (Px, Py) point to interpolate
-            Py = grid[g,1]
-            vertices = Vertices[point][g]
-            PDFVals = UM.getPDFForPoint(pdf, VerticesNum[point][g])
-            interp = UM.baryInterp(Px, Py, vertices, PDFVals)
-            interpPdf.append(interp)
-        #gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
-        #G.append(gRow)
-        gRow = GMat[point]
-        newval = np.matmul(np.asarray(gRow), np.asarray(interpPdf))
-        #newval2 = loopNewPDf(mesh[point,0], mesh[point,1], grid, kstep, h, interpPdf)
-        pdfNew[point] = np.copy(newval)
-    PdfTraj.append(np.copy(pdfNew))
-    Meshes.append(np.copy(mesh))
-    pdf=pdfNew
-    print('Length of mesh = ', len(mesh))
+                    tri = Delaunay(mesh, incremental=True)
+                    Vertices = []
+                    VerticesNum = []
+                    for point in range(len(mesh)): # Recompute Vertices and VerticesNum matrices
+                        grid = Grids[point]
+                        Vertices.append([])
+                        VerticesNum.append([])
+                        for currGridPoint in range(len(grid)):
+                            vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
+                            Vertices[point].append(np.copy(vertices))
+                            VerticesNum[point].append(np.copy(indices))
+       
+        mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, addBool,xmin, xmax, ymin, ymax = MeshUp.addPointsToMesh(mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, kstep, h, xmin, xmax, ymin, ymax)
+        if (addBool == 1):
+            Vertices = []
+            VerticesNum = []
+            for point in range(len(mesh)): # Recompute Vertices and VerticesNum matrices
+                grid = Grids[point]
+                Vertices.append([])
+                VerticesNum.append([])
+                for currGridPoint in range(len(grid)):
+                    vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
+                    Vertices[point].append(np.copy(vertices))
+                    VerticesNum[point].append(np.copy(indices))
+    if i >=-1:
+        pdfNew = np.copy(pdf)                   
+        print("stepping forward...")
+        for point in range(len(mesh)):
+            interpPdf = []
+            #grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 3, xmin,xmax,ymin,ymax)
+            grid = Grids[point]
+            for g in range(len(grid)):
+                Px = grid[g,0] # (Px, Py) point to interpolate
+                Py = grid[g,1]
+                vertices = Vertices[point][g]
+                PDFVals = UM.getPDFForPoint(pdf, VerticesNum[point][g])
+                interp = UM.baryInterp(Px, Py, vertices, PDFVals)
+                interpPdf.append(interp)
+            #gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
+            #G.append(gRow)
+            gRow = GMat[point]
+            newval = np.matmul(np.asarray(gRow), np.asarray(interpPdf))
+            #newval2 = loopNewPDf(mesh[point,0], mesh[point,1], grid, kstep, h, interpPdf)
+            pdfNew[point] = np.copy(newval)
+        PdfTraj.append(np.copy(pdfNew))
+        Meshes.append(np.copy(mesh))
+        pdf=pdfNew
+        print('Length of mesh = ', len(mesh))
+    else:
+        PdfTraj.append(np.copy(pdf))
+        Meshes.append(np.copy(mesh))
+        print('Length of mesh = ', len(mesh))
+
     
 ##Use
 #fig = plt.figure()
@@ -244,7 +265,7 @@ for i in trange(150):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = 22
+index = -2
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 #    
 #    
@@ -260,25 +281,28 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[20]))
+ax.set_zlim(0, np.max(PdfTraj[-1]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
-                                         interval=1000, blit=False)
+                                         interval=300, blit=False)
 
 plt.show()
 
 
 
-# timestr = time.strftime("%Y%m%d-%H%M%S")
-# #
-# pkl_file = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PdfTraj-"+ timestr+".p", "wb" ) 
-# pkl_file2 = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/Meshes-"+ timestr+".p", "wb" ) 
+timestr = time.strftime("%Y%m%d-%H%M%S")
+#
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal-"+ timestr+".p", "wb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesBimodal-"+ timestr+".p", "wb" ) 
+
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal.p", "wb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesBimodal.p", "wb" ) 
 
 # #    
 # pickle.dump(PdfTraj, pkl_file)
 # pickle.dump(Meshes, pkl_file2)
 # pkl_file.close()
 # pkl_file2.close()
-##
+# #
 #pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PDF.p","rb")
 #PdfTraj = pickle.load(pickle_in)
 #

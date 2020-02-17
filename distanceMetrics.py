@@ -29,5 +29,5 @@ def separationDistance(mesh):
         minVals.append(np.copy(np.min(sortedVals[1]))) #Take 1 since 0 in at 0 index since same point
     return np.min(minVals)
 
-#separationDist = separationDistance(mesh)
+# separationDist = separationDistance(Meshes[-1])
 

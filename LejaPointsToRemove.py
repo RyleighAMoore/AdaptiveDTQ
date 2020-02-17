@@ -78,7 +78,17 @@ def getLejaPointsToRemove(Px, Py, numNeighbors, mesh, scaleX, scaleY, numBasis):
         neighbors = np.asarray([[Px],[Py]]).T
         
     intialPoints = LP.mapPointsTo(Px,Py,neighbors, 1/scaleX,1/scaleY)
-    lejaPointsFinal, indices = getLejaPointsForRemoval(int(np.ceil(len(mesh))), intialPoints.T, mesh.T, 35, dimensions=2)
+    result = None
+    tries = 0
+    lejaPointsFinal = None
+    while lejaPointsFinal is None:
+        try:
+            # connect
+            lejaPointsFinal, indices = getLejaPointsForRemoval(int(np.ceil(len(mesh))), intialPoints.T, mesh.T, 15+tries, dimensions=2)
+        except:
+            tries = tries+10
+            pass
+    
     lejaPointsFinal = LP.mapPointsBack(Px,Py,lejaPointsFinal, scaleX, scaleY)
     # newLeja = LP.mapPointsBack(Px,Py,newLeja,scaleX,scaleY)
     plot= False
@@ -95,16 +105,22 @@ def getLejaPointsToRemove(Px, Py, numNeighbors, mesh, scaleX, scaleY, numBasis):
 
 def getMeshIndicesToRemoveFromMesh(mesh, skipCount):  
     initial_samples = np.asarray([[mesh[0,0]], [mesh[0,0]]])
-    LPVals, indices = getLejaPointsToRemove(mesh[0,0], mesh[0,1], len(mesh), mesh, 0.1, 0.1, 35)
+    try:
+        LPVals, indices = getLejaPointsToRemove(mesh[0,0], mesh[0,1], len(mesh), mesh, 0.1, 0.1, 55)
+    except:
+        LPVals, indices = getLejaPointsToRemove(mesh[0,0], mesh[0,1], len(mesh), mesh, 0.1, 0.1, len(mesh))
+
     valsToKeep = np.ndarray.tolist(LPVals)
     meshList = np.ndarray.tolist(mesh)
     # plt.figure()
-    # plt.plot(LPVals[::2][:,0], LPVals[::2][:,1], '.r', label='Points to keep',markersize=20)
+    # plt.plot(LPVals[::skipCount][:,0], LPVals[::skipCount][:,1], '.r', label='Points to remove',markersize=20)
+    # # plt.plot(LPVals[:20][:,0], LPVals[:2][:,1], '.r', label='Points to keep',markersize=20)
+
     # plt.plot(LPVals[:,0], LPVals[:,1], '*', label='All Points',markersize=10)
     # i=0
     # while i < len(indices):
     #     plt.plot(LPVals[i,0], LPVals[i,1], '.w',markersize=5)
-    #     i+=2
+    #     i+=skipCount
     # plt.legend()
     # plt.show()
     indicesToRemove = indices[1::skipCount]
@@ -113,14 +129,14 @@ def getMeshIndicesToRemoveFromMesh(mesh, skipCount):
 
 
 # mesh = LP.generateLejaMesh(0, 0.1,0.1, 100)
-# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
-# mesh = pickle.load(pickle_in)
-# for val in range(len(mesh)-1,-1,-1):
-#     xx = mesh[val,0]
-#     yy = mesh[val,1]
-#     rad = xx**2 +yy**2 
-#     if rad < 0.1:
-#         mesh = np.delete(mesh, val, 0)
+pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
+mesh = pickle.load(pickle_in)
+for val in range(len(mesh)-1,-1,-1):
+    xx = mesh[val,0]
+    yy = mesh[val,1]
+    rad = xx**2 +yy**2 
+    if rad < 0.1:
+        mesh = np.delete(mesh, val, 0)
         
         
         
@@ -129,23 +145,23 @@ def getMeshIndicesToRemoveFromMesh(mesh, skipCount):
 # diff[:,1]= 1*np.ones((len(mesh)))
 # mesh = np.vstack((mesh,mesh+ diff))
 
-# # index = getMeshIndicesToRemoveFromMesh(mesh,2)
+# index = getMeshIndicesToRemoveFromMesh(mesh,2)
 
 # initial_samples = np.asarray([[mesh[0,0]], [mesh[0,0]]])
-
+# 
 # LPVals = getLejaPointsToRemove(mesh[0,0], mesh[0,1], len(mesh), mesh, 0.1, 0.1, 35)
-# # LP2, LPNew2 = getLejaPointsToRemove(5, 5, len(mesh), mesh, 0.3, 0.1, 0.1, 35)
+# LP2, LPNew2 = getLejaPointsToRemove(5, 5, len(mesh), mesh, 0.3, 0.1, 0.1, 35)
 
 
-# # plt.figure()
-# # plt.plot(LPVals[::2][:,0], LPVals[::2][:,1], '.r', label='Points to keep',markersize=20)
+# plt.figure()
+# plt.plot(LPVals[::2][:,0], LPVals[::2][:,1], '.r', label='Points to keep',markersize=20)
 
-# # plt.plot(LPVals[:,0], LPVals[:,1], '*', label='All Points',markersize=10)
+# plt.plot(LPVals[:,0], LPVals[:,1], '*', label='All Points',markersize=10)
 
-# # # plt.plot(mesh[0,0], mesh[0,1], '.r',markersize=10)
+# # plt.plot(mesh[0,0], mesh[0,1], '.r',markersize=10)
 
-# # plt.legend()
-# # plt.show()
+# plt.legend()
+# plt.show()
 
 # #lejaPoints = generateLejaMesh(10)
 

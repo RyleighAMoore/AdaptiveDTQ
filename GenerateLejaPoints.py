@@ -28,6 +28,7 @@ import numpy as np
 import Functions  as fun
 plt.rcParams['text.usetex'] = False
 import matplotlib.animation as animation
+import pickle
 
 
 def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samples = 5000, dimensions=2):
@@ -219,9 +220,24 @@ def generateLejaMesh(numPoints, sigmaX, sigmaY, numBasis):
 # point = np.asarray(mesh[num:num+1,:])
 # Px = point[0,0]
 # Py= point[0,1]
+pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
+mesh = pickle.load(pickle_in)
+for val in range(len(mesh)-1,-1,-1):
+    xx = mesh[val,0]
+    yy = mesh[val,1]
+    rad = xx**2 +yy**2 
+    if rad < 0.1:
+        mesh = np.delete(mesh, val, 0)
+        
+        
+        
+# diff = np.ones((len(mesh),2))
+# diff[:,0]= 3*np.ones((len(mesh)))
+# diff[:,1]= 1*np.ones((len(mesh)))
+# mesh = np.vstack((mesh,mesh+ diff))
 
-# lejaPointsFinal, newLeja = getLejaPointsWithStartingPoints(0, 0,0, mesh, 100, 1, 1, 15, 1000)
-
+# # lejaPointsFinal, newLeja = getLejaPointsWithStartingPoints(0, 0,0, mesh, 100, 1, 1, 15, 1000)
+# lejaPointsFinal, newLeja = getLejaPoints(len(mesh), mesh.T, 55, num_candidate_samples = 5000, dimensions=2)
 # def update_graph(num):
 #     graph.set_data(lejaPointsFinal[0:num,0], lejaPointsFinal[0:num,1])
 #     # graph.set_3d_properties(PdfTraj[num])
@@ -234,8 +250,8 @@ def generateLejaMesh(numPoints, sigmaX, sigmaY, numBasis):
 # # title = ax.set_title('3D Test')
     
 # graph, = ax.plot(lejaPointsFinal[0,0], lejaPointsFinal[0,1], linestyle="", marker="o")
-# ax.set_xlim(-10, 10)
-# ax.set_ylim(-10, 10)
+# ax.set_xlim(-5, 5)
+# ax.set_ylim(-5, 5)
 
 # ani = animation.FuncAnimation(fig, update_graph, frames=len(lejaPointsFinal),
 #                                           interval=100, blit=False)

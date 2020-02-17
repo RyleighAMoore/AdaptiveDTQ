@@ -19,6 +19,9 @@ from pyapprox.polynomial_sampling import christoffel_weights
 import numpy as np
 from scipy.stats import multivariate_normal
 from pyapprox.multivariate_polynomials import evaluate_multivariate_orthonormal_polynomial
+import UnorderedMesh as UM
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 univariate_variables = [norm(0,1),norm(0,1)]
 variable = IndependentMultivariateRandomVariable(univariate_variables)
@@ -51,15 +54,29 @@ coef = np.linalg.lstsq(precond_basis_matrix,precond_train_values,rcond=None)[0]
 poly.set_coefficients(coef)
 
 samples1 = np.asarray([[0],[0]])
+mesh = UM.generateOrderedGridCenteredAtZero(-5, 5, -5, 5, 0.1)
 indices = poly.indices
 recursion_coeffs = np.asarray(poly.recursion_coeffs)
 
-vals1 = poly.value(train_samples.T)
+vals1 = poly.value(mesh.T)
+
+fig = plt.figure()
+ax = Axes3D(fig)
+ax.scatter(mesh[:,0], mesh[:,1], vals1, c='r', marker='.')
+ax.scatter(train_samples[:,0], train_samples[:,1], train_values, '*k')
 
 
-vals = evaluate_multivariate_orthonormal_polynomial(
-        samples1, indices, recursion_coeffs,deriv_order=0,
-        basis_type_index_map=None)
+grid_x, grid_y = np.mgrid[-2:2:100j, -2:2:200j]
+from scipy.interpolate import griddata
+
+grid_z2 = griddata(train_samples, train_values, (grid_x, grid_y), method='cubic')
+fig = plt.figure()
+ax = Axes3D(fig)
+ax.scatter(grid_x,grid_y, grid_z2, c='r', marker='.')
+
+# vals = evaluate_multivariate_orthonormal_polynomial(
+#         samples1, indices, recursion_coeffs,deriv_order=0,
+#         basis_type_index_map=None)
 
 # def test_evaluate_multivariate_orthonormal_polynomial(self):
 #         num_vars = 2; alpha = 0.; beta = 0.; degree = 2; deriv_order=1    
