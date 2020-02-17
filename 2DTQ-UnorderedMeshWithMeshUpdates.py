@@ -52,14 +52,14 @@ h=0.01
 #    return val
 
 #mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)      # ordered mesh  
-mesh = LP.generateLejaMesh(300, 0.1, 0.1, 50)
+# mesh = LP.generateLejaMesh(300, 0.1, 0.1, 50)
 
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
 # pickle.dump(mesh, pkl_file)
 # pkl_file.close()
 
-# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
-# mesh = pickle.load(pickle_in)
+pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
+mesh = pickle.load(pickle_in)
 
 #mesh2 = UM.generateOrderedGridCenteredAtZero(-0.1, 0.1, -0.1, 0.1, kstep)
 #mesh = np.vstack((mesh,mesh2))
@@ -244,7 +244,7 @@ for i in trange(150):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = 22
+index = 11
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 #    
 #    
@@ -260,7 +260,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[20]))
+ax.set_zlim(0, np.max(PdfTraj[0]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                          interval=1000, blit=False)
 
