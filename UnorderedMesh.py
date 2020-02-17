@@ -182,12 +182,12 @@ def getVerticesForPoint(point, allPoints, tri):
     vertices.append(allPoints[verts[1]])
     vertices.append(allPoints[verts[2]])
     vertices = np.asarray(vertices)
-#    plt.figure()
-#    plt.plot(vertices[0,0], vertices[0,1], '*k')
-#    plt.plot(vertices[1,0], vertices[1,1], '*k')
-#    plt.plot(vertices[2,0], vertices[2,1], '*k')
-#    plt.plot(point[0], point[1], '.r')
-#    plt.show()
+    # plt.figure()
+    # plt.plot(vertices[0,0], vertices[0,1], '*k')
+    # plt.plot(vertices[1,0], vertices[1,1], '*k')
+    # plt.plot(vertices[2,0], vertices[2,1], '*k')
+    # plt.plot(point[0], point[1], '.r')
+    # plt.show()
     return np.asarray(vertices), verts
 
     
@@ -222,7 +222,7 @@ def generateOrderedGrid(xmin, xmax, ymin, ymax, kstep):
     mesh = np.asarray([x,y]).T
     return mesh
 
-def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep):
+def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep, includeZero=True):
     stepsX = int(np.ceil(np.ceil((abs(xmin) + abs(xmax)) / (kstep))/2))
     x =[]
     x.append(0)
@@ -236,8 +236,9 @@ def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep):
     for i in range(1, stepsY):
         y.append(i*kstep)
         y.append(-i*kstep)
-    x = np.sort(x)
-    y= np.sort(y)
+    
+    # x = np.sort(x)
+    # y= np.sort(y)
     X, Y = np.meshgrid(x, y)
     x1 = []
     x2 = []
@@ -246,6 +247,8 @@ def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep):
             x1.append(X[i,j])
             x2.append(Y[i,j])       
    
-    mesh = np.asarray([x2,x1]).T
+    mesh = np.asarray([x2,x1]).T 
+    if not includeZero:
+        mesh = np.delete(mesh, 0, 0)     
     return mesh
     

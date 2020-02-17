@@ -24,36 +24,36 @@ def dnorm_partialx(x, mu, sigma):
 
 
 # Volcano
-# def f1(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     #return 1
-#     return x * (1- r ** 2)
-
-
-# def f2(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     #return 0
-#     return y * (1- r ** 2) 
-
-# def g1():
-#     return 1
-
-# def g2():
-#     return 1
-    
-    
 def f1(x, y):
-    return 2
+    r = np.sqrt(x ** 2 + y ** 2)
+    #return 1
+    return x * (4- r ** 2)
 
 
 def f2(x, y):
-    return 0
+    r = np.sqrt(x ** 2 + y ** 2)
+    #return 0
+    return y * (0- r ** 2) 
 
 def g1():
-    return 0.5
+    return 1
 
 def g2():
-    return 0.5
+    return 1
+    
+    
+# def f1(x, y):
+#     return 5
+
+
+# def f2(x, y):
+#     return 0
+
+# def g1():
+#     return 0.5
+
+# def g2():
+#     return 0.5
 
 # def f1(x, y):
 #     r = np.sqrt(x ** 2 + y ** 2)

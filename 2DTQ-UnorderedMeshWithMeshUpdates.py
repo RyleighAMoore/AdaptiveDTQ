@@ -30,7 +30,7 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 kstep = h ** s
-kstep = 0.1
+kstep = 0.05
 xmin=-1
 xmax=1
 ymin=-1
@@ -51,7 +51,7 @@ h=0.01
 #        val = val + kstep**2*fun.G(Px, Py, grid[i,0], grid[i,1], h)*interpPDF[i]
 #    return val
 
-#mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)      # ordered mesh  
+# mesh = UM.generateOrderedGridCenteredAtZero(-0.5, 0.5, -0.5, 0.5, kstep)      # ordered mesh  
 # mesh = LP.generateLejaMesh(300, 0.1, 0.1, 50)
 
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
@@ -61,8 +61,9 @@ h=0.01
 pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
 mesh = pickle.load(pickle_in)
 
-#mesh2 = UM.generateOrderedGridCenteredAtZero(-0.1, 0.1, -0.1, 0.1, kstep)
-#mesh = np.vstack((mesh,mesh2))
+mesh2 = UM.generateOrderedGridCenteredAtZero(-0.2, 0.2, -0.2, 0.2, kstep, includeZero = False)
+# mesh2 = UM.makeOrderedGridAroundPoint([0.001, 0.001], 0.01, 2, -0.05, 0.05, -0.05, 0.05)
+mesh = np.vstack((mesh,mesh2))
 
 #x = np.arange(-0.2, 0.2, .01)
 #y = np.arange(-0.2, 0.2, .01)
@@ -126,7 +127,7 @@ mesh = pickle.load(pickle_in)
 #mesh2 = mesh2
 #mesh = np.vstack((mesh,mesh2))
 
-pdf = 0.1*UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
 #pdf = phat_rav
 #pdf = np.zeros(len(mesh))
 #pdf[-1]=10
@@ -201,29 +202,35 @@ for i in trange(150):
                         vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
                         Vertices[point].append(np.copy(vertices))
                         VerticesNum[point].append(np.copy(indices))
-    pdfNew = np.copy(pdf)                   
-    print("stepping forward...")
-    for point in range(len(mesh)):
-        interpPdf = []
-        #grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 3, xmin,xmax,ymin,ymax)
-        grid = Grids[point]
-        for g in range(len(grid)):
-            Px = grid[g,0] # (Px, Py) point to interpolate
-            Py = grid[g,1]
-            vertices = Vertices[point][g]
-            PDFVals = UM.getPDFForPoint(pdf, VerticesNum[point][g])
-            interp = UM.baryInterp(Px, Py, vertices, PDFVals)
-            interpPdf.append(interp)
-        #gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
-        #G.append(gRow)
-        gRow = GMat[point]
-        newval = np.matmul(np.asarray(gRow), np.asarray(interpPdf))
-        #newval2 = loopNewPDf(mesh[point,0], mesh[point,1], grid, kstep, h, interpPdf)
-        pdfNew[point] = np.copy(newval)
-    PdfTraj.append(np.copy(pdfNew))
-    Meshes.append(np.copy(mesh))
-    pdf=pdfNew
-    print('Length of mesh = ', len(mesh))
+    if i > -1:
+        pdfNew = np.copy(pdf)                   
+        print("stepping forward...")
+        for point in range(len(mesh)):
+            interpPdf = []
+            #grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 3, xmin,xmax,ymin,ymax)
+            grid = Grids[point]
+            for g in range(len(grid)):
+                Px = grid[g,0] # (Px, Py) point to interpolate
+                Py = grid[g,1]
+                vertices = Vertices[point][g]
+                PDFVals = UM.getPDFForPoint(pdf, VerticesNum[point][g])
+                interp = UM.baryInterp(Px, Py, vertices, PDFVals)
+                interpPdf.append(interp)
+            #gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
+            #G.append(gRow)
+            gRow = GMat[point]
+            newval = np.matmul(np.asarray(gRow), np.asarray(interpPdf))
+            #newval2 = loopNewPDf(mesh[point,0], mesh[point,1], grid, kstep, h, interpPdf)
+            pdfNew[point] = np.copy(newval)
+        PdfTraj.append(np.copy(pdfNew))
+        Meshes.append(np.copy(mesh))
+        pdf=pdfNew
+        print('Length of mesh = ', len(mesh))
+    else:
+        PdfTraj.append(np.copy(pdf))
+        Meshes.append(np.copy(mesh))
+        print('Length of mesh = ', len(mesh))
+
     
 ##Use
 #fig = plt.figure()
@@ -244,7 +251,7 @@ for i in trange(150):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = 11
+index = 0
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 #    
 #    
@@ -260,9 +267,9 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[0]))
+ax.set_zlim(0, np.max(PdfTraj[-1]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
-                                         interval=1000, blit=False)
+                                         interval=500, blit=False)
 
 plt.show()
 
