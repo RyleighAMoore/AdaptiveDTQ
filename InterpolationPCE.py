@@ -47,6 +47,8 @@ train_values = np.asarray([rv.pdf(train_samples)]).T
 
 
 basis_matrix = poly.basis_matrix(train_samples.T)
+basis_matrix2 = poly.canonical_basis_matrix(train_samples.T)
+
 precond_weights = christoffel_weights(basis_matrix)
 precond_basis_matrix = precond_weights[:,np.newaxis]*basis_matrix
 precond_train_values = precond_weights[:,np.newaxis]*train_values
@@ -54,9 +56,11 @@ coef = np.linalg.lstsq(precond_basis_matrix,precond_train_values,rcond=None)[0]
 poly.set_coefficients(coef)
 
 samples1 = np.asarray([[0],[0]])
-mesh = UM.generateOrderedGridCenteredAtZero(-5, 5, -5, 5, 0.1)
+mesh = UM.generateOrderedGridCenteredAtZero(-4, 4, -4, 4, 0.1)
 indices = poly.indices
 recursion_coeffs = np.asarray(poly.recursion_coeffs)
+
+mesh, newLeja = LP.getLejaPoints(num_leja_samples, initial_samples,degree, num_candidate_samples = 5000, dimensions=num_vars)
 
 vals1 = poly.value(mesh.T)
 
@@ -66,7 +70,7 @@ ax.scatter(mesh[:,0], mesh[:,1], vals1, c='r', marker='.')
 ax.scatter(train_samples[:,0], train_samples[:,1], train_values, '*k')
 
 
-grid_x, grid_y = np.mgrid[-2:2:100j, -2:2:200j]
+grid_x, grid_y = np.mgrid[-6:6:100j, -6:6:100j]
 from scipy.interpolate import griddata
 
 grid_z2 = griddata(train_samples, train_values, (grid_x, grid_y), method='cubic')

@@ -52,7 +52,7 @@ h=0.01
 #        val = val + kstep**2*fun.G(Px, Py, grid[i,0], grid[i,1], h)*interpPDF[i]
 #    return val
 
-#mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)      # ordered mesh  
+# mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)      # ordered mesh  
 # mesh = LP.generateLejaMesh(500, 0.1, 0.1, 50)
 
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
@@ -62,8 +62,8 @@ h=0.01
 pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
 mesh = pickle.load(pickle_in)
 
-#mesh2 = UM.generateOrderedGridCenteredAtZero(-0.1, 0.1, -0.1, 0.1, kstep)
-#mesh = np.vstack((mesh,mesh2))
+mesh2 = UM.generateOrderedGridCenteredAtZero(-0.3, 0.3, -0.3, 0.3, 0.05, includeOrigin=False)
+mesh = np.vstack((mesh,mesh2))
 
 #x = np.arange(-0.2, 0.2, .01)
 #y = np.arange(-0.2, 0.2, .01)
@@ -179,7 +179,7 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(100):
+for i in trange(25):
     Slope = MeshUp.checkAddInteriorPoints(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
@@ -188,7 +188,7 @@ for i in trange(100):
     if (i >= 0) and adjustGrid:
         assert np.max(PdfTraj[-1]<10), "PDF Blew up"
 ###################################################### Check if remove points
-        if (i>=1):
+        if (i>=-1):
             GMat, mesh, Grids, pdf, remBool = MeshUp.removePointsFromMesh(GMat, mesh, Grids, pdf, tri, True)
     ######################################################
             if (remBool == 1):
@@ -203,7 +203,9 @@ for i in trange(100):
                             vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
                             Vertices[point].append(np.copy(vertices))
                             VerticesNum[point].append(np.copy(indices))
-       
+        # plt.figure()
+        # plt.plot(mesh[:,0],mesh[:,1], '.g')
+        # plt.show()
         mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, addBool,xmin, xmax, ymin, ymax = MeshUp.addPointsToMesh(mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, kstep, h, xmin, xmax, ymin, ymax)
         if (addBool == 1):
             Vertices = []
@@ -216,7 +218,8 @@ for i in trange(100):
                     vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
                     Vertices[point].append(np.copy(vertices))
                     VerticesNum[point].append(np.copy(indices))
-    if i >=-1:
+       
+    if i >=1:
         pdfNew = np.copy(pdf)                   
         print("stepping forward...")
         for point in range(len(mesh)):
@@ -265,7 +268,7 @@ for i in trange(100):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = -2
+index = -1
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 #    
 #    

@@ -27,14 +27,16 @@ def findNearestKPoints(xCoord, yCoord, AllPoints, numNeighbors):
         normList.append(np.sqrt((xCoord-xVal)**2+(yCoord-yVal)**2))
     idx = np.argsort(normList)
     neighbors = []
+    distances = []
     for k in range(1,numNeighbors+1):
         neighbors.append(np.asarray([AllPoints[idx[k],0], AllPoints[idx[k],1]]))
+        distances.append(normList[idx[k]])
     neighbors = np.asarray(neighbors)
 #    plt.figure()
 #    plt.plot(xCoord,yCoord, '*r')
 #    plt.plot(neighbors[:,0], neighbors[:,1],'.')
 #    plt.show()
-    return neighbors
+    return neighbors, distances
 
 #neighbors = findNearestKPoints(-1.7, 1, Meshes[0], 4)
 
@@ -222,7 +224,7 @@ def generateOrderedGrid(xmin, xmax, ymin, ymax, kstep):
     mesh = np.asarray([x,y]).T
     return mesh
 
-def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep):
+def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep, includeOrigin = True):
     stepsX = int(np.ceil(np.ceil((abs(xmin) + abs(xmax)) / (kstep))/2))
     x =[]
     x.append(0)
@@ -236,8 +238,8 @@ def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep):
     for i in range(1, stepsY):
         y.append(i*kstep)
         y.append(-i*kstep)
-    x = np.sort(x)
-    y= np.sort(y)
+    # x = np.sort(x)
+    # y= np.sort(y)
     X, Y = np.meshgrid(x, y)
     x1 = []
     x2 = []
@@ -247,5 +249,7 @@ def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep):
             x2.append(Y[i,j])       
    
     mesh = np.asarray([x2,x1]).T
+    if includeOrigin == False:
+        mesh = np.delete(mesh,0,0)
     return mesh
     

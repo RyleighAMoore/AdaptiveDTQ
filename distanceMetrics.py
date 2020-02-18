@@ -16,8 +16,16 @@ def fillDistance(mesh):
         minVals.append(np.copy(np.min(sortedVals[1]))) #Take 1 since 0 in at 0 index since same point
     return np.max(minVals)
         
-
-#fillDist = fillDistance(mesh)
+def fillDistance2(mesh, mesh2):
+    minVals = []
+    for i in range(len(mesh)):
+        vecX = mesh[i,0]*np.ones(len(mesh2))  
+        vecY = mesh[i,1]*np.ones(len(mesh2))
+        vals = np.sqrt((vecX - mesh2[:,0])**2 +(vecY - mesh2[:,1])**2)
+        sortedVals = sorted(vals)
+        minVals.append(np.copy(np.min(sortedVals[1]))) #Take 1 since 0 in at 0 index since same point
+    return np.max(minVals)
+# fillDist = fillDistance(Meshes[-1])
 
 def separationDistance(mesh):
     minVals = []

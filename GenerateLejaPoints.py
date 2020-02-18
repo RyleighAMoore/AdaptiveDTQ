@@ -183,7 +183,7 @@ def mapPointsBack(Px, Py, allPoints, scaleX, scaleY):
     return (scaleVec)*np.asarray(allPoints) + delta
 
 def getLejaPointsWithStartingPoints(Px, Py, numNeighbors, mesh, numNewLejaPoints, scaleX, scaleY, numBasis, numSamples):
-    neighbors = UM.findNearestKPoints(Px, Py, mesh, numNeighbors) 
+    neighbors, distances = UM.findNearestKPoints(Px, Py, mesh, numNeighbors) 
     if len(neighbors > 0): 
         neighbors = np.vstack((neighbors,[Px,Py]))
     else: # make sure we have at least one point.

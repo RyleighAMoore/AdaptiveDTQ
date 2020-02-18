@@ -71,7 +71,7 @@ def getLejaPointsForRemoval(num_leja_samples, initial_samples, Mesh, numBasis, d
     return np.asarray(samples).T, data_structures[2]
 
 def getLejaPointsToRemove(Px, Py, numNeighbors, mesh, scaleX, scaleY, numBasis):
-    neighbors = UM.findNearestKPoints(Px, Py, mesh, numNeighbors-1) 
+    neighbors, distances = UM.findNearestKPoints(Px, Py, mesh, numNeighbors-1) 
     if len(neighbors > 0): 
         neighbors = np.vstack((neighbors,[Px,Py]))
     else: # make sure we have at least one point.
@@ -112,17 +112,17 @@ def getMeshIndicesToRemoveFromMesh(mesh, skipCount):
 
     valsToKeep = np.ndarray.tolist(LPVals)
     meshList = np.ndarray.tolist(mesh)
-    # plt.figure()
-    # plt.plot(LPVals[::skipCount][:,0], LPVals[::skipCount][:,1], '.r', label='Points to remove',markersize=20)
-    # # plt.plot(LPVals[:20][:,0], LPVals[:2][:,1], '.r', label='Points to keep',markersize=20)
+    plt.figure()
+    plt.plot(LPVals[::skipCount][:,0], LPVals[::skipCount][:,1], '.r', label='Points to remove',markersize=20)
+    # plt.plot(LPVals[:20][:,0], LPVals[:2][:,1], '.r', label='Points to keep',markersize=20)
 
-    # plt.plot(LPVals[:,0], LPVals[:,1], '*', label='All Points',markersize=10)
-    # i=0
-    # while i < len(indices):
-    #     plt.plot(LPVals[i,0], LPVals[i,1], '.w',markersize=5)
-    #     i+=skipCount
-    # plt.legend()
-    # plt.show()
+    plt.plot(LPVals[:,0], LPVals[:,1], '*', label='All Points',markersize=10)
+    i=0
+    while i < len(indices):
+        plt.plot(LPVals[i,0], LPVals[i,1], '.w',markersize=5)
+        i+=skipCount
+    plt.legend()
+    plt.show()
     indicesToRemove = indices[1::skipCount]
     return indicesToRemove
 
