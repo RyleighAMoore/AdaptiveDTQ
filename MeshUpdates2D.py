@@ -23,12 +23,12 @@ import LejaPointsToRemove as LPR
 ##denisfyAroundPointIfSlopeLargerThanTolerance = 5
 #minDistanceBetweenPoints = 0.1
 
-addPointsToBoundaryIfBiggerThanTolerance = 10**(-2)
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-5)
 removeZerosValuesIfLessThanTolerance = 10**(-10)
 #removePointsIfSlopeLessThanTolerance = 5
 #denisfyAroundPointIfSlopeLargerThanTolerance = 5
 minDistanceBetweenPoints = 0.03
-minDistanceBetweenPointsBoundary = 0.1
+minDistanceBetweenPointsBoundary = 0.05
 skipCount = 7
 maxDistanceBetweenPoints = 0.15
 
@@ -36,7 +36,7 @@ maxDistanceBetweenPoints = 0.15
 def checkIntegrandForZeroPoints(GMat, PDF, tolerance, Mesh, tri, boundaryOnly):
     maxMat = 10*np.ones(len(PDF))
     if boundaryOnly:
-        edges = alpha_shape(Mesh, tri, 0.2, only_outer=True)
+        edges = alpha_shape(Mesh, tri, 0.1, only_outer=True)
         aa = list(chain(edges))
         out = [item for t in aa for item in t]
         pointsOnEdge = np.sort(out)
@@ -53,7 +53,7 @@ def checkIntegrandForZeroPoints(GMat, PDF, tolerance, Mesh, tri, boundaryOnly):
 def checkIntegrandForAddingPointsAroundBoundaryPoints(GMat, PDF, tolerance, Mesh, tri, boundaryOnly):
     maxMat = -1*np.ones(len(PDF))
     if boundaryOnly:
-        edges = alpha_shape(Mesh, tri, 0.2, only_outer=True)
+        edges = alpha_shape(Mesh, tri, 0.1, only_outer=True)
         aa = list(chain(edges))
         out = [item for t in aa for item in t]
         pointsOnEdge = np.sort(out)
@@ -117,7 +117,7 @@ def removeBoundaryPoints(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
 def removeInteriorPointsToMakeLessDense(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
     length = len(Mesh)
     Slopes = checkAddInteriorPoints(Mesh, Pdf)
-    removePointsIfSlopeLessThanTolerance = 0.1 #np.quantile(Slopes,.1)
+    removePointsIfSlopeLessThanTolerance = np.quantile(Slopes,.5)
     pointsToRemove = np.asarray([np.asarray(Slopes) < removePointsIfSlopeLessThanTolerance]).T
     meshWithSmallSlopes = []
     ChangedBool=0
@@ -161,7 +161,6 @@ def removeInteriorPointsToMakeLessDense(GMat, Mesh, Grids, Pdf, tri, boundaryOnl
 # and the parts associated with the removed points need to be removed.
 def removePointsFromMesh(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
     GMat, Mesh, Grids, Pdf, ChangedBool2 = removeBoundaryPoints(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool)
-    
     GMat, Mesh, Grids, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool)
     # plt.figure()
     # plt.plot(Mesh[:,0],Mesh[:,1], '*')
@@ -216,6 +215,10 @@ def addPointsToMesh(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation
                 ChangedBool = 1
 #                newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, kstep)
                 allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 3, Mesh, 3, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(),6, 100)
+                # plt.figure()
+                # plt.plot(allPoints[:,0], allPoints[:,1], '.')
+                # plt.plot(newPoints[:,0], newPoints[:,1], '.r')
+                # plt.show()
                 newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, minDistanceBetweenPointsBoundary)
                 for point in range(len(newPoints)):
                     Mesh = np.append(Mesh, np.asarray([[newPoints[point,0]],[newPoints[point,1]]]).T, axis=0)

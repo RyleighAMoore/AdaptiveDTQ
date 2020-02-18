@@ -43,7 +43,7 @@ def dnorm_partialx(x, mu, sigma):
     
     
 def f1(x, y):
-    return 3
+    return 5
 
 
 def f2(x, y):

@@ -62,8 +62,8 @@ h=0.01
 pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
 mesh = pickle.load(pickle_in)
 
-mesh2 = UM.generateOrderedGridCenteredAtZero(-0.3, 0.3, -0.3, 0.3, 0.05, includeOrigin=False)
-mesh = np.vstack((mesh,mesh2))
+# mesh2 = UM.generateOrderedGridCenteredAtZero(-0.3, 0.3, -0.3, 0.3, 0.05, includeOrigin=False)
+# mesh = np.vstack((mesh,mesh2))
 
 #x = np.arange(-0.2, 0.2, .01)
 #y = np.arange(-0.2, 0.2, .01)
