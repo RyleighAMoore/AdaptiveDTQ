@@ -22,7 +22,7 @@ import pickle
 
 T = 0.01  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
-h = 0.01  # temporal step size
+h = 0.1  # temporal step size
 init = 0  # initial condition X_0
 numsteps = int(np.ceil(T / h))
 
@@ -35,7 +35,7 @@ xmin=-1
 xmax=1
 ymin=-1
 ymax=1
-h=0.01
+h=0.015
 
 
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
@@ -53,7 +53,7 @@ h=0.01
 #    return val
 
 # mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)      # ordered mesh  
-# mesh = LP.generateLejaMesh(500, 0.1, 0.1, 50)
+# mesh = LP.generateLejaMesh(300, 0.1, 0.1, 50)
 
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
 # pickle.dump(mesh, pkl_file)
@@ -207,6 +207,12 @@ for i in trange(25):
         # plt.plot(mesh[:,0],mesh[:,1], '.g')
         # plt.show()
         mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, addBool,xmin, xmax, ymin, ymax = MeshUp.addPointsToMesh(mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, kstep, h, xmin, xmax, ymin, ymax)
+        # fig = plt.figure()
+        # ax = Axes3D(fig)
+        # ax.scatter(mesh[:,0], mesh[:,1], pdf, c='r', marker='.')
+        # ax.scatter(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], c='k', marker='.')
+
+        
         if (addBool == 1):
             Vertices = []
             VerticesNum = []
@@ -218,7 +224,7 @@ for i in trange(25):
                     vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
                     Vertices[point].append(np.copy(vertices))
                     VerticesNum[point].append(np.copy(indices))
-       
+    t=0 
     if i >=1:
         pdfNew = np.copy(pdf)                   
         print("stepping forward...")

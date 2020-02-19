@@ -18,7 +18,6 @@ import Operations2D
 #  x2   y2
 #  x3   y3
 #  ...  ...
-
 def findNearestKPoints(xCoord, yCoord, AllPoints, numNeighbors):
     normList = []
     for point in range(len(AllPoints)):
@@ -38,7 +37,7 @@ def findNearestKPoints(xCoord, yCoord, AllPoints, numNeighbors):
 #    plt.show()
     return neighbors, distances
 
-#neighbors = findNearestKPoints(-1.7, 1, Meshes[0], 4)
+# neighbors, distances = findNearestKPoints(-1.7, 1, Meshes[0], 1)
 
 def findNearestPoint(xCoord, yCoord, AllPoints, includeIndex=False):
     normList = []
@@ -67,7 +66,8 @@ def findNearestPoint(xCoord, yCoord, AllPoints, includeIndex=False):
 # spacing: step size of grid
 # span: Units around the point to make the grid.
 def makeOrderedGridAroundPoint(point, spacing, span, xmin, xmax, ymin, ymax):
-    percent = .01
+    span = 2
+    percent = 0.01
     x = XGrid.getCenteredXvecAroundPoint(spacing, span, span, point[0])
     y = XGrid.getCenteredXvecAroundPoint(spacing, span, span, point[1])
     x = np.asarray(x)
@@ -82,7 +82,7 @@ def makeOrderedGridAroundPoint(point, spacing, span, xmin, xmax, ymin, ymax):
     points = np.hstack((xVec,yVec))
     return points
 
-
+# grid = makeOrderedGridAroundPoint(point, spacing, span, xmin, xmax, ymin, ymax)
 
 #(Px,Py): point we want to approximate
 # nearestPoints 

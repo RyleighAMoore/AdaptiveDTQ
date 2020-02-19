@@ -73,20 +73,20 @@ def g2():
 #     return 1
 
 ## Penguin
-#def f1(x, y):
-#    r = np.sqrt(x ** 2 + y ** 2)
-#    return np.sin(x*r)
-#
-#
-#def f2(x, y):
-#    r = np.sqrt(x ** 2 + y ** 2)
-#    return np.tan(y*r)**2
-#
-#def g1():
-#    return 1
-#
-#def g2():
-#    return 1
+# def f1(x, y):
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     return np.sin(x*r)
+
+
+# def f2(x, y):
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     return np.tan(y*r)**2
+
+# def g1():
+#     return 1
+
+# def g2():
+#     return 1
     
 ## Monster Truck
 #def f1(x, y):
@@ -120,6 +120,22 @@ def g2():
 #
 #def g2():
 #    return 1
+    
+# 
+# def f1(x, y):
+#     r = np.sqrt(2*x ** 2 + y ** 2)
+#     return np.cos(1-r**2)
+
+
+# def f2(x, y):
+#     r = np.sqrt(x ** 2 + 2*y ** 2)
+#     return np.sin(1-r**2)
+
+# def g1():
+#     return 0.5
+
+# def g2():
+#     return 0.5
 
 
 def G(x1, x2, y1, y2, h):

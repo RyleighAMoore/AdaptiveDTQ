@@ -33,7 +33,7 @@ xmin=-3
 xmax=3
 ymin=-3
 ymax=3
-h=0.01
+h=0.1
 
 
 mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)

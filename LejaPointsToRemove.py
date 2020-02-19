@@ -118,9 +118,9 @@ def getMeshIndicesToRemoveFromMesh(mesh, skipCount):
 
     plt.plot(LPVals[:,0], LPVals[:,1], '*', label='All Points',markersize=10)
     i=0
-    while i < len(indices):
-        plt.plot(LPVals[i,0], LPVals[i,1], '.w',markersize=5)
-        i+=skipCount
+    # while i < len(indices):
+    #     plt.plot(LPVals[i,0], LPVals[i,1], '.w',markersize=5)
+    #     i+=skipCount
     plt.legend()
     plt.show()
     indicesToRemove = indices[1::skipCount]
@@ -145,12 +145,12 @@ for val in range(len(mesh)-1,-1,-1):
 # diff[:,1]= 1*np.ones((len(mesh)))
 # mesh = np.vstack((mesh,mesh+ diff))
 
-# index = getMeshIndicesToRemoveFromMesh(mesh,2)
+# index = getMeshIndicesToRemoveFromMesh(mesh,4)
 
 # initial_samples = np.asarray([[mesh[0,0]], [mesh[0,0]]])
-# 
+
 # LPVals = getLejaPointsToRemove(mesh[0,0], mesh[0,1], len(mesh), mesh, 0.1, 0.1, 35)
-# LP2, LPNew2 = getLejaPointsToRemove(5, 5, len(mesh), mesh, 0.3, 0.1, 0.1, 35)
+# # LP2, LPNew2 = getLejaPointsToRemove(5, 5, len(mesh), mesh, 0.3, 0.1, 0.1, 35)
 
 
 # plt.figure()
