@@ -28,8 +28,8 @@ removeZerosValuesIfLessThanTolerance = 10**(-10)
 #removePointsIfSlopeLessThanTolerance = 5
 #denisfyAroundPointIfSlopeLargerThanTolerance = 5
 minDistanceBetweenPoints = 0.05
-minDistanceBetweenPointsBoundary = 0.05
-skipCount = 5
+minDistanceBetweenPointsBoundary = 0.1
+skipCount = 3
 maxDistanceBetweenPoints = 0.2
 
 
@@ -117,7 +117,7 @@ def removeBoundaryPoints(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
 def removeInteriorPointsToMakeLessDense(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
     length = len(Mesh)
     Slopes = checkAddInteriorPoints(Mesh, Pdf)
-    removePointsIfSlopeLessThanTolerance = 0.2 # np.quantile(Slopes,.3)
+    removePointsIfSlopeLessThanTolerance = 0.15 # np.quantile(Slopes,.3)
     pointsToRemove = np.asarray([np.asarray(Slopes) < removePointsIfSlopeLessThanTolerance]).T
     meshWithSmallSlopes = []
     ChangedBool=0
@@ -132,7 +132,7 @@ def removeInteriorPointsToMakeLessDense(GMat, Mesh, Grids, Pdf, tri, boundaryOnl
     meshWithSmallSlopes = np.asarray(meshWithSmallSlopes)
     spacing = distanceMetrics.fillDistance(meshWithSmallSlopes)
     print(spacing, maxDistanceBetweenPoints*(skipCount-1)/skipCount)
-    if spacing < 0.1: #maxDistanceBetweenPoints*(skipCount-1)/skipCount
+    if spacing < maxDistanceBetweenPoints*(skipCount-1)/skipCount:
         indices = LPR.getMeshIndicesToRemoveFromMesh(meshWithSmallSlopes, skipCount)
         corrIndices = np.sort(corrIndices)
         for j in range(len(indices)-1,-1,-1):
