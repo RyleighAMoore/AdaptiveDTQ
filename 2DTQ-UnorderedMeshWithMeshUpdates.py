@@ -183,7 +183,7 @@ Slopes = []
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
 for i in trange(55):
-    Slope = MeshUp.checkAddInteriorPoints(mesh, pdf)
+    Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
     SlopesMax.append(np.max(Slope))
@@ -192,7 +192,7 @@ for i in trange(55):
         assert np.max(PdfTraj[-1]<10), "PDF Blew up"
 ###################################################### Check if remove points
         if (i>=-1):
-            GMat, mesh, Grids, pdf, remBool = MeshUp.removePointsFromMesh(GMat, mesh, Grids, pdf, tri, True)
+            GMat, mesh, Grids, pdf, remBool = MeshUp.removePointsFromMeshProcedure(GMat, mesh, Grids, pdf, tri, True)
     ######################################################
             if (remBool == 1):
                     tri = Delaunay(mesh, incremental=True)
