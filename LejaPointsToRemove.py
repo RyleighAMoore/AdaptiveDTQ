@@ -112,17 +112,17 @@ def getMeshIndicesToRemoveFromMesh(mesh, skipCount):
 
     valsToKeep = np.ndarray.tolist(LPVals)
     meshList = np.ndarray.tolist(mesh)
-    plt.figure()
-    plt.plot(LPVals[::skipCount][:,0], LPVals[::skipCount][:,1], '.r', label='Points to remove',markersize=20)
-    # plt.plot(LPVals[:20][:,0], LPVals[:2][:,1], '.r', label='Points to keep',markersize=20)
+    # plt.figure()
+    # plt.plot(LPVals[::skipCount][:,0], LPVals[::skipCount][:,1], '.r', label='Points to remove',markersize=20)
+    # # plt.plot(LPVals[:20][:,0], LPVals[:2][:,1], '.r', label='Points to keep',markersize=20)
 
-    plt.plot(LPVals[:,0], LPVals[:,1], '*', label='All Points',markersize=10)
-    i=0
-    # while i < len(indices):
-    #     plt.plot(LPVals[i,0], LPVals[i,1], '.w',markersize=5)
-    #     i+=skipCount
-    plt.legend()
-    plt.show()
+    # plt.plot(LPVals[:,0], LPVals[:,1], '*', label='All Points',markersize=10)
+    # i=0
+    # # while i < len(indices):
+    # #     plt.plot(LPVals[i,0], LPVals[i,1], '.w',markersize=5)
+    # #     i+=skipCount
+    # plt.legend()
+    # plt.show()
     indicesToRemove = indices[1::skipCount]
     return indicesToRemove
 

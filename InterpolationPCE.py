@@ -68,6 +68,7 @@ fig = plt.figure()
 ax = Axes3D(fig)
 ax.scatter(mesh[:,0], mesh[:,1], vals1, c='r', marker='.')
 ax.scatter(train_samples[:,0], train_samples[:,1], train_values, '*k')
+ax.set_zlim(0, .3)
 
 
 grid_x, grid_y = np.mgrid[-6:6:100j, -6:6:100j]

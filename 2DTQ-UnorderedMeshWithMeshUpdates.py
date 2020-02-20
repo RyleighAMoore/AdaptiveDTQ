@@ -35,7 +35,7 @@ xmin=-1
 xmax=1
 ymin=-1
 ymax=1
-h=0.015
+h=0.01
 
 
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
@@ -126,8 +126,11 @@ mesh = pickle.load(pickle_in)
 #pdf = np.zeros(len(mesh))
 #mesh2 = mesh2
 #mesh = np.vstack((mesh,mesh2))
+dx = 1*np.ones((1,len(mesh))).T
+dy = 1*np.ones((1,len(mesh))).T
+delta = np.hstack((dx,dy))
+pdf = 0.5*UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
 
-pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
 # pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal.p","rb")
 # pdf = pickle.load(pickle_in)
 # pdf = pdf[-1]
@@ -179,7 +182,7 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(25):
+for i in trange(55):
     Slope = MeshUp.checkAddInteriorPoints(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
@@ -225,7 +228,7 @@ for i in trange(25):
                     Vertices[point].append(np.copy(vertices))
                     VerticesNum[point].append(np.copy(indices))
     t=0 
-    if i >=1:
+    if i >0:
         pdfNew = np.copy(pdf)                   
         print("stepping forward...")
         for point in range(len(mesh)):
@@ -292,7 +295,7 @@ title = ax.set_title('3D Test')
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
 ax.set_zlim(0, np.max(PdfTraj[-1]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
-                                         interval=300, blit=False)
+                                          interval=300, blit=False)
 
 plt.show()
 

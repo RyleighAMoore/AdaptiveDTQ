@@ -28,12 +28,12 @@ numsteps = int(np.ceil(T / h))
 assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 kstep = h ** s
-kstep = 0.15
-xmin=-3
-xmax=3
-ymin=-3
-ymax=3
-h=0.1
+kstep = 0.1
+xmin=-3.1
+xmax=3.1
+ymin=-3.1
+ymax=3.1
+h=0.01
 
 
 mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)
@@ -56,7 +56,7 @@ while t < 150:
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = 5
+index = -1
 ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
 #  
 def update_graph(num):
