@@ -9,7 +9,7 @@ define_poly_options_from_variable_transformation
 from pyapprox.probability_measure_sampling import \
 generate_independent_random_samples
 from scipy.stats import uniform, beta, norm
-from pyapprox.indexing import compute_hyperbolic_indices, tensor_product_indices
+from pyapprox.indexing import compute_hyperbolic_indices, tensor_product_indices,compute_tensor_product_level_indices
 from pyapprox.models.genz import GenzFunction
 from functools import partial
 from pyapprox.univariate_quadrature import gauss_jacobi_pts_wts_1D, \
@@ -33,51 +33,68 @@ poly.configure(poly_opts)
 
 degree=15
 indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
+# indices = compute_tensor_product_level_indices(poly.num_vars(),degree,max_norm=True)
 poly.set_indices(indices)
 
 num_vars = 2
-deriv_order=0    
+deriv_order= 0    
 probability_measure = True
-num_leja_samples = 100
+num_leja_samples = len(indices[0])-1
 initial_samples = np.asarray([[0],[0]])
 
-train_samples, newLeja = LP.getLejaPoints(num_leja_samples, initial_samples,degree, num_candidate_samples = 5000, dimensions=num_vars)
+# train_samples, newLeja = LP.getLejaPoints(num_leja_samples, initial_samples,degree, num_candidate_samples = 5000, dimensions=num_vars)
+train_samples = LP.generateLejaMesh(num_leja_samples, 1, 1, degree)
+# fig = plt.figure()
+# ax = Axes3D(fig)
+# ax.scatter(train_samples[:,0], train_samples[:,1])
+# ax.scatter(train_samples[-1,0], train_samples[-1,1])
+
+# plt.show()
+
+
 rv = multivariate_normal([0, 0], [[1, 0], [0, 1]])
-train_values = np.asarray([rv.pdf(train_samples)]).T
+train_values = np.log(np.asarray([rv.pdf(train_samples)])).T
 
 
 basis_matrix = poly.basis_matrix(train_samples.T)
-basis_matrix2 = poly.canonical_basis_matrix(train_samples.T)
+# basis_matrix = basis_matrix[:,:np.size(basis_matrix,0)]
+# basis_matrix2 = poly.canonical_basis_matrix(train_samples.T)
 
-precond_weights = christoffel_weights(basis_matrix)
-precond_basis_matrix = precond_weights[:,np.newaxis]*basis_matrix
-precond_train_values = precond_weights[:,np.newaxis]*train_values
-coef = np.linalg.lstsq(precond_basis_matrix,precond_train_values,rcond=None)[0]
+# precond_weights = christoffel_weights(basis_matrix)
+# precond_basis_matrix = precond_weights[:,np.newaxis]*basis_matrix
+# precond_train_values = precond_weights[:,np.newaxis]*train_values
+# assert np.size(basis_matrix,0) == np.size(basis_matrix,1)
+coef = np.linalg.lstsq(basis_matrix,train_values,rcond=None)[0]
 poly.set_coefficients(coef)
 
 samples1 = np.asarray([[0],[0]])
-mesh = UM.generateOrderedGridCenteredAtZero(-4, 4, -4, 4, 0.1)
+mesh = UM.generateOrderedGridCenteredAtZero(-3, 3, -3,3, 0.5)
 indices = poly.indices
 recursion_coeffs = np.asarray(poly.recursion_coeffs)
 
-mesh, newLeja = LP.getLejaPoints(num_leja_samples, initial_samples,degree, num_candidate_samples = 5000, dimensions=num_vars)
+# mesh, newLeja = LP.getLejaPoints(100, initial_samples, degree, num_candidate_samples = 5000, dimensions=num_vars)
+mesh = UM.generateOrderedGridCenteredAtZero(-4,4, -4,4, 0.1, includeOrigin=True)
 
-vals1 = poly.value(mesh.T)
+meshVals = np.asarray([rv.pdf(mesh)]).T
+
+vals1 = np.exp(poly.value(mesh.T))
 
 fig = plt.figure()
 ax = Axes3D(fig)
-ax.scatter(mesh[:,0], mesh[:,1], vals1, c='r', marker='.')
-ax.scatter(train_samples[:,0], train_samples[:,1], train_values, '*k')
-ax.set_zlim(0, .3)
+ax.scatter(train_samples[:,0], train_samples[:,1], np.exp(train_values), c='k', s=15)
+ax.scatter(mesh[:,0], mesh[:,1], vals1, c='r', s=10)
 
 
-grid_x, grid_y = np.mgrid[-6:6:100j, -6:6:100j]
-from scipy.interpolate import griddata
 
-grid_z2 = griddata(train_samples, train_values, (grid_x, grid_y), method='cubic')
-fig = plt.figure()
-ax = Axes3D(fig)
-ax.scatter(grid_x,grid_y, grid_z2, c='r', marker='.')
+# grid_x, grid_y = np.mgrid[-6:6:100j, -6:6:100j]
+# from scipy.interpolate import griddata
+
+# grid_z2 = griddata(train_samples, train_values, (grid_x, grid_y), method='cubic')
+# fig = plt.figure()
+# ax = Axes3D(fig)
+# ax.scatter(grid_x,grid_y, grid_z2, c='r', marker='.')
+
+
 
 # vals = evaluate_multivariate_orthonormal_polynomial(
 #         samples1, indices, recursion_coeffs,deriv_order=0,

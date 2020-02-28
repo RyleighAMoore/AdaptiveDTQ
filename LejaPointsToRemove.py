@@ -147,21 +147,20 @@ for val in range(len(mesh)-1,-1,-1):
 
 # index = getMeshIndicesToRemoveFromMesh(mesh,4)
 
-# initial_samples = np.asarray([[mesh[0,0]], [mesh[0,0]]])
+initial_samples = np.asarray([[mesh[0,0]], [mesh[0,0]]])
 
-# LPVals = getLejaPointsToRemove(mesh[0,0], mesh[0,1], len(mesh), mesh, 0.1, 0.1, 35)
+LPVals, indices = getLejaPointsToRemove(mesh[0,0], mesh[0,1], len(mesh), mesh, 0.1, 0.1, 35)
 # # LP2, LPNew2 = getLejaPointsToRemove(5, 5, len(mesh), mesh, 0.3, 0.1, 0.1, 35)
 
 
-# plt.figure()
-# plt.plot(LPVals[::2][:,0], LPVals[::2][:,1], '.r', label='Points to keep',markersize=20)
+plt.figure()
+plt.plot(LPVals[::2][:,0], LPVals[::2][:,1], '.r', label='points to keep',markersize=20)
+plt.plot(LPVals[:,0], LPVals[:,1], '*', label='all points',markersize=10)
 
-# plt.plot(LPVals[:,0], LPVals[:,1], '*', label='All Points',markersize=10)
+# plt.plot(mesh[0,0], mesh[0,1], '.r',markersize=10)
 
-# # plt.plot(mesh[0,0], mesh[0,1], '.r',markersize=10)
-
-# plt.legend()
-# plt.show()
+plt.legend(fontsize = 25)
+plt.show()
 
 # #lejaPoints = generateLejaMesh(10)
 

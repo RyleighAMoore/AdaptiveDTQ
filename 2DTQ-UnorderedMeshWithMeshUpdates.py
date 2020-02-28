@@ -30,11 +30,11 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 kstep = h ** s
-kstep = 0.1
-xmin=-1
-xmax=1
-ymin=-1
-ymax=1
+kstep = 0.05
+xmin=-1.5
+xmax=1.5
+ymin=-1.5
+ymax=1.5
 h=0.01
 
 
@@ -52,17 +52,25 @@ h=0.01
 #        val = val + kstep**2*fun.G(Px, Py, grid[i,0], grid[i,1], h)*interpPDF[i]
 #    return val
 
-# mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)      # ordered mesh  
-# mesh = LP.generateLejaMesh(300, 0.1, 0.1, 50)
+# mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)      # ordered mesh  
+mesh = LP.generateLejaMesh(400, 1, 1, 70)
+
+plt.figure()
+plt.plot(mesh[:,0], mesh[:,1], '.')
+plt.show()
+
 
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
 # pickle.dump(mesh, pkl_file)
 # pkl_file.close()
 
-pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
-mesh = pickle.load(pickle_in)
+# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
+# mesh = pickle.load(pickle_in)
 
-# mesh2 = UM.generateOrderedGridCenteredAtZero(-0.3, 0.3, -0.3, 0.3, 0.05, includeOrigin=False)
+xmin = np.min(mesh[:,0]); xmax = np.max(mesh[:,0])
+ymin = np.min(mesh[:,1]); ymax = np.max(mesh[:,1])
+
+# mesh = UM.generateOrderedGridCenteredAtZero(-1, 1, -1, 1, 0.05, includeOrigin=True)
 # mesh = np.vstack((mesh,mesh2))
 
 #x = np.arange(-0.2, 0.2, .01)
@@ -126,10 +134,10 @@ mesh = pickle.load(pickle_in)
 #pdf = np.zeros(len(mesh))
 #mesh2 = mesh2
 #mesh = np.vstack((mesh,mesh2))
-dx = 1*np.ones((1,len(mesh))).T
-dy = 1*np.ones((1,len(mesh))).T
-delta = np.hstack((dx,dy))
-pdf = 0.5*UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+# dx = 1*np.ones((1,len(mesh))).T
+# dy = 1*np.ones((1,len(mesh))).T
+# delta = np.hstack((dx,dy))
+pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
 
 # pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal.p","rb")
 # pdf = pickle.load(pickle_in)
@@ -152,7 +160,7 @@ VerticesNum = []
 tri = Delaunay(mesh, incremental=True)
 #tri.simplices=s
 #order2 = []
-numSD = 8
+numSD = 4
 for point in trange(len(mesh)):
    # grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, max(xmax-xmin, ymax-ymin), xmin,xmax,ymin,ymax)
     grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, max(xmax-xmin, ymax-ymin),mesh[point,0]-numSD*np.sqrt(h)*fun.g1() ,mesh[point,0]+numSD*np.sqrt(h)*fun.g1(),mesh[point,1]-numSD*np.sqrt(h)*fun.g2(),mesh[point,1]+numSD*np.sqrt(h)*fun.g2())
@@ -182,53 +190,24 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(105):
+for i in trange(150):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
     SlopesMax.append(np.max(Slope))
     Slopes.append(Slope)
     if (i >= 0) and adjustGrid:
-        assert np.max(PdfTraj[-1]<10), "PDF Blew up"
-###################################################### Check if remove points
-        if (i>=-1):
+        assert np.max(PdfTraj[-1] < 10), "PDF Blew up"
+        if (i>=0):
+            mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, addBool,xmin, xmax, ymin, ymax = MeshUp.addPointsToMeshProcedure(mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, kstep, h, xmin, xmax, ymin, ymax)
+            if (addBool == 1):
+                Vertices, VerticesNum, tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, Grids, tri)
             GMat, mesh, Grids, pdf, remBool = MeshUp.removePointsFromMeshProcedure(GMat, mesh, Grids, pdf, tri, True)
-    ######################################################
             if (remBool == 1):
-                    tri = Delaunay(mesh, incremental=True)
-                    Vertices = []
-                    VerticesNum = []
-                    for point in range(len(mesh)): # Recompute Vertices and VerticesNum matrices
-                        grid = Grids[point]
-                        Vertices.append([])
-                        VerticesNum.append([])
-                        for currGridPoint in range(len(grid)):
-                            vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
-                            Vertices[point].append(np.copy(vertices))
-                            VerticesNum[point].append(np.copy(indices))
-        # plt.figure()
-        # plt.plot(mesh[:,0],mesh[:,1], '.g')
-        # plt.show()
-        mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, addBool,xmin, xmax, ymin, ymax = MeshUp.addPointsToMeshProcedure(mesh, GMat, Grids, Vertices, VerticesNum, pdf, tri, kstep, h, xmin, xmax, ymin, ymax)
-        # fig = plt.figure()
-        # ax = Axes3D(fig)
-        # ax.scatter(mesh[:,0], mesh[:,1], pdf, c='r', marker='.')
-        # ax.scatter(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], c='k', marker='.')
-
+                Vertices, VerticesNum, tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, Grids, tri)
         
-        if (addBool == 1):
-            Vertices = []
-            VerticesNum = []
-            for point in range(len(mesh)): # Recompute Vertices and VerticesNum matrices
-                grid = Grids[point]
-                Vertices.append([])
-                VerticesNum.append([])
-                for currGridPoint in range(len(grid)):
-                    vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
-                    Vertices[point].append(np.copy(vertices))
-                    VerticesNum[point].append(np.copy(indices))
     t=0 
-    if i >0:
+    if i >5:
         pdfNew = np.copy(pdf)                   
         print("stepping forward...")
         for point in range(len(mesh)):
@@ -257,28 +236,15 @@ for i in trange(105):
         Meshes.append(np.copy(mesh))
         print('Length of mesh = ', len(mesh))
 
-    
-##Use
-#fig = plt.figure()
-#ax = Axes3D(fig)
-#ax.scatter(grid[:,0], grid[:,1], np.asarray(interpPdf), c='r', marker='.')
-#            
-#Use to check triangularization
-#plt.plot(mesh[:,0], mesh[:,1], '.k')
-#plt.plot(vertices[0,0], vertices[0,1], '.g', markersize=14)
-#plt.plot(vertices[1,0], vertices[1,1], '.g',  markersize=14)
-#plt.plot(vertices[2,0], vertices[2,1], '.g',  markersize=14)
-#plt.plot(Px, Py, '.r', markersize=14)
-#plt.show()
-##
-#fig = plt.figure()
-#ax = Axes3D(fig)
-#ax.scatter(grid[:,0], grid[:,1], interpPdf, c='r', marker='.')
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = -1
+index =2
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
+
+index = 2
+ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
+
 #    
 #    
 def update_graph(num):
@@ -343,3 +309,15 @@ timestr = time.strftime("%Y%m%d-%H%M%S")
 #for i in range(si):
 #    for j in range(si):
 #        pdfgrid[i,j]=PdfTraj[0][i+j]
+
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PDFTrajDenseMovingHill.p", "wb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshDenseMovingHill.p", "wb" ) 
+
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal.p", "wb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesBimodal.p", "wb" ) 
+
+# #    
+# pickle.dump(PdfTraj, pkl_file)
+# pickle.dump(Meshes, pkl_file2)
+# pkl_file.close()
+# pkl_file2.close()

@@ -89,7 +89,7 @@ def makeOrderedGridAroundPoint(point, spacing, span, xmin, xmax, ymin, ymax):
 #  x1   y1
 #  x2   y2
 #  x3   y3
-def baryInterp(Px, Py, simplexPoints, degsFreePDF):
+def baryInterp(Px, Py, simplexPoints, degsFreePDF, nearestNeighbor=False):
     Xv1 = simplexPoints[0,0]
     Yv1 = simplexPoints[0,1]
     Xv2 = simplexPoints[1,0]
@@ -106,14 +106,18 @@ def baryInterp(Px, Py, simplexPoints, degsFreePDF):
     Wv2 = ((Yv3-Yv1)*(Px-Xv3)+(Xv1-Xv3)*(Py-Yv3))/((Yv2-Yv3)*(Xv1-Xv3)+(Xv3-Xv2)*(Yv1-Yv3))
     Wv3 = 1-Wv1-Wv2
     if (Wv1 < -10**(-10)) | (Wv2 < -10**(-10)) | (Wv3 < -10**(-10)):
-        #print(min(Wv1,Wv2,Wv3))
-        return 0
-    #    plt.figure()
-    #    plt.plot(simplexPoints[0,0], simplexPoints[0,1], '*k')
-    #    plt.plot(simplexPoints[1,0], simplexPoints[1,1], '*k')
-    #    plt.plot(simplexPoints[2,0], simplexPoints[2,1], '*k')
-    #    plt.plot(Px, Py, '.r')
-    #    plt.show()
+        if nearestNeighbor:
+            PDFNew = Wv1*PDF1+Wv2*PDF2+Wv3*PDF3
+            # print("Point outside Triangle")
+            #print(min(Wv1,Wv2,Wv3))
+        else:
+            return 0 # Triangle doesn't surround points
+        # plt.figure()
+        # plt.plot(simplexPoints[0,0], simplexPoints[0,1], '*k')
+        # plt.plot(simplexPoints[1,0], simplexPoints[1,1], '*k')
+        # plt.plot(simplexPoints[2,0], simplexPoints[2,1], '*k')
+        # plt.plot(Px, Py, '.r')
+        # plt.show()
 #    assert Wv1 >= 0, 'Weight less than 0'
 #    assert Wv2 >= 0, 'Weight less than 0'
 #    assert Wv3 >= 0, 'Weight less than 0'
@@ -122,7 +126,7 @@ def baryInterp(Px, Py, simplexPoints, degsFreePDF):
 #    PDF = np.exp(PDFNew)
     return PDFNew
 
-x = baryInterp(-.1,-0.1, np.asarray([[-0.25,-0.5], [0,1], [1,1]]),[1,1,2])
+# x = baryInterp(-0.5,-0.5, np.asarray([[-0.25,-0.5], [0,1], [1,1]]),[10,10,20])
 
 # generate random points from [xMin,xMax] x [yMin, yMax]
 # returns 
@@ -175,7 +179,7 @@ def generateICPDF(x,y,sigma_x, sigma_y):
     # calculation of the barycentric interpolation.
 def getVerticesForPoint(point, allPoints, tri):
     #tri = Delaunay(allPoints)
-    simplex = tri.find_simplex(point, bruteforce = True)
+    simplex = tri.find_simplex(point)
 #    if simplex == -1:
 #        print("WARNING: A point in the grid may be outside the bounds.")
     verts = tri.simplices[simplex]
@@ -184,12 +188,12 @@ def getVerticesForPoint(point, allPoints, tri):
     vertices.append(allPoints[verts[1]])
     vertices.append(allPoints[verts[2]])
     vertices = np.asarray(vertices)
-#    plt.figure()
-#    plt.plot(vertices[0,0], vertices[0,1], '*k')
-#    plt.plot(vertices[1,0], vertices[1,1], '*k')
-#    plt.plot(vertices[2,0], vertices[2,1], '*k')
-#    plt.plot(point[0], point[1], '.r')
-#    plt.show()
+    # plt.figure()
+    # plt.plot(vertices[0,0], vertices[0,1], '*k')
+    # plt.plot(vertices[1,0], vertices[1,1], '*k')
+    # plt.plot(vertices[2,0], vertices[2,1], '*k')
+    # plt.plot(point[0], point[1], '.r')
+    # plt.show()
     return np.asarray(vertices), verts
 
     

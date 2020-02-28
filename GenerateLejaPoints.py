@@ -214,7 +214,7 @@ def generateLejaMesh(numPoints, sigmaX, sigmaY, numBasis):
 
         
 # mesh = UM.generateOrderedGridCenteredAtZero(-1.8, 1.8, -1.8, 1.8, 0.1)      # ordered mesh 
-# # mesh = UM.generateRandomPoints(-0.2,0.2,-0.2,0.2,200)  # unordered mesh
+# mesh = UM.generateRandomPoints(-0.2,0.2,-0.2,0.2,200)  # unordered mesh
 
 # num = 0
 # point = np.asarray(mesh[num:num+1,:])

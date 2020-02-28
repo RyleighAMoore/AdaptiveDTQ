@@ -25,13 +25,13 @@ minSizeGAndStillRemoveValsFromG = 100
 minMaxOfPhatAndStillRemoveValsFromG = 0.001
 
 # simulation parameters
-autoCorrectInitialGrid = True
-RandomXvec = True  # if autoCorrectInitialGrid is True this has no effect.
+autoCorrectInitialGrid = False
+RandomXvec = False  # if autoCorrectInitialGrid is True this has no effect.
 
-RemoveFromG = True  # Also want AddToG to be true if true
-IncGridDensity = True
-DecGridDensity = True
-AddToG = True
+RemoveFromG = False  # Also want AddToG to be true if true
+IncGridDensity = False
+DecGridDensity = False
+AddToG = False
 
 T = 1.0  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
@@ -43,8 +43,8 @@ assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
 k = h ** s
-xMin = -2
-xMax = 2
+xMin = -4
+xMax = 4
 ##############################################################################
 
 pdf_trajectory = []
@@ -59,7 +59,7 @@ a = init + fun.driftfun(init)
 b = np.abs(fun.difffun(init)) * np.sqrt(h)
 
 if not autoCorrectInitialGrid: #Assuming initial grid is sufficient to capture the pdf.
-    xvec, phat, G = setup.setupNonCorrectedGrid(xMin, xMax, k, a, b, h)
+    xvec, phat, G = setup.setUpNonCorrectedGrid(xMin, xMax, k, a, b, h)
 
 if autoCorrectInitialGrid:
     xvec, k, phat = setup.correctInitialGrid(xMin, xMax, a, b, k)

@@ -28,15 +28,15 @@ numsteps = int(np.ceil(T / h))
 assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 kstep = h ** s
-kstep = 0.1
-xmin=-3.1
-xmax=3.1
-ymin=-3.1
-ymax=3.1
+kstep = 0.05
+xmin=-1.5
+xmax=1.5
+ymin=-1.5
+ymax=1.5
 h=0.01
 
 
-mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep)
+mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
 
 GMat = []
@@ -47,7 +47,7 @@ for point in trange(len(mesh)):
 surfaces = [] 
 surfaces.append(np.copy(pdf))
 t=0
-while t < 150:
+while t < 21:
     print(t)
     pdf = np.matmul(GMat, pdf)
     surfaces.append(np.copy(pdf))
@@ -56,7 +56,7 @@ while t < 150:
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = -1
+index = 8
 ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
 #  
 def update_graph(num):
@@ -65,6 +65,8 @@ def update_graph(num):
     title.set_text('3D Test, time={}'.format(num))
     return title, graph
 
+meshSoln = np.copy(mesh)
+pdfSoln = surfaces.copy()
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
@@ -76,5 +78,7 @@ ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
                                          interval=100, blit=False)
 
 plt.show()
+
+
 
 

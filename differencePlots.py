@@ -20,7 +20,7 @@ def plotMaxDiffTrajGraph(One,Two):
         value = np.max(np.max(abs(One[i]-Two[i])))
         val.append(np.abs(value))
         print(i)
-    w = np.linspace(1, sizing,sizing)
+    w = np.linspace(-1, sizing,sizing)
     fig, ax = plt.subplots()
 
     # We change the fontsize of minor ticks label 
@@ -30,10 +30,10 @@ def plotMaxDiffTrajGraph(One,Two):
     ax.yaxis.get_offset_text().set_fontsize(24)
 
     plt.xlabel('Iteration', fontsize='50')
-    plt.ylabel('difference', fontsize='50') 
+    plt.ylabel('Max difference', fontsize='50') 
     plt.xticks(fontsize='50')
     plt.yticks(fontsize='50')
-    ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
+    # ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
     plt.subplots_adjust(top=0.88,bottom=0.175,left=0.11,right=0.9,hspace=0.2,wspace=0.2)
     
     print(val)
