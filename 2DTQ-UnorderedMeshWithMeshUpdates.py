@@ -53,19 +53,19 @@ h=0.01
 #    return val
 
 # mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)      # ordered mesh  
-mesh = LP.generateLejaMesh(400, 1, 1, 70)
+# mesh = LP.generateLejaMesh(400, .1, .1, 50)
 
-plt.figure()
-plt.plot(mesh[:,0], mesh[:,1], '.')
-plt.show()
+# plt.figure()
+# plt.plot(mesh[:,0], mesh[:,1], '.')
+# plt.show()
 
 
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
 # pickle.dump(mesh, pkl_file)
 # pkl_file.close()
 
-# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
-# mesh = pickle.load(pickle_in)
+pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
+mesh = pickle.load(pickle_in)
 
 xmin = np.min(mesh[:,0]); xmax = np.max(mesh[:,0])
 ymin = np.min(mesh[:,1]); ymax = np.max(mesh[:,1])
@@ -189,7 +189,7 @@ SlopesMin = []
 SlopesMean = []  
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
-adjustGrid = True
+adjustGrid = False
 for i in trange(150):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
@@ -207,29 +207,33 @@ for i in trange(150):
                 Vertices, VerticesNum, tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, Grids, tri)
         
     t=0 
-    if i >5:
-        pdfNew = np.copy(pdf)                   
-        print("stepping forward...")
-        for point in range(len(mesh)):
-            interpPdf = []
-            #grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 3, xmin,xmax,ymin,ymax)
-            grid = Grids[point]
-            for g in range(len(grid)):
-                Px = grid[g,0] # (Px, Py) point to interpolate
-                Py = grid[g,1]
-                vertices = Vertices[point][g]
-                PDFVals = UM.getPDFForPoint(pdf, VerticesNum[point][g])
-                interp = UM.baryInterp(Px, Py, vertices, PDFVals)
-                interpPdf.append(interp)
-            #gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
-            #G.append(gRow)
-            gRow = GMat[point]
-            newval = np.matmul(np.asarray(gRow), np.asarray(interpPdf))
-            #newval2 = loopNewPDf(mesh[point,0], mesh[point,1], grid, kstep, h, interpPdf)
-            pdfNew[point] = np.copy(newval)
-        PdfTraj.append(np.copy(pdfNew))
+    import InterpolationPCE as IPCE
+    if i >0:
+        pdf = IPCE.stepForwardInTime(mesh, pdf, h)
+        PdfTraj.append(np.copy(pdf))
         Meshes.append(np.copy(mesh))
-        pdf=pdfNew
+        # pdfNew = np.copy(pdf)                   
+        # print("stepping forward...")
+        # for point in range(len(mesh)):
+        #     interpPdf = []
+        #     #grid = UM.makeOrderedGridAroundPoint([mesh[point,0],mesh[point,1]],kstep, 3, xmin,xmax,ymin,ymax)
+        #     grid = Grids[point]
+        #     for g in range(len(grid)):
+        #         Px = grid[g,0] # (Px, Py) point to interpolate
+        #         Py = grid[g,1]
+        #         vertices = Vertices[point][g]
+        #         PDFVals = UM.getPDFForPoint(pdf, VerticesNum[point][g])
+        #         interp = UM.baryInterp(Px, Py, vertices, PDFVals)
+        #         interpPdf.append(interp)
+        #     #gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], grid, kstep, h)
+        #     #G.append(gRow)
+        #     gRow = GMat[point]
+        #     newval = np.matmul(np.asarray(gRow), np.asarray(interpPdf))
+        #     #newval2 = loopNewPDf(mesh[point,0], mesh[point,1], grid, kstep, h, interpPdf)
+        #     pdfNew[point] = np.copy(newval)
+        # PdfTraj.append(np.copy(pdfNew))
+        # Meshes.append(np.copy(mesh))
+        # pdf=pdfNew
         print('Length of mesh = ', len(mesh))
     else:
         PdfTraj.append(np.copy(pdf))
@@ -313,8 +317,8 @@ timestr = time.strftime("%Y%m%d-%H%M%S")
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PDFTrajDenseMovingHill.p", "wb" ) 
 # pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshDenseMovingHill.p", "wb" ) 
 
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal.p", "wb" ) 
-# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesBimodal.p", "wb" ) 
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTraj.p", "wb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Meshes.p", "wb" ) 
 
 # #    
 # pickle.dump(PdfTraj, pkl_file)

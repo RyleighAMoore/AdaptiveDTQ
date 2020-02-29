@@ -28,11 +28,11 @@ numsteps = int(np.ceil(T / h))
 assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 kstep = h ** s
-kstep = 0.05
-xmin=-1.5
-xmax=1.5
-ymin=-1.5
-ymax=1.5
+kstep = 0.1
+xmin=-1
+xmax=1
+ymin=-1
+ymax=1
 h=0.01
 
 
@@ -47,7 +47,7 @@ for point in trange(len(mesh)):
 surfaces = [] 
 surfaces.append(np.copy(pdf))
 t=0
-while t < 21:
+while t < 150:
     print(t)
     pdf = np.matmul(GMat, pdf)
     surfaces.append(np.copy(pdf))
@@ -65,8 +65,8 @@ def update_graph(num):
     title.set_text('3D Test, time={}'.format(num))
     return title, graph
 
-meshSoln = np.copy(mesh)
-pdfSoln = surfaces.copy()
+# meshSoln = np.copy(mesh)
+# pdfSoln = surfaces.copy()
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
@@ -79,6 +79,13 @@ ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
 
 plt.show()
 
+pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PDFTraj.p", "wb" ) 
+pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Mesh.p", "wb" ) 
 
+import pickle  
+pickle.dump(surfaces, pkl_file)
+pickle.dump(mesh, pkl_file2)
+pkl_file.close()
+pkl_file2.close()
 
 

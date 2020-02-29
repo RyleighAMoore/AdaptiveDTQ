@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial import Delaunay
 import Functions as fun
 import Operations2D
+from mpl_toolkits.mplot3d import Axes3D
 # xCoord, yCoord, is the point we are looking for the closests 
 # two points to. 
 # AllPoints is a Nx2  matrix of all the degrees of freedom.
@@ -18,7 +19,7 @@ import Operations2D
 #  x2   y2
 #  x3   y3
 #  ...  ...
-def findNearestKPoints(xCoord, yCoord, AllPoints, numNeighbors):
+def findNearestKPoints(xCoord, yCoord, AllPoints, numNeighbors, getIndices = False):
     normList = []
     for point in range(len(AllPoints)):
         xVal = AllPoints[point,0]
@@ -27,14 +28,22 @@ def findNearestKPoints(xCoord, yCoord, AllPoints, numNeighbors):
     idx = np.argsort(normList)
     neighbors = []
     distances = []
+    indices = []
     for k in range(1,numNeighbors+1):
         neighbors.append(np.asarray([AllPoints[idx[k],0], AllPoints[idx[k],1]]))
         distances.append(normList[idx[k]])
+        assert normList[idx[k]] > 0, "point wrong"
+        indices.append(idx[k])
     neighbors = np.asarray(neighbors)
-#    plt.figure()
-#    plt.plot(xCoord,yCoord, '*r')
-#    plt.plot(neighbors[:,0], neighbors[:,1],'.')
-#    plt.show()
+    # if len(neighbors) > 0:
+    #     plt.figure()
+    #     plt.plot(AllPoints[:,0], AllPoints[:,1], '.')
+    #     plt.plot(xCoord,yCoord, '*r')
+    #     plt.plot(neighbors[:,0], neighbors[:,1],'.')
+    #     plt.show()
+    # print(distances)
+    if getIndices:
+        return neighbors, distances, indices
     return neighbors, distances
 
 # neighbors, distances = findNearestKPoints(-1.7, 1, Meshes[0], 1)
@@ -111,6 +120,7 @@ def baryInterp(Px, Py, simplexPoints, degsFreePDF, nearestNeighbor=False):
             # print("Point outside Triangle")
             #print(min(Wv1,Wv2,Wv3))
         else:
+            PDFNew = 0
             return 0 # Triangle doesn't surround points
         # plt.figure()
         # plt.plot(simplexPoints[0,0], simplexPoints[0,1], '*k')
@@ -121,8 +131,19 @@ def baryInterp(Px, Py, simplexPoints, degsFreePDF, nearestNeighbor=False):
 #    assert Wv1 >= 0, 'Weight less than 0'
 #    assert Wv2 >= 0, 'Weight less than 0'
 #    assert Wv3 >= 0, 'Weight less than 0'
-
+    # plt.figure()
+    # plt.plot(simplexPoints[0,0], simplexPoints[0,1], '*k')
+    # plt.plot(simplexPoints[1,0], simplexPoints[1,1], '*k')
+    # plt.plot(simplexPoints[2,0], simplexPoints[2,1], '*k')
+    # plt.plot(Px, Py, '.r')
+    # plt.show()
     PDFNew = Wv1*PDF1+Wv2*PDF2+Wv3*PDF3
+
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(simplexPoints[:,0], simplexPoints[:,1], degsFreePDF, c='r', marker='.')
+    # ax.scatter(Px, Py, PDFNew, c='r', marker='.')
+
 #    PDF = np.exp(PDFNew)
     return PDFNew
 
