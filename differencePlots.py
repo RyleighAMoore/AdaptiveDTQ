@@ -42,21 +42,21 @@ def plotMaxDiffTrajGraph(One,Two):
     
 val = plotMaxDiffTrajGraph(PdfTraj,surfaces)
 
-#avgMaxError = []
-#maxMaxError = []
-#sdCount = []
-#avgMaxError.append(np.average(val))
-#maxMaxError.append(np.max(val))
-#sdCount.append(8)
-plt.plot()
-plt.semilogy(sdCount,avgMaxError, label = "Avg. Max Error")
-plt.semilogy(sdCount,maxMaxError,label = "Maximum Max Error" )
-plt.xlabel('Number of St.Devs. for grids', fontsize='80')
-plt.ylabel('Error', fontsize='80') 
-plt.xticks(fontsize='80')
-plt.yticks(fontsize='80')
-plt.legend(fontsize='20')
-plt.show()
+# #avgMaxError = []
+# #maxMaxError = []
+# #sdCount = []
+# #avgMaxError.append(np.average(val))
+# #maxMaxError.append(np.max(val))
+# #sdCount.append(8)
+# plt.plot()
+# plt.semilogy(sdCount,avgMaxError, label = "Avg. Max Error")
+# plt.semilogy(sdCount,maxMaxError,label = "Maximum Max Error" )
+# plt.xlabel('Number of St.Devs. for grids', fontsize='80')
+# plt.ylabel('Error', fontsize='80') 
+# plt.xticks(fontsize='80')
+# plt.yticks(fontsize='80')
+# plt.legend(fontsize='20')
+# plt.show()
     
 def plotL2DiffTrajGraph(One,Two):
     sizing = min(len(One), len(Two))

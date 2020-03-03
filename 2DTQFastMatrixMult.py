@@ -19,35 +19,51 @@ from tqdm import tqdm, trange
 import UnorderedMesh as UM
 import MeshUpdates2D as MeshUp
 
-T = 0.01  # final time, code computes PDF of X_T
-s = 0.75  # the exponent in the relation k = h^s
-h = 0.01  # temporal step size
-init = 0  # initial condition X_0
-numsteps = int(np.ceil(T / h))
+# T = 0.01  # final time, code computes PDF of X_T
+# s = 0.75  # the exponent in the relation k = h^s
+# h = 0.01  # temporal step size
+# init = 0  # initial condition X_0
+# numsteps = int(np.ceil(T / h))
 
-assert numsteps > 0, 'The variable numsteps must be greater than 0'
-
+# assert numsteps > 0, 'The variable numsteps must be greater than 0'
+h=0.01
+s=0.75
 kstep = h ** s
 kstep = 0.1
-xmin=-1
-xmax=1
-ymin=-1
-ymax=1
-h=0.01
+xmin=-1.5
+xmax=1.5
+ymin=-1.5
+ymax=1.5
 
+
+def generateGRow(point, allPoints, kstep, h):
+    row = []
+    OrderA = []
+    for i in range(len(allPoints)):
+        val = kstep**2*fun.G(point[0], point[1], allPoints[i,0], allPoints[i,1], h)
+        row.append(val)
+        OrderA.append([point[0], point[1], allPoints[i,0], allPoints[i,1]])
+    return row
 
 mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+# 
+# for i in range(len(pdf)):
+#     pdf[i] = (16*(mesh[i,0]+ mesh[i,1]))**2
+# fig = plt.figure()
+# ax = Axes3D(fig)
+# index =-1
+# ax.scatter(mesh[:,0], mesh[:,1], pdf, c='r', marker='.')
 
 GMat = []
 for point in trange(len(mesh)):
-    gRow = MeshUp.generateGRow([mesh[point,0], mesh[point,1]], mesh, kstep, h)
+    gRow = generateGRow([mesh[point,0], mesh[point,1]], mesh, kstep, h)
     GMat.append(np.copy(gRow))
       
 surfaces = [] 
 surfaces.append(np.copy(pdf))
 t=0
-while t < 150:
+while t < 100:
     print(t)
     pdf = np.matmul(GMat, pdf)
     surfaces.append(np.copy(pdf))
@@ -56,8 +72,10 @@ while t < 150:
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = 8
+index =12
 ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
+index = 3
+
 #  
 def update_graph(num):
     graph.set_data(mesh[:,0], mesh[:,1])
@@ -65,13 +83,13 @@ def update_graph(num):
     title.set_text('3D Test, time={}'.format(num))
     return title, graph
 
-# meshSoln = np.copy(mesh)
-# pdfSoln = surfaces.copy()
+meshSoln = np.copy(mesh)
+pdfSoln = surfaces.copy()
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
-    
+
 graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[-1], linestyle="", marker="o")
 ax.set_zlim(0, np.max(surfaces[-1]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
@@ -79,8 +97,8 @@ ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
 
 plt.show()
 
-pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PDFTraj.p", "wb" ) 
-pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Mesh.p", "wb" ) 
+pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PDFTraj1.p", "wb" ) 
+pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Mesh1.p", "wb" ) 
 
 import pickle  
 pickle.dump(surfaces, pkl_file)

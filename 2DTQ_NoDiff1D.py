@@ -99,7 +99,7 @@ if g1 == 0:
         print(i)
         print(len(inds_unrav[0]))            
         for k in range(0, len(x1)):
-            Gmat[i,k]=kstep*G2D(x1[i], x2[i], x2[k], g2)
+            Gmat[i,k]=kstep*G1D(x1[i], x2[i], x2[k], g2)
             
     t=0
     while t < 150:

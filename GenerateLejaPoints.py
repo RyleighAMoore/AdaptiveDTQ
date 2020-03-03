@@ -207,9 +207,15 @@ def getLejaPointsWithStartingPoints(Px, Py, numNeighbors, mesh, numNewLejaPoints
 
 def generateLejaMesh(numPoints, sigmaX, sigmaY, numBasis):
 #    lejaPoints, newPoints = getLejaPointsWithStartingPoints(0, 0, 0,[], numPoints, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(),40)
-     lejaPoints, newPoints = getLejaPointsWithStartingPoints(0, 0, 0,[], numPoints, sigmaX,sigmaY,numBasis, 10000)
+     lejaPoints, newPoints = getLejaPointsWithStartingPoints(0, 0, 0, [], numPoints, sigmaX,sigmaY,numBasis, 10000)
 
      return lejaPoints
+ 
+    
+def generateLejaMeshNotCentered(numPoints, sigmaX, sigmaY, numBasis, meanX, meanY):
+#    lejaPoints, newPoints = getLejaPointsWithStartingPoints(0, 0, 0,[], numPoints, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(),40)
+    lejaPoints, newPoints = getLejaPointsWithStartingPoints(meanX, meanY, 0, [], numPoints, sigmaX,sigmaY,numBasis, 10000)
+    return lejaPoints
 
 
         

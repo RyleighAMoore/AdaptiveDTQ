@@ -16,18 +16,19 @@ from mpl_toolkits.mplot3d import Axes3D
 import GenerateLejaPoints as LP
 import distanceMetrics
 import LejaPointsToRemove as LPR
+import InterpolationPCE as IPCE
 
 global MaxSlope
 MaxSlope = 0 # Initialize to 0, the real value is set in the code
-addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
-removeZerosValuesIfLessThanTolerance = 10**(-10)
-minDistanceBetweenPoints = 0.03
-minDistanceBetweenPointsBoundary = 0.1
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-6)
+removeZerosValuesIfLessThanTolerance = 10**(-15)
+minDistanceBetweenPoints = 0.05
+minDistanceBetweenPointsBoundary = 0.05
 skipCount = 4
 maxDistanceBetweenPoints = 0.15
 numStdDev = 5 #For grids around each point in the mesh
 
-adjustDensity = True
+adjustDensity = False
 adjustBoundary = True
 
 # addPointsToBoundaryIfBiggerThanTolerance = 10**(-2)
@@ -38,29 +39,29 @@ adjustBoundary = True
 # maxDistanceBetweenPoints = 0.2
 
 
-def addPointsToMeshProcedure(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, kstep, h, xmin, xmax, ymin, ymax):
+def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, xmin, xmax, ymin, ymax):
     changedBool2 = 0
     changedBool1 = 0
     if adjustDensity:
-        Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, changedBool2 = addInteriorPoints(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, kstep, h)
+        Mesh, Pdf, triangulation, changedBool2 = addInteriorPoints(Mesh, Pdf, triangulation, kstep, h)
     if adjustBoundary:
-        Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, changedBool1 = addPointsToBoundary(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, kstep, h)
+        Mesh, Pdf, triangulation, changedBool1 = addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h)
     ChangedBool = max(changedBool1, changedBool2)
-    return Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, ChangedBool, xmin, xmax, ymin, ymax 
+    return Mesh, Pdf, triangulation, ChangedBool, xmin, xmax, ymin, ymax 
 
-def removePointsFromMeshProcedure(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
+def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool):
     '''Removes the flagged values from the list of mesh values and in Gmat. 
     boolZerosArray is the list of zeros and ones denoting which grid points to remove.
     Gmat, Mesh, Grids, Vertices, and VerticesNum are all used in the 2DTQ-UnorderedMesh method 
     and the parts associated with the removed points need to be removed.'''
     ChangedBool2 = 0
     ChangedBool1 = 0
-    if adjustBoundary:
-        GMat, Mesh, Grids, Pdf, ChangedBool2 = removeBoundaryPoints(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool)
+    # if adjustBoundary:
+    #     Mesh, Pdf, ChangedBool2 = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool)
     if adjustDensity:
-        GMat, Mesh, Grids, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool)
+        Mesh, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool)
     ChangedBool = max(ChangedBool1, ChangedBool2)
-    return GMat, Mesh, Grids, Pdf, ChangedBool
+    return Mesh, Pdf, ChangedBool
 
 
 def getBoundaryPoints(Mesh, tri, alpha):
@@ -72,17 +73,17 @@ def getBoundaryPoints(Mesh, tri, alpha):
     return pointsOnEdge
 
 
-def checkIntegrandForZeroPoints(GMat, PDF, tolerance, Mesh, tri, boundaryOnly):
+def checkIntegrandForZeroPoints(PDF, tolerance, Mesh, tri, boundaryOnly):
     '''Check if the integrand p*G is less than the tolerance.
     Uses alpha hull to get the boundary points if boundaryOnly is True.'''
     maxMat = 10*np.ones(len(PDF))
     if boundaryOnly:
         pointsOnEdge = getBoundaryPoints(Mesh, tri, maxDistanceBetweenPoints)
         for i in pointsOnEdge:
-            maxMat[i]=(np.max(PDF[i]*GMat[i]))    
+            maxMat[i]=(np.max(PDF[i]))    
     else:
         for i in range(len(PDF)):
-            maxMat[i]=(np.max(PDF[i]*GMat[i]))  
+            maxMat[i]=(np.max(PDF[i]))  
     Slopes = getSlopes(Mesh, PDF)
     adding = np.asarray([Slopes < 0.001])
     adding2 = [np.asarray(maxMat) < tolerance]
@@ -96,15 +97,15 @@ def checkIntegrandForZeroPoints(GMat, PDF, tolerance, Mesh, tri, boundaryOnly):
     return np.asarray(possibleZeros).T
 
 
-def checkIntegrandForAddingPointsAroundBoundaryPoints(GMat, PDF, tolerance, Mesh, tri, boundaryOnly):
+def checkIntegrandForAddingPointsAroundBoundaryPoints(PDF, tolerance, Mesh, tri, boundaryOnly):
     maxMat = -1*np.ones(len(PDF))
     if boundaryOnly:
         pointsOnEdge = getBoundaryPoints(Mesh, tri, maxDistanceBetweenPoints)
         for i in pointsOnEdge:
-            maxMat[i]=(np.max(PDF[i]*GMat[i]))    
+            maxMat[i]=(np.max(PDF[i]))    
     else:
         for i in range(len(PDF)):
-            maxMat[i]=(np.max(PDF[i]*GMat[i]))
+            maxMat[i]=(np.max(PDF[i]))
     addingAround = [np.asarray(maxMat) >= tolerance]
     # print(np.max(np.asarray(maxMat)))
     return np.asarray(addingAround).T
@@ -116,52 +117,50 @@ def checkIntegrandForAddingPointsAroundBoundaryPoints(GMat, PDF, tolerance, Mesh
 #    return [np.asarray(newPDF) <= tolerance]
 
 
-def generateGRow(point, allPoints, kstep, h):
-    row = []
-    OrderA = []
-    for i in range(len(allPoints)):
-        val = kstep**2*fun.G(point[0], point[1], allPoints[i,0], allPoints[i,1], h)
-        row.append(val)
-        OrderA.append([point[0], point[1], allPoints[i,0], allPoints[i,1]])
-    return row
+# def generateGRow(point, allPoints, kstep, h):
+#     row = []
+#     OrderA = []
+#     for i in range(len(allPoints)):
+#         val = kstep**2*fun.G(point[0], point[1], allPoints[i,0], allPoints[i,1], h)
+#         row.append(val)
+#         OrderA.append([point[0], point[1], allPoints[i,0], allPoints[i,1]])
+#     return row
 
 
 
-def removeBoundaryPoints(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
+def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool):
     stillRemoving = True
     ChangedBool = 0
     length = len(Mesh)
     while stillRemoving: # Removing boundary points
-        boundaryZeroPointsBoolArray = checkIntegrandForZeroPoints(GMat, Pdf, removeZerosValuesIfLessThanTolerance,Mesh,tri, True)
+        boundaryZeroPointsBoolArray = checkIntegrandForZeroPoints(Pdf, removeZerosValuesIfLessThanTolerance,Mesh,tri, True)
         if max(boundaryZeroPointsBoolArray == 1):
             for val in range(len(boundaryZeroPointsBoolArray)-1,-1,-1):
                 if boundaryZeroPointsBoolArray[val] == 1: # remove the point
                     ChangedBool=1
-                    GMat, Mesh, Grids, Pdf = removePoint(val, GMat, Mesh, Grids, Pdf)
+                    Mesh, Pdf = removePoint(val, Mesh, Pdf)
         else:
             stillRemoving = False
-        Vertices, VerticesNum, tri = houseKeepingAfterAdjustingMesh(Mesh, Grids, tri)
+        tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
     for i in range(len(Mesh)-1,-1,-1): # Remove straggling points
         nearestPoint, distToNearestPoints = UM.findNearestKPoints(Mesh[i,0],Mesh[i,1], Mesh, 6)            # print("Making Less Dense!...")
         dist = np.mean(distToNearestPoints)
         if dist > maxDistanceBetweenPoints: # Remove outlier
-            GMat, Mesh, Grids, Pdf = removePoint(i, GMat, Mesh, Grids, Pdf)
+            Mesh, Pdf = removePoint(i, Mesh, Pdf)
             ChangedBool = 1
     if ChangedBool == 1:
-        Vertices, VerticesNum, tri = houseKeepingAfterAdjustingMesh(Mesh, Grids, tri)
+        tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
     print("Boundary points removed", length -len(Mesh))  
-    return GMat, Mesh, Grids, Pdf, ChangedBool
+    return Mesh, Pdf, ChangedBool
 
 
-def removePoint(index, GMat, Mesh, Grids, Pdf):
-    GMat.pop(index)
+def removePoint(index, Mesh, Pdf):
     Mesh = np.delete(Mesh, index, 0)
-    Grids.pop(index)
     Pdf = np.delete(Pdf, index, 0)
-    return GMat, Mesh, Grids, Pdf
+    return Mesh, Pdf
     
 
-def removeInteriorPointsToMakeLessDense(GMat, Mesh, Grids, Pdf, tri, boundaryOnlyBool):
+def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool):
     ChangedBool=0
     startingLength = len(Mesh)
     Slopes = getSlopes(Mesh, Pdf)
@@ -182,7 +181,7 @@ def removeInteriorPointsToMakeLessDense(GMat, Mesh, Grids, Pdf, tri, boundaryOnl
             nearestPoint, distances = UM.findNearestKPoints(Mesh[corrIndices[j],0],Mesh[corrIndices[j],1], meshWithSmallSlopes, 6)            # print("Making Less Dense!...")
             distToNearestPoint = np.max(distances)
             if distToNearestPoint < maxDistanceBetweenPoints:
-                GMat, Mesh, Grids, Pdf = removePoint(corrIndices[j], GMat, Mesh, Grids, Pdf)
+                Mesh, Pdf = removePoint(corrIndices[j], Mesh, Pdf)
                 ChangedBool = 1
             # else:
             #     print("Skip removing top of hill")
@@ -191,67 +190,34 @@ def removeInteriorPointsToMakeLessDense(GMat, Mesh, Grids, Pdf, tri, boundaryOnl
     numReduced = startingLength-len(Mesh)
     print("Removed ", numReduced, "to decrease density.")
     if ChangedBool:
-        Vertices, VerticesNum, tri = houseKeepingAfterAdjustingMesh(Mesh, Grids, tri)
-    return GMat, Mesh, Grids, Pdf, ChangedBool
+        tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
+    return Mesh, Pdf, ChangedBool
 
 
-def houseKeepingAfterAdjustingMesh(Mesh, Grids, tri):
+def houseKeepingAfterAdjustingMesh(Mesh, tri):
     '''Updates all the Vertices information for the mesh. Must be run after removing points'''
     tri = Delaunay(Mesh, incremental=True)
-    Vertices = []
-    VerticesNum = []
-    for point in range(len(Mesh)): # Recompute Vertices and VerticesNum matrices
-        grid = Grids[point]
-        Vertices.append([])
-        VerticesNum.append([])
-        for currGridPoint in range(len(grid)):
-            vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], Mesh, tri) # Points that make up triangle
-            Vertices[point].append(np.copy(vertices))
-            VerticesNum[point].append(np.copy(indices))
-    return Vertices, VerticesNum, tri
+    return tri
 
 
-def addPoint(Px,Py, Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, kstep, h):
+def addPoint(Px,Py, Mesh, Pdf, triangulation, kstep, h):
+    newPoint = np.asarray([[Px],[Py]]).T
+    interp = IPCE.interpolateLeja(Mesh, Pdf, newPoint, h)
+    # interp = np.squeeze(interp2)
     Mesh = np.append(Mesh, np.asarray([[Px],[Py]]).T, axis=0)
-    xmin = np.min(Mesh[:,0]); xmax = np.max(Mesh[:,0])
-    ymin = np.min(Mesh[:,1]); ymax = np.max(Mesh[:,1])
-    grid = UM.makeOrderedGridAroundPoint([Px,Py],kstep, max(xmax-xmin, ymax-ymin),Px-numStdDev*np.sqrt(h)*fun.g1() ,Px+numStdDev*np.sqrt(h)*fun.g1(),Py-numStdDev*np.sqrt(h)*fun.g2(),Py+numStdDev*np.sqrt(h)*fun.g2())
-    Grids.append(np.copy(grid))
-    Vertices.append([])
-    VerticesNum.append([])
-    for currGridPoint in range(len(grid)):
-        vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], Mesh, triangulation) # Points that make up triangle
-        Vertices[-1].append(np.copy(vertices))
-        VerticesNum[-1].append(np.copy(indices))
-    pointVertices, pointIndices = UM.getVerticesForPoint([Px,Py], Mesh, triangulation) # Points that make up triangle    
-    threePdfVals = [Pdf[pointIndices[0]], Pdf[pointIndices[1]], Pdf[pointIndices[2]]]
-    interp = UM.baryInterp([Px],[Py], pointVertices, threePdfVals)
-    try: 
-        threePdfVals = [Pdf[pointIndices[0]], Pdf[pointIndices[1]], Pdf[pointIndices[2]]]
-        interp = UM.baryInterp([Px],[Py], pointVertices, threePdfVals)
-        Pdf = np.append(Pdf, interp, axis=0)                      
-    except:
-        interp = 0
-        Pdf = np.append(Pdf, [0], axis=0)
-    # print(interp)
-    gRow = generateGRow([Px, Py], grid, kstep, h)
-    GMat.append(np.copy(gRow))
+    Pdf = np.append(Pdf, interp[0], axis=0)                      
     triangulation.add_points(np.asarray([[Px],[Py]]).T, restart=False)
-    # if interp > 0.1:
-    #     plt.figure()
-    #     plt.plot(Mesh[:,0], Mesh[:,1], '.k')
-    #     plt.plot(Px,Py, '*r')
-    #     plt.show()
-    return  Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation
+
+    return  Mesh, Pdf, triangulation
  
     
-def addPointsToBoundary(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, kstep, h):
+def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h):
     numBoundaryAdded = 0
     keepAdding = True
     changedBool = 0
     print("adding boundary points...")
     while keepAdding:
-        boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(GMat, Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation, True)
+        boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation, True)
         # print(np.count_nonzero(boundaryPointsToAddAround))
         # plt.figure()
         # pointsX = []
@@ -271,7 +237,7 @@ def addPointsToBoundary(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangula
                     newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, minDistanceBetweenPointsBoundary)
                     for point in range(len(newPoints)):
                         ChangedBool = 1
-                        Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation = addPoint(newPoints[point,0], newPoints[point,1], Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, kstep, h)
+                        Mesh, Pdf, triangulation = addPoint(newPoints[point,0], newPoints[point,1], Mesh, Pdf, triangulation, kstep, h)
                         numBoundaryAdded = numBoundaryAdded +1
         else:
             keepAdding =False
@@ -279,11 +245,11 @@ def addPointsToBoundary(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangula
         # plt.plot(Mesh[:,0], Mesh[:,1], '.k')
         # plt.show()
         if changedBool == 1:
-            Vertices, VerticesNum, tri = houseKeepingAfterAdjustingMesh(Mesh, Grids, triangulation)
+            tri = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
     print("# boundary points Added = ", numBoundaryAdded)    
-    return Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, changedBool
+    return Mesh, Pdf, triangulation, changedBool
 
-def addInteriorPoints(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, kstep, h):
+def addInteriorPoints(Mesh, Pdf, triangulation, kstep, h):
     Slopes = getSlopes(Mesh, Pdf)
     denisfyAroundPointIfSlopeLargerThanTolerance = 0.1 # np.quantile(Slopes,0.5)
     interiorPointsToAddAround = np.asarray([np.asarray(Slopes)> denisfyAroundPointIfSlopeLargerThanTolerance]).T
@@ -307,9 +273,10 @@ def addInteriorPoints(Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulati
                     newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, min(minDistanceBetweenPoints/Slopes[val], minDistanceBetweenPoints))
                     for point in range(len(newPoints)):
                         ChangedBool = 1
-                        Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation = addPoint(newPoints[point,0], newPoints[point,1], Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, kstep, h)
-        print("# interior points Added = ", numInteriorAdded)  
-        return Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, ChangedBool 
+                        numInteriorAdded+=1
+                        Mesh, Pdf, triangulation = addPoint(newPoints[point,0], newPoints[point,1], Mesh, Pdf, triangulation, kstep, h)
+    print("# interior points Added = ", numInteriorAdded)  
+    return Mesh, Pdf, triangulation, ChangedBool 
 
 
 def getSlopes(mesh, PDF):

@@ -15,13 +15,14 @@ def getErrors(meshSol, valSoln, meshTest, valTest):
     maxErrors = []
     L2Errors = []
     location = []
+    KLErrors = []
     for i in range(min(len(valSoln), len(meshTest))):
     # for i in range(1):
-        for ii in range(1,10):
+        for ii in range(1,2):
             xmin = np.min(meshSol[:,0]); xmax = np.max(meshSol[:,0])
             ymin = np.min(meshSol[:,1]); ymax = np.max(meshSol[:,1])
-            # xmin = -2; xmax = 2
-            # ymin = -2; ymax = 2 
+            # xmin = -0.5; xmax = 0.5
+            # ymin = -0.5; ymax = 0.5
             grid_x, grid_y = np.mgrid[xmin:xmax:0.01*ii, ymin:ymax:0.01*ii]
             location.append(np.asarray([1+i,0.01*ii]))
 
@@ -41,7 +42,7 @@ def getErrors(meshSol, valSoln, meshTest, valTest):
             grid_train = griddata(meshTest[i], valTest[i], (grid_x, grid_y), method='cubic')
             grid_soln = griddata(meshSol, valSoln[i], (grid_x, grid_y), method='cubic')
             grid_train = np.matrix.flatten(grid_train)
-            grid_soln=  np.matrix.flatten(grid_soln)
+            grid_soln =  np.matrix.flatten(grid_soln)
             assert len(grid_soln) == len(grid_train)
            
             
@@ -51,6 +52,12 @@ def getErrors(meshSol, valSoln, meshTest, valTest):
             grid_soln[gS] = 0
             maxError = np.max(np.abs(grid_soln - grid_train))
             maxErrors.append(maxError)
+            klerror = 0
+            for val in range(len(grid_soln)):
+                # if grid_soln[val] >0.01 and grid_train[val] >0.01:
+                klerror = klerror + grid_soln[val]*(grid_soln[val]-grid_train[val])
+                    # print(klerror)
+            KLErrors.append(np.copy(klerror))
             # grid_soln = np.ma.masked_where(grid_soln <= 10**(-10), grid_soln)
             # grid_train = np.ma.masked_where(grid_train <= 10**(-10), grid_train)
             runningsum = 0
@@ -85,14 +92,14 @@ def getErrors(meshSol, valSoln, meshTest, valTest):
         # ax.scatter(grid_x,grid_y, np.abs(grid_soln-grid_train), c='g', marker='.')
         # plt.show()
         
-    return maxErrors, L2Errors, grid_soln, grid_train, np.asarray(location)
+    return maxErrors, L2Errors, grid_soln, grid_train, np.asarray(location), KLErrors
         
-maxError, L2Error,grid_soln, grid_train, locations = getErrors(meshSoln, pdfSoln, Meshes, PdfTraj)
+maxError, L2Error,grid_soln, grid_train, locations, KLErrors = getErrors(meshSoln, pdfSoln, Meshes, PdfTraj)
 
 fig = plt.figure()
 ax = Axes3D(fig)
 # ax.scatter(locations[:,0], locations[:,1], maxError, c='r', label = "Max Error")
-ax.scatter(locations[:,0], locations[:,1], L2Error, c='g', label = "L2 Error")
+ax.scatter(locations[:,0], locations[:,1], np.asarray(KLErrors), c='g', label = "L2 Error")
 
 ax.set_xlabel('Time Step', labelpad=20)
 ax.set_ylabel('Grid Spacing', labelpad=20)
@@ -137,7 +144,7 @@ Meshes = []
 PdfTraj = [] 
 pdfSoln = []
 # for i in range(2):
-for j in range(1,8):
+for j in range(9,10):
     degree=55
     num_leja_samples = 100*j
     num_vars = 2
@@ -150,11 +157,10 @@ for j in range(1,8):
     pdf = UM.generateICPDF(train_samples[:,0], train_samples[:,1], 0.1, 0.1)
     Meshes.append(train_samples)
     PdfTraj.append(pdf)
-    meshSoln = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, 0.05, includeOrigin=True)
+    meshSoln = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, 0.01, includeOrigin=True)
     pdf2 = UM.generateICPDF(meshSoln[:,0], meshSoln[:,1], 0.1, 0.1)
     pdfSoln.append(pdf2)
-
-
+    
 
 
 
