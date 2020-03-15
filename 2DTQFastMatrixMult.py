@@ -30,10 +30,10 @@ h=0.01
 s=0.75
 kstep = h ** s
 kstep = 0.1
-xmin=-1.5
-xmax=1.5
-ymin=-1.5
-ymax=1.5
+xmin=-2
+xmax=2
+ymin=-2
+ymax=2
 
 
 def generateGRow(point, allPoints, kstep, h):
@@ -59,6 +59,8 @@ GMat = []
 for point in trange(len(mesh)):
     gRow = generateGRow([mesh[point,0], mesh[point,1]], mesh, kstep, h)
     GMat.append(np.copy(gRow))
+
+
       
 surfaces = [] 
 surfaces.append(np.copy(pdf))
@@ -72,9 +74,11 @@ while t < 100:
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =12
-ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
-index = 3
+index = 12
+ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='*')
+index = 12
+ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
+# 
 
 #  
 def update_graph(num):

@@ -123,25 +123,24 @@ def getLejaQuadratureRule(sigmaX, sigmaY, muX, muY):
 
 '''
 # Quadrature Testing
-train_samples1, weights1, poly = getLejaQuadratureRule(0.1, 0.1 ,1,1)
-train_samples, weights, poly = getLejaQuadratureRule(0.1, 0.1,0,0)
-plt.scatter(train_samples1[:,0], train_samples1[:,1])
+# train_samples1, weights1, poly = getLejaQuadratureRule(0.1, 0.1 ,1,1)
+# train_samples, weights, poly = getLejaQuadratureRule(0.1, 0.1,0,0)
+# plt.scatter(train_samples1[:,0], train_samples1[:,1])
 
-# train_samples1, weights, poly = getLejaQuadratureRule(1, 1, 0,0)
-Aa1 = np.matmul(weights1, np.ones(len(train_samples1))) # should be 1
-Aa = np.matmul(weights, np.ones(len(train_samples))) 
+# # train_samples1, weights, poly = getLejaQuadratureRule(1, 1, 0,0)
+# Aa1 = np.matmul(weights1, np.ones(len(train_samples1))) # should be 1
+# Aa = np.matmul(weights, np.ones(len(train_samples))) 
+# rv = multivariate_normal([0, 0], [[0.25, 0], [0, 0.25]])
+# vals1 = np.asarray([rv.pdf(train_samples1)]).T  
+# vals = np.asarray([rv.pdf(train_samples)]).T
+# Ab1 = np.matmul(weights1, vals1) # should be 2.277E-44
+# Ab = np.matmul(weights, vals) # Should be 0.612134
 
-rv = multivariate_normal([0, 0], [[0.25, 0], [0, 0.25]])
-vals1 = np.asarray([rv.pdf(train_samples1)]).T  
-vals = np.asarray([rv.pdf(train_samples)]).T
-Ab1 = np.matmul(weights1, vals1) # should be 2.277E-44
-Ab = np.matmul(weights, vals) # Should be 0.612134
-
-rv = multivariate_normal([1, -1], [[0.25, 0], [0, 0.25]])
-vals1 = np.asarray([rv.pdf(train_samples1)]).T 
-vals = np.asarray([rv.pdf(train_samples)]).T
-Ac1 = np.matmul(weights1, vals1) # should be 0.000279332
-Ac = np.matmul(weights, vals) # Should be 0.0130763
+# rv = multivariate_normal([1, -1], [[0.25, 0], [0, 0.25]])
+# vals1 = np.asarray([rv.pdf(train_samples1)]).T 
+# vals = np.asarray([rv.pdf(train_samples)]).T
+# Ac1 = np.matmul(weights1, vals1) # should be 0.000279332
+# Ac = np.matmul(weights, vals) # Should be 0.0130763
 '''
 
 
@@ -176,7 +175,7 @@ def LejaInterpolation(train_values,train_samples, sigmaX, sigmaY):
     # plt.show()
     
     
-    rv = multivariate_normal([0, 0], [[sigmaX**2, 0], [0, sigmaX**2]])
+    rv = multivariate_normal([0, 0], [[sigmaX, 0], [0, sigmaX]])
     train_values = np.log(np.asarray([rv.pdf(train_samples)])).T
     
     
@@ -215,21 +214,7 @@ def LejaInterpolation(train_values,train_samples, sigmaX, sigmaY):
     aa2 = np.matmul(testing, np.exp(train_values))   
     aa3 = np.matmul(testing, train_values)  
     
-
-
-def getGaussianPolys(sigmaX, sigmaY, muX, muY):
-    univariate_variables = [norm(muX,sigmaX),norm(muY,sigmaY)]
-    variable = IndependentMultivariateRandomVariable(univariate_variables)
-    var_trans = AffineRandomVariableTransformation(variable)
-    poly = PolynomialChaosExpansion()
-    poly_opts = define_poly_options_from_variable_transformation(var_trans)
-    poly.configure(poly_opts)
     
-    degree=9
-    indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
-    # indices = compute_tensor_product_level_indices(poly.num_vars(),degree,max_norm=True)
-    poly.set_indices(indices)
-    return poly
 
 
 def interpolateLeja(Mesh, Pdf, newPoint, h):
@@ -252,13 +237,13 @@ def interpolateLeja(Mesh, Pdf, newPoint, h):
 # interp2 = interpolateLeja(Meshes[0], pdf, np.asarray([[2],[1]]).T, 0.1)
 
 
-import untitled9 as u9
+
 import Functions as fun
 from scipy.interpolate import griddata
 import UnorderedMesh as UM
 from tqdm import tqdm, trange
 h=0.01
-lejaPoints1, weights, poly = getLejaQuadratureRule(np.sqrt(h)*fun.g1(0,0), np.sqrt(h)*fun.g2(0,0), 0,0)
+lejaPoints1, weights, poly = getLejaQuadratureRule(np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(), 0,0)
 # lejaPoints1, weights = np.polynomial.hermite.hermgauss(10)
 def stepForwardInTime(Mesh, Pdf, h):
     print("Stepping Forward...")
@@ -269,43 +254,18 @@ def stepForwardInTime(Mesh, Pdf, h):
     # plt.scatter(lejaPoints[:,0], lejaPoints[:,1])
     # lejaPoints1, weights, poly = getLejaQuadratureRule(np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(), 0,0)
     for point in trange(len(train_samples)):
-        Px = np.copy(train_samples[point,0])
-        Py = np.copy(train_samples[point,1])
-        muX2 = Px - h*fun.f1(Px,Py)
-        muY2 = Py - h*fun.f2(Px,Py)
-        sigmaX = np.sqrt(h)*fun.g1()
-        sigmaY = np.sqrt(h)*fun.g2()
-        # degree = 35
-        
-        # dx1 = muX*np.ones((1,len(train_samples))).T
-        # dy2 = muY*np.ones((1,len(train_samples))).T
-        # delta2 = np.hstack((dx1,dy2))
-        # train_samples = train_samples + delta2
-        
-        dx1 = 2*muX2*np.ones((1,len(train_samples))).T - Px*np.ones((1,len(train_samples))).T
-        dy2 = 2*muY2*np.ones((1,len(train_samples))).T - Py*np.ones((1,len(train_samples))).T
-        delta2 = np.hstack((dx1,dy2))
-        train_samples = train_samples - delta2
-        
-        # train_values = np.expand_dims(train_values,axis=1)
-        aa, poly = u9.QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, 0, 0, 30)
-        
-
-        # aa = u9.QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, muY, degree)
-        '''
         train_samples = np.copy(Mesh)
         lejaPoints = np.copy(lejaPoints1)
         Px = np.copy(train_samples[point,0])
         Py = np.copy(train_samples[point,1])
-        muX = Px - h*fun.f1(Px,Py)
-        muY = Py - h*fun.f2(Px,Py)
+        muX = Px - 2*h*fun.f1(Px,Py)
+        muY = Py - 2*h*fun.f2(Px,Py)
         # lejaPoints, weights, poly = getLejaQuadratureRule(np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(), muX,muY)
 
         dx1 = muX*np.ones((1,len(lejaPoints))).T
         dy2 = muY*np.ones((1,len(lejaPoints))).T
         delta2 = np.hstack((dx1,dy2))
-        lejaPoints = lejaPoints + delta2
-        '''
+        lejaPoints = lejaPoints - delta2
     
        
         # dx = Px*np.ones((1,len(train_samples))).T #+ h*fun.f1(Px,Py)*np.ones((1,len(train_samples))).T
@@ -317,24 +277,21 @@ def stepForwardInTime(Mesh, Pdf, h):
         # mesh = UM.generateOrderedGridCenteredAtZero(-4,4, -4,4, 0.1, includeOrigin=True)
         # rv = multivariate_normal([muX, muY], [[np.sqrt(h)*fun.g1(),0], [0, np.sqrt(h)*fun.g2()]])
         # normal = (np.asarray([rv.pdf(mesh)])).T
-        '''
         mesh = UM.generateOrderedGridCenteredAtZero(-2,2, -2,2, 0.01, includeOrigin=True)
-        '''
         # rv = multivariate_normal([muX, muY], [[np.sqrt(h)*fun.g1(),0], [0, np.sqrt(h)*fun.g2()]])
         
         # rv1 = multivariate_normal([0, 0], [[0.25,0], [0, 0.25]])
         # normal1 = (np.asarray([rv.pdf(mesh)])).T
         
-        '''
+    
         grid_z2 = griddata(train_samples, train_values, lejaPoints, method='cubic', fill_value=0)
         grid_z = griddata(train_samples, train_values, mesh, method='cubic', fill_value=0)
         # grid_z3 = (np.asarray([rv1.pdf(lejaPoints1)])).T
-    
-        aa = np.dot(weights, grid_z2) 
-        '''
-        PdfNew.append(np.copy(aa))
-        # print(aa)
         
+        
+        
+        aa = np.dot(weights, grid_z2) 
+        PdfNew.append(np.copy(aa))
         
         # mesh = UM.generateOrderedGridCenteredAtZero(-4,4, -4,4, 0.1, includeOrigin=True)    
         # vals1 = np.exp(poly.value(mesh.T))
@@ -383,11 +340,6 @@ def stepForwardInTime(Mesh, Pdf, h):
     PdfNew = np.asarray(PdfNew)
     return np.squeeze(PdfNew)
 
-
-
-
-
-
 # import pickle
 # pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTraj1.p","rb")
 # train_value = pickle.load(pickle_in)
@@ -400,38 +352,7 @@ def stepForwardInTime(Mesh, Pdf, h):
 # fig = plt.figure()
 # ax = Axes3D(fig)
 # ax.scatter(train_samples[:,0], train_samples[:,1], PdfNew, c='r', marker='.')
-# ax.scatter(train_samples[:,0], train_samples[:,1], train_value[31], c='k', marker='.')
+# ax.scatter(train_samples[:,0], train_samples[:,1], train_value[1], c='k', marker='.')
 
 # t=0
-
-import  untitled9 as u9
-lejaPoints1, weights, poly = getLejaQuadratureRule(np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(), 0,0)
-# lejaPoints1, weights = np.polynomial.hermite.hermgauss(10)
-def stepForwardInTime2(Mesh, Pdf, h):
-    print("Stepping Forward...")
-    PdfNew = []
-    train_samples = np.copy(Mesh)
-    train_values = np.copy(Pdf)
-    # If g1 or g2 changes spatially, we need to move this inside the loop.
-    # plt.scatter(lejaPoints[:,0], lejaPoints[:,1])
-    # lejaPoints1, weights, poly = getLejaQuadratureRule(np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(), 0,0)
-    for point in trange(len(train_samples)):
-        train_samples1 = np.copy(Mesh)
-        lejaPoints = np.copy(lejaPoints1)
-        Px = np.copy(train_samples[point,0])
-        Py = np.copy(train_samples[point,1])
-        muX = Px - 2*h*fun.f1(Px,Py); 
-        muY = Py - 2*h*fun.f2(Px,Py); 
-        sigmaX = np.sqrt(h)*fun.g1();
-        sigmaY = np.sqrt(h)*fun.g2();
-        degree=50
-        
-        integral, poly = u9.QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, muY, degree)
-        PdfNew.append(integral)
-        print(integral)
-
-    PdfNew = np.asarray(PdfNew)
-    return np.squeeze(PdfNew)
-
-
 

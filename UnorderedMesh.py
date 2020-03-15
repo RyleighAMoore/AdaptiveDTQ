@@ -196,6 +196,16 @@ def generateICPDF(x,y,sigma_x, sigma_y):
     
     return z
 
+def generateICPDFShifted(x,y,sigma_x, sigma_y, muX, muY):
+    z = (1/(2*np.pi*sigma_x*sigma_y) * np.exp(-((x-muX)**2/(2*sigma_x**2)
+         + (y-muY)**2/(2*sigma_y**2))))
+
+#    fig = plt.figure()
+#    ax = Axes3D(fig)
+#    ax.scatter(x, y, z, c='r', marker='.')
+    
+    return z
+
 # Function that finds the vertices for 
     # calculation of the barycentric interpolation.
 def getVerticesForPoint(point, allPoints, tri):
