@@ -210,7 +210,8 @@ def houseKeepingAfterAdjustingMesh(Mesh, Grids, tri):
             VerticesNum[point].append(np.copy(indices))
     return Vertices, VerticesNum, tri
 
-
+import untitled7 as u7
+from scipy.interpolate import griddata
 def addPoint(Px,Py, Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation, kstep, h):
     Mesh = np.append(Mesh, np.asarray([[Px],[Py]]).T, axis=0)
     xmin = np.min(Mesh[:,0]); xmax = np.max(Mesh[:,0])
@@ -223,8 +224,13 @@ def addPoint(Px,Py, Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation
         vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], Mesh, triangulation) # Points that make up triangle
         Vertices[-1].append(np.copy(vertices))
         VerticesNum[-1].append(np.copy(indices))
+        
     pointVertices, pointIndices = UM.getVerticesForPoint([Px,Py], Mesh, triangulation) # Points that make up triangle    
     threePdfVals = [Pdf[pointIndices[0]], Pdf[pointIndices[1]], Pdf[pointIndices[2]]]
+    
+    train_samples, train_values = u7.getMeshValsThatAreClose(Mesh, Pdf, 0.1, 0.1, Px, Py)
+    grid_z2 = griddata(train_samples, train_values, np.asarray([[Px,Py]]), method='cubic', fill_value=0)
+    
     interp = UM.baryInterp([Px],[Py], pointVertices, threePdfVals)
     try: 
         threePdfVals = [Pdf[pointIndices[0]], Pdf[pointIndices[1]], Pdf[pointIndices[2]]]
@@ -232,7 +238,7 @@ def addPoint(Px,Py, Mesh, GMat, Grids, Vertices, VerticesNum, Pdf, triangulation
         Pdf = np.append(Pdf, interp, axis=0)                      
     except:
         interp = 0
-        Pdf = np.append(Pdf, [0], axis=0)
+        Pdf = np.append(Pdf, [10**(-20)], axis=0)
     # print(interp)
     gRow = generateGRow([Px, Py], grid, kstep, h)
     GMat.append(np.copy(gRow))

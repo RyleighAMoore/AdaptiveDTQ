@@ -30,10 +30,10 @@ h=0.01
 s=0.75
 kstep = h ** s
 kstep = 0.1
-xmin=-2
-xmax=2
-ymin=-2
-ymax=2
+xmin=-2.25
+xmax=2.25
+ymin=-2.25
+ymax=2.25
 
 
 def generateGRow(point, allPoints, kstep, h):
@@ -74,9 +74,9 @@ while t < 100:
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index = 12
+index =5
 ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='*')
-index = 12
+index =5
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
 # 
 

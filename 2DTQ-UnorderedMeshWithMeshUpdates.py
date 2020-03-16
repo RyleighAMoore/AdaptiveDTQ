@@ -201,12 +201,12 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(100):
-    # Slope = MeshUp.getSlopes(mesh, pdf)
-    # SlopesMean.append(np.mean(Slope))
-    # SlopesMin.append(np.min(Slope))
-    # SlopesMax.append(np.max(Slope))
-    # Slopes.append(Slope)
+for i in trange(40):
+    Slope = MeshUp.getSlopes(mesh, pdf)
+    SlopesMean.append(np.mean(Slope))
+    SlopesMin.append(np.min(Slope))
+    SlopesMax.append(np.max(Slope))
+    Slopes.append(Slope)
     if (i >= 0) and adjustGrid:
         assert np.max(PdfTraj[-1] < 10), "PDF Blew up"
         if (i>=0):
@@ -219,7 +219,7 @@ for i in trange(100):
         
     t=0 
     import untitled7 as u13
-    if i >-1:
+    if i >0:
         pdfNew = []
         pdf = np.expand_dims(pdf,axis=1)
         for point in range(len(mesh)):
@@ -243,7 +243,7 @@ ax = Axes3D(fig)
 index =-1
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 index = 50
-ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')
+# ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')
 
 #    
 #    

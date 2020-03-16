@@ -167,7 +167,7 @@ def checkIfExtrapolation(train_samples, train_values, lejaPoints):
 # vals = newIntegrand(0,0,mesh,0.01)
 
 # import untitled9 as u9
-
+import InterpolationPCE as IPCE 
 def getNewPDFVal(Px, Py, train_samples, train_values, degree, h):   
     muX = Px #- h*fun.f1(Px,Py)
     muY =  Py #- h*fun.f2(Px,Py)
@@ -187,15 +187,16 @@ def getNewPDFVal(Px, Py, train_samples, train_values, degree, h):
     # print(np.max(np.abs(testing-train_values)))
 
     # grid_z2 = griddata(train_samples, np.squeeze(train_values), lejaPointsShifted, method='cubic', fill_value=0)
-    grid_z2 = griddata(train_samples, fullIntegrand, lejaPointsShifted, method='cubic', fill_value=0)
-    if min(grid_z2) <0:
-        grid_z2[grid_z2<0] = 0
+    grid_z2 = griddata(train_samples, fullIntegrand, lejaPointsShifted, method='cubic', fill_value=10**(-20))
+    if min(grid_z2) <=0:
+        grid_z2[grid_z2<0] = 10**(-20)
 
     # grid_z2 = np.exp(grid_z2)
 
     integralSoln = np.dot(weights,grid_z2)[0]
     
-    integralSoln2, poly = QuadratureByInterpolation(train_samples, fullIntegrand, sigmaX, sigmaY, muX, muY, degree)
+    # integralSoln2, poly = QuadratureByInterpolation(train_samples, fullIntegrand, sigmaX, sigmaY, muX, muY, degree)
+    integralSoln2=0
     
     # valExtrap = checkIfExtrapolation(train_samples, train_values, lejaPointsShifted)
     
@@ -215,9 +216,9 @@ def getNewPDFVal(Px, Py, train_samples, train_values, degree, h):
     #     ax.scatter(train_samples[:,0], train_samples[:,1], np.squeeze(train_values)*integral, c='r', marker='*')
     #     # ax.scatter(mesh1[:,0], mesh1[:,1], grid, c='g', marker='.')
     #     ax.scatter(train_samples[:,0], train_samples[:,1], np.squeeze(train_values), c='k', marker='*')
-
-    integralSoln = max(np.asarray([0]), integralSoln)
-    integralSoln2 = max(np.asarray([0]), integralSoln2)
+    if integralSoln < 0:
+        integralSoln = max(np.asarray([0]), integralSoln)
+        # integralSoln2 = max(np.asarray([0]), integralSoln2)
     # print(integralSoln)
 
     # print(integralSoln2)

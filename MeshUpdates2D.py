@@ -20,11 +20,11 @@ import InterpolationPCE as IPCE
 
 global MaxSlope
 MaxSlope = 0 # Initialize to 0, the real value is set in the code
-addPointsToBoundaryIfBiggerThanTolerance = 10**(-10)
-removeZerosValuesIfLessThanTolerance = 10**(-10)
-minDistanceBetweenPoints = 0.1
-minDistanceBetweenPointsBoundary = 0.1
-skipCount = 4
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
+removeZerosValuesIfLessThanTolerance = 10**(-9)
+minDistanceBetweenPoints = 0.07
+minDistanceBetweenPointsBoundary = 0.07
+skipCount = 10
 maxDistanceBetweenPoints = 0.15
 numStdDev = 5 #For grids around each point in the mesh
 
@@ -56,8 +56,8 @@ def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool):
     and the parts associated with the removed points need to be removed.'''
     ChangedBool2 = 0
     ChangedBool1 = 0
-    # if adjustBoundary:
-    #     Mesh, Pdf, ChangedBool2 = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool)
+    if adjustBoundary:
+        Mesh, Pdf, ChangedBool2 = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool)
     if adjustDensity:
         Mesh, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool)
     ChangedBool = max(ChangedBool1, ChangedBool2)
@@ -105,7 +105,7 @@ def checkIntegrandForAddingPointsAroundBoundaryPoints(PDF, tolerance, Mesh, tri,
             maxMat[i]=(np.max(PDF[i]))    
     else:
         for i in range(len(PDF)):
-            maxMat[i]=(np.max(PDF[i]))
+            maxMat[i]=(PDF[i])
     addingAround = [np.asarray(maxMat) >= tolerance]
     # print(np.max(np.asarray(maxMat)))
     return np.asarray(addingAround).T
@@ -145,9 +145,10 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool):
     for i in range(len(Mesh)-1,-1,-1): # Remove straggling points
         nearestPoint, distToNearestPoints = UM.findNearestKPoints(Mesh[i,0],Mesh[i,1], Mesh, 6)            # print("Making Less Dense!...")
         dist = np.mean(distToNearestPoints)
-        if dist > maxDistanceBetweenPoints: # Remove outlier
+        if dist > 2*maxDistanceBetweenPoints: # Remove outlier
             Mesh, Pdf = removePoint(i, Mesh, Pdf)
             ChangedBool = 1
+            print("outlier")
     if ChangedBool == 1:
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
     print("Boundary points removed", length -len(Mesh))  
@@ -173,9 +174,13 @@ def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool):
             corrIndices.append(i) #Index from bigger mesh
             meshWithSmallSlopes.append(Mesh[i,:])
     meshWithSmallSlopes = np.asarray(meshWithSmallSlopes)
+    # plt.figure()
+    # plt.scatter(meshWithSmallSlopes[:,0], meshWithSmallSlopes[:,1])
+    # plt.show()
+    
     corrIndices = np.sort(corrIndices)
     spacing = distanceMetrics.fillDistance(meshWithSmallSlopes)
-    if spacing < maxDistanceBetweenPoints*(skipCount+1)/skipCount: # if removing points will be ok.
+    if spacing < 10: #maxDistanceBetweenPoints*(skipCount+4)/skipCount: # if removing points will be ok.
         indices = LPR.getMeshIndicesToRemoveFromMesh(meshWithSmallSlopes, skipCount)
         for j in range(len(indices)-1,-1,-1): # Check if point is likely top of hill - don't remove it
             nearestPoint, distances = UM.findNearestKPoints(Mesh[corrIndices[j],0],Mesh[corrIndices[j],1], meshWithSmallSlopes, 6)            # print("Making Less Dense!...")
@@ -199,15 +204,31 @@ def houseKeepingAfterAdjustingMesh(Mesh, tri):
     tri = Delaunay(Mesh, incremental=True)
     return tri
 
-
+import untitled7 as u7
+from scipy.interpolate import griddata
 def addPoint(Px,Py, Mesh, Pdf, triangulation, kstep, h):
+    # if interior:
     newPoint = np.asarray([[Px],[Py]]).T
-    interp = IPCE.interpolateLeja(Mesh, Pdf, newPoint, h)
+    interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='cubic', fill_value=np.min(Pdf))])
+    
+    if interp < 0:
+        interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='linear', fill_value=np.min(Pdf))])
+
+    assert interp>=0
+        # interp = IPCE.interpolateLeja(Mesh, Pdf, newPoint, h)
+    # train_samples, train_values = u7.getMeshValsThatAreClose(Mesh, Pdf, 0.1, 0.1, Px, Py)
+    # grid_z2 = griddata(train_samples, train_values, np.asarray([[Px,Py]]), method='cubic', fill_value=0)
+    # if interp[0][0] <= 0 or not interior: #boundary point
+        # pointVertices, dist, indices = UM.findNearestKPoints(Px, Py, Mesh, 3, getIndices = True)
+        # threePdfVals = [Pdf[indices[0]], Pdf[indices[1]], Pdf[indices[2]]]
+        # interp = UM.baryInterp([Px],[Py], pointVertices, threePdfVals, nearestNeighbor=True)
+        # interp = np.asarray([interp])
+    # assert interp[0][0] >= 0, "The added point was less than 0"
     # interp = np.squeeze(interp2)
     Mesh = np.append(Mesh, np.asarray([[Px],[Py]]).T, axis=0)
     Pdf = np.append(Pdf, interp[0], axis=0)                      
     triangulation.add_points(np.asarray([[Px],[Py]]).T, restart=False)
-
+    # print(interp)
     return  Mesh, Pdf, triangulation
  
     
@@ -218,6 +239,7 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h):
     print("adding boundary points...")
     while keepAdding:
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation, True)
+
         # print(np.count_nonzero(boundaryPointsToAddAround))
         # plt.figure()
         # pointsX = []
@@ -229,17 +251,22 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h):
         # plt.plot(np.asarray(pointsX), np.asarray(pointsY), '.')
         # plt.show()
         
-        if max(boundaryPointsToAddAround == 1) and np.count_nonzero(boundaryPointsToAddAround) > 5:
+        if max(boundaryPointsToAddAround == 1) and np.count_nonzero(boundaryPointsToAddAround) > 0:
             for val in range(len(boundaryPointsToAddAround)-1,-1,-1):
                 if boundaryPointsToAddAround[val] == 1: # if we should extend boundary
-                    # newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, maxDistanceBetweenPoints/2, 0.0001)
-                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 3, Mesh, 3, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(),30, 100)
+                    # newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, minDistanceBetweenPointsBoundary*2, minDistanceBetweenPointsBoundary)
+                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 3, Mesh, 3, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(),4, 100)
+                    # plt.figure()
+                    # plt.scatter(Mesh[:,0], Mesh[:,1], c='k')
+                    # plt.scatter(allPoints[:,0], allPoints[:,1], c='r')
+                    # plt.scatter(Mesh[val,0], Mesh[val,1], c='b')
+                    
                     newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, minDistanceBetweenPointsBoundary)
-                    newPoints = newPoints[:6]
+                    # newPoints = newPoints[:6]
                     for point in range(len(newPoints)):
                         ChangedBool = 1
                         Mesh, Pdf, triangulation = addPoint(newPoints[point,0], newPoints[point,1], Mesh, Pdf, triangulation, kstep, h)
-                        numBoundaryAdded = numBoundaryAdded +1
+                        numBoundaryAdded = numBoundaryAdded + 1
         else:
             keepAdding =False
         # plt.figure()
@@ -252,7 +279,7 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h):
 
 def addInteriorPoints(Mesh, Pdf, triangulation, kstep, h):
     Slopes = getSlopes(Mesh, Pdf)
-    denisfyAroundPointIfSlopeLargerThanTolerance = 0.1 # np.quantile(Slopes,0.5)
+    denisfyAroundPointIfSlopeLargerThanTolerance = 0.05 # np.quantile(Slopes,0.5)
     interiorPointsToAddAround = np.asarray([np.asarray(Slopes)> denisfyAroundPointIfSlopeLargerThanTolerance]).T
     meshWithBigSlopes = []
     indexMax = np.argmax(Pdf) # We want to add around the largest value

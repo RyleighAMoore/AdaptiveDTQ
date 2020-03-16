@@ -98,30 +98,38 @@ def makeOrderedGridAroundPoint(point, spacing, span, xmin, xmax, ymin, ymax):
 #  x1   y1
 #  x2   y2
 #  x3   y3
+from scipy.interpolate import griddata
 def baryInterp(Px, Py, simplexPoints, degsFreePDF, nearestNeighbor=False):
-    Xv1 = simplexPoints[0,0]
+    return False
+    '''Xv1 = simplexPoints[0,0]
     Yv1 = simplexPoints[0,1]
     Xv2 = simplexPoints[1,0]
     Yv2 = simplexPoints[1,1]
     Xv3 = simplexPoints[2,0]
     Yv3 = simplexPoints[2,1]
-#    PDF1 = np.log(degsFreePDF[0])
-#    PDF2 = np.log(degsFreePDF[1])
-#    PDF3 = np.log(degsFreePDF[2])
+   
     PDF1 = degsFreePDF[0]
     PDF2 = degsFreePDF[1]
     PDF3 = degsFreePDF[2]
     Wv1 = ((Yv2-Yv3)*(Px-Xv3)+(Xv3-Xv2)*(Py-Yv3))/((Yv2-Yv3)*(Xv1-Xv3)+(Xv3-Xv2)*(Yv1-Yv3))
     Wv2 = ((Yv3-Yv1)*(Px-Xv3)+(Xv1-Xv3)*(Py-Yv3))/((Yv2-Yv3)*(Xv1-Xv3)+(Xv3-Xv2)*(Yv1-Yv3))
     Wv3 = 1-Wv1-Wv2
-    if (Wv1 < -10**(-10)) | (Wv2 < -10**(-10)) | (Wv3 < -10**(-10)):
+    if (Wv1 < -10**(-10)) | (Wv2 < -10**(-10)) | (Wv3 < -10**(-10)): #Outside triangulation
         if nearestNeighbor:
-            PDFNew = Wv1*PDF1+Wv2*PDF2+Wv3*PDF3
+            PDF1 = np.log(degsFreePDF[0])
+            PDF2 = np.log(degsFreePDF[1])
+            PDF3 = np.log(degsFreePDF[2])
+            PDFNew = np.exp(Wv1*PDF1+Wv2*PDF2+Wv3*PDF3)
+            # print(PDFNew)
+            if PDFNew > np.max(degsFreePDF):
+                return [np.min(degsFreePDF) - np.min(degsFreePDF)/2]
+            return PDFNew
+            
             # print("Point outside Triangle")
             #print(min(Wv1,Wv2,Wv3))
         else:
-            PDFNew = 0
-            return 0 # Triangle doesn't surround points
+            PDFNew = [degsFreePDF[0]-degsFreePDF[0]/2]
+            return PDFNew # Triangle doesn't surround points
         # plt.figure()
         # plt.plot(simplexPoints[0,0], simplexPoints[0,1], '*k')
         # plt.plot(simplexPoints[1,0], simplexPoints[1,1], '*k')
@@ -138,6 +146,7 @@ def baryInterp(Px, Py, simplexPoints, degsFreePDF, nearestNeighbor=False):
     # plt.plot(Px, Py, '.r')
     # plt.show()
     PDFNew = Wv1*PDF1+Wv2*PDF2+Wv3*PDF3
+    # print(PDFNew)
 
     # fig = plt.figure()
     # ax = Axes3D(fig)
@@ -145,7 +154,7 @@ def baryInterp(Px, Py, simplexPoints, degsFreePDF, nearestNeighbor=False):
     # ax.scatter(Px, Py, PDFNew, c='r', marker='.')
 
 #    PDF = np.exp(PDFNew)
-    return PDFNew
+    return PDFNew'''
 
 # x = baryInterp(-0.5,-0.5, np.asarray([[-0.25,-0.5], [0,1], [1,1]]),[10,10,20])
 

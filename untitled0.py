@@ -18,9 +18,9 @@ def getErrors(meshSol, valSoln, meshTest, valTest):
     KLErrors = []
     for i in range(min(len(valSoln), len(meshTest))):
     # for i in range(1):
-        for ii in range(1,2):
-            xmin = np.min(meshSol[:,0]); xmax = np.max(meshSol[:,0])
-            ymin = np.min(meshSol[:,1]); ymax = np.max(meshSol[:,1])
+        for ii in range(1,6):
+            xmin = np.min(meshTest[i][:,0]); xmax = np.max(meshTest[i][:,0])
+            ymin = np.min(meshTest[i][:,1]); ymax = np.max(meshTest[i][:,1])
             # xmin = -0.5; xmax = 0.5
             # ymin = -0.5; ymax = 0.5
             grid_x, grid_y = np.mgrid[xmin:xmax:0.01*ii, ymin:ymax:0.01*ii]
@@ -55,9 +55,10 @@ def getErrors(meshSol, valSoln, meshTest, valTest):
             klerror = 0
             for val in range(len(grid_soln)):
                 # if grid_soln[val] >0.01 and grid_train[val] >0.01:
-                klerror = klerror + grid_soln[val]*(grid_soln[val]-grid_train[val])
+                # klerror = klerror + grid_soln[val]*(grid_soln[val]-grid_train[val])
+                klerror = klerror + grid_soln[val]*(np.abs(grid_soln[val]-grid_train[val]))
                     # print(klerror)
-            KLErrors.append(np.copy(klerror))
+            KLErrors.append(np.copy(klerror)/len(grid_train))
             # grid_soln = np.ma.masked_where(grid_soln <= 10**(-10), grid_soln)
             # grid_train = np.ma.masked_where(grid_train <= 10**(-10), grid_train)
             runningsum = 0
@@ -70,17 +71,17 @@ def getErrors(meshSol, valSoln, meshTest, valTest):
                     counter =counter + 1
             L2 = np.sqrt(runningsum) / counter 
             # print(L2)
-            L2Errors.append(L2)
+            # L2Errors.append(L2)
 
             # L2 = np.sqrt(np.sum(np.abs(grid_soln - grid_train)**2))
-            # L2Errors.append(L2/len(grid_train))
+            L2Errors.append(L2/len(grid_train))
             # print(len(grid_train))
             
-        fig = plt.figure()
-        ax = Axes3D(fig)
-        ax.scatter(grid_x,grid_y, grid_train, c='r', marker='.')
-        ax.scatter(grid_x,grid_y, grid_soln, c='k', marker='.')
-        plt.show()
+        # fig = plt.figure()
+        # ax = Axes3D(fig)
+        # ax.scatter(grid_x,grid_y, grid_train, c='r', marker='.')
+        # ax.scatter(grid_x,grid_y, grid_soln, c='k', marker='.')
+        # plt.show()
             
         # # fig = plt.figure()
         # # ax = Axes3D(fig)
@@ -99,7 +100,7 @@ maxError, L2Error,grid_soln, grid_train, locations, KLErrors = getErrors(meshSol
 fig = plt.figure()
 ax = Axes3D(fig)
 # ax.scatter(locations[:,0], locations[:,1], maxError, c='r', label = "Max Error")
-ax.scatter(locations[:,0], locations[:,1], np.asarray(KLErrors), c='g', label = "L2 Error")
+ax.scatter(locations[:,0], locations[:,1], np.asarray(L2Error), c='g', label = "L2 Error/# Points")
 
 ax.set_xlabel('Time Step', labelpad=20)
 ax.set_ylabel('Grid Spacing', labelpad=20)
