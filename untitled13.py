@@ -26,7 +26,7 @@ import Functions as fun
 from scipy.interpolate import griddata
 import UnorderedMesh as UM
 from tqdm import tqdm, trange
-import InterpolationPCE as IPCE
+import LejaQuadrature as LQ
 from Functions import f1, g1, f2, g2
 
 def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY):
@@ -145,7 +145,7 @@ mesh = np.asarray([[1,-1]])
 vals = newIntegrand(0,0,mesh,0.01)
 
 # import untitled9 as u9
-mesh, weights, poly = IPCE.getLejaQuadratureRule(1, 1, 0, 0)
+mesh, weights, poly = LQ.getLejaQuadratureRule(1, 1, 0, 0)
 
 def getNewPDFVal(Px, Py, train_samples, train_values, degree, h):   
     muX = Px #- h*fun.f1(Px,Py)

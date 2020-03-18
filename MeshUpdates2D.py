@@ -16,7 +16,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import GenerateLejaPoints as LP
 import distanceMetrics
 import LejaPointsToRemove as LPR
-import InterpolationPCE as IPCE
+import LejaQuadrature as LQ
 
 global MaxSlope
 MaxSlope = 0 # Initialize to 0, the real value is set in the code
@@ -215,7 +215,7 @@ def addPoint(Px,Py, Mesh, Pdf, triangulation, kstep, h):
         interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='linear', fill_value=np.min(Pdf))])
 
     assert interp>=0
-        # interp = IPCE.interpolateLeja(Mesh, Pdf, newPoint, h)
+        # interp = LQ.interpolateLeja(Mesh, Pdf, newPoint, h)
     # train_samples, train_values = u7.getMeshValsThatAreClose(Mesh, Pdf, 0.1, 0.1, Px, Py)
     # grid_z2 = griddata(train_samples, train_values, np.asarray([[Px,Py]]), method='cubic', fill_value=0)
     # if interp[0][0] <= 0 or not interior: #boundary point

@@ -26,7 +26,7 @@ import Functions as fun
 from scipy.interpolate import griddata
 import UnorderedMesh as UM
 from tqdm import tqdm, trange
-import InterpolationPCE as IPCE
+import LejaQuadrature as LQ
 from Functions import f1, g1, f2, g2
 
 def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY):
@@ -108,34 +108,6 @@ def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, 
     return coef[0], poly
 
 
-def calculateLg(Px,Py,LejaPoints, h):
-    scale = (fun.g1(Px, Py)*fun.g2(Px, Py)) * (fun.g1(LejaPoints[:,0], LejaPoints[:,1])*fun.g2(LejaPoints[:,0], LejaPoints[:,1]))
-    # print(scale)
-    y1 = LejaPoints[:,0]
-    y2 = LejaPoints[:,1]
-    values = scale*np.exp((1/2)*((Px-y1 +h*fun.f1(y1,y2))**2/(h*fun.g1(Px,Py)**2) + (Py-y2 +h*fun.f2(y1,y2))**2/(h*fun.g2(Px,Py)**2)
-            - ((Px-y1 +h*fun.f1(y1, y2))**2/(h*fun.g1(y1,y2)**2) + (Py-y2 +h*fun.f2(y1,y2))**2/(h*fun.g2(y1,y2)**2)))) 
-    values2 = scale*np.exp((1/2)*((Px-y1 -h*fun.f1(y1,y2))**2/(h*fun.g1(Px,Py)**2) + (Py-y2 -h*fun.f2(y1,y2))**2/(h*fun.g2(Px,Py)**2)
-            - ((Px-y1 -h*fun.f1(y1, y2))**2/(h*fun.g1(y1,y2)**2) + (Py-y2 -h*fun.f2(y1,y2))**2/(h*fun.g2(y1,y2)**2))))
-    
-    
-    return values, values2 
-
-# def calculateLg2(Px,Py,LejaPoints, h):
-#     values = np.exp((Px-LejaPoints[:,0] -h*fun.f1(LejaPoints[:,0], LejaPoints[:,1]))**2/(h*fun.g1(Px,Py)**2) + (Py-LejaPoints[:,1] -h*fun.f2(LejaPoints[:,0], LejaPoints[:,1]))**2/(h*fun.g2(Px,Py)**2)
-#            - ((Px-LejaPoints[:,0] -h*fun.f1(LejaPoints[:,0], LejaPoints[:,1]))**2/(h*fun.g1(LejaPoints[:,0], LejaPoints[:,1])**2) - (Py-LejaPoints[:,1] +h*fun.f2(LejaPoints[:,0], LejaPoints[:,1]))**2/(h*fun.g2(LejaPoints[:,0], LejaPoints[:,1])**2))) 
-#     return values 
-
-def calculateLf(Px,Py,LejaPoints, h):
-    y1 = LejaPoints[:,0]
-    y2 = LejaPoints[:,1]
-    values = np.exp(-(1/2)*((h**2*fun.f1(y1,y2)**2 + 2*h*fun.f1(y1,y2)*(Px-y1))**2/(h*fun.g1(Px,Py)**2) 
-                      + (h**2*fun.f2(y1,y2)**2 + 2*h*fun.f2(y1,y2)*(Py-y2))**2/(h*fun.g2(Px,Py)**2)))
-    values2 = np.exp(-(1/2)*((h**2*fun.f1(y1,y2)**2 - 2*h*fun.f1(y1,y2)*(Px-y1))**2/(h*fun.g1(Px,Py)**2) 
-                        + (h**2*fun.f2(y1,y2)**2 - 2*h*fun.f2(y1,y2)*(Py-y2))**2/(h*fun.g2(Px,Py)**2)))
-    return values, values2
-
-
 def newIntegrand(x1,x2,mesh,h):
     y1 = mesh[:,0]
     y2 = mesh[:,1]
@@ -144,22 +116,6 @@ def newIntegrand(x1,x2,mesh,h):
     val = scale*np.exp(-(h**2*f1(y1,y2)**2-2*h*f1(y1,y2)*(x1-y1))/(2*h*g1(x1,x2)**2) + -(h**2*f2(y1,y2)**2-2*h*f2(y1,y2)*(x2-y2))/(2*h*g2(x1,x2)**2))*np.exp((x1-y1-h*f1(y1,y2))**2/(2*h*g1(x1,x2)**2) - (x1-y1-h *f1(y1,y2))**2/(2*h*g1(y1,y2)**2) + (x2-y2-h*f2(y1,y2))**2/(2*h*g2(x1,x2)**2) - (x2-y2-h* f2(y1,y2))**2/(2*h*g2(y1,y2)**2))
 
     return val
-
-def checkIfExtrapolation(train_samples, train_values, lejaPoints):
-    minXTrain = np.min(train_samples[:,0])
-    maxXTrain = np.max(train_samples[:,0])
-    minYTrain = np.min(train_samples[:,1])
-    maxYTrain = np.max(train_samples[:,1])
-    
-    minXLP = np.min(lejaPoints[:,0])
-    maxXLP = np.max(lejaPoints[:,0])
-    minYLP = np.min(lejaPoints[:,1])
-    maxYLP = np.max(lejaPoints[:,1])
-    
-    if minXLP < minXTrain or minYLP < minXTrain or maxXLP > maxXTrain or maxYLP > maxYTrain:
-        return True
-    else:
-        return False
     
     
 
@@ -167,7 +123,7 @@ def checkIfExtrapolation(train_samples, train_values, lejaPoints):
 # vals = newIntegrand(0,0,mesh,0.01)
 
 # import untitled9 as u9
-import InterpolationPCE as IPCE 
+import LejaQuadrature as LQ 
 def getNewPDFVal(Px, Py, train_samples, train_values, degree, h):   
     muX = Px #- h*fun.f1(Px,Py)
     muY =  Py #- h*fun.f2(Px,Py)
@@ -247,7 +203,7 @@ def getNewPDFVal(Px, Py, train_samples, train_values, degree, h):
 # plt.legend()
 
 
-lejaPoints, weights, poly = IPCE.getLejaQuadratureRule(1, 1, 0, 0)
+lejaPoints, weights = LQ.getLejaQuadratureRule(1, 1, 0, 0)
 
 # points = []
 # diffs = []

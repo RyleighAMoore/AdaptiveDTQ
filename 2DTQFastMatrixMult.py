@@ -29,11 +29,11 @@ import MeshUpdates2D as MeshUp
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.1
-xmin=-2.25
-xmax=2.25
-ymin=-2.25
-ymax=2.25
+kstep = 0.05
+xmin=-1
+xmax=1
+ymin=-1
+ymax=1
 
 
 def generateGRow(point, allPoints, kstep, h):

@@ -19,7 +19,7 @@ import datetime
 import time
 import GenerateLejaPoints as LP
 import pickle
-import InterpolationPCE as IPCE
+import LejaQuadrature as LQ
 
 
 T = 0.01  # final time, code computes PDF of X_T
@@ -219,14 +219,27 @@ for i in trange(40):
         
     t=0 
     import untitled7 as u13
+    import LejaQuadrature as LQ
     if i >0:
         pdfNew = []
         pdf = np.expand_dims(pdf,axis=1)
+        Pxs = []
+        Pys = []
         for point in range(len(mesh)):
             Px = mesh[point,0]
             Py = mesh[point,1]
             integral, integral2 = u13.getNewPDFVal(Px, Py, mesh, pdf, 50, h)
+            integral21 = LQ.getNewPDFVal(Px, Py, mesh, pdf, 50, h)
+            if abs(integral21-integral) > 0.5:
+                # integral = integral21
+                Pxs.append(Px)
+                Pys.append(Py)
+           
+            
             pdfNew.append(integral)
+        plt.figure()
+        plt.plot(mesh[:,0], mesh[:,1], '.r')
+        plt.scatter(np.asarray(Pxs),np.asarray(Pys))
         pdf = np.copy(np.asarray(pdfNew))
         pdf = np.squeeze(pdf)
         PdfTraj.append(np.copy(pdf))
