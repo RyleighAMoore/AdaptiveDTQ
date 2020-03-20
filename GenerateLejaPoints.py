@@ -66,7 +66,7 @@ def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samp
     
     degree = np.sqrt(2*num_leja_samples)
     # generate_candidate_samples = lambda n: np.sqrt(2*degree)*np.random.normal(0, 1, (num_vars, n)) 
-    generate_candidate_samples = lambda n: 2*np.random.normal(0, 1, (num_vars, n)) 
+    generate_candidate_samples = lambda n: np.sqrt(degree)*np.random.normal(0, 1, (num_vars, n)) 
 
     if defCandidateSamples == True:
         candidate_samples = candidateSampleMesh
@@ -84,8 +84,8 @@ def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samp
     #if initial_samples == None:
     #num_initial_samples = 10
     #else:
-    PxInit = initial_samples[0,0]
-    PyInit = initial_samples[1,0]
+    # PxInit = initial_samples[0,0]
+    # PyInit = initial_samples[1,0]
     
 #    initial_samples = var_trans.map_to_canonical_space(initial_samples)
 #    Px = initial_samples[0,0]
@@ -127,6 +127,8 @@ def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samp
     if successBool ==True:
         if returnIndices:
             indicesLeja = data_structures[2]
+            # indicesLeja[0] = 1 # ADJUST for the zero and the initial values
+            # indicesLeja = indicesLeja -1
             return np.asarray(samples).T, indicesLeja
         
         return np.asarray(samples).T, np.asarray(samples[:,num_initial_samples:]).T
@@ -262,7 +264,7 @@ def generateLejaMeshNotCentered(numPoints, sigmaX, sigmaY, numBasis, meanX, mean
 
 def getLejaSetFromPoints(Px, Py, mesh, numNewLejaPoints, numBasis):
     intialPoints = mapPointsTo(Px, Py, mesh, 1, 1)
-    lejaPointsFinal, indices = getLejaPoints(numNewLejaPoints+1, np.asarray([[Px,Py]]).T, numBasis, defCandidateSamples=True, candidateSampleMesh = intialPoints.T, returnIndices=True)
+    lejaPointsFinal, indices = getLejaPoints(numNewLejaPoints, np.asarray([[Px,Py]]).T, numBasis, defCandidateSamples=True, candidateSampleMesh = intialPoints.T, returnIndices=True)
     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, 1, 1)
      
     plot= False

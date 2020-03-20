@@ -74,6 +74,8 @@ def newIntegrand(x1,x2,mesh,h):
 def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY):
     MeshToKeep = []
     PdfToKeep = []
+    distances = np.sqrt((Mesh[:,0]-muX)**2 + (Mesh[:,1]-muY)**2)
+    
     for i in range(len(Mesh)):
         Px = Mesh[i,0]; Py = Mesh[i,1]
         if np.sqrt((Px-muX)**2 + (Py-muY)**2) < 5*max(sigmaX,sigmaY):
@@ -97,7 +99,7 @@ def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, 
     poly = PolynomialChaosExpansion()
     poly_opts = define_poly_options_from_variable_transformation(var_trans)
     poly.configure(poly_opts)
-    degree=20
+    degree=degree
     num_vars = 2
     indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
     # indices = compute_tensor_product_level_indices(poly.num_vars(),degree,max_norm=True)
@@ -150,7 +152,7 @@ def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, 
     #     ax.scatter(train_samples[:,0], train_samples[:,1], train_values, c='k', marker='.')
         
     
-    return coef[0]
+    return coef[0], np.sum(np.abs(Vinv[0,:]))
 
 def getNewPDFVal(Px, Py, train_samples, train_values, degree, h):   
     muX = Px

@@ -38,4 +38,12 @@ def separationDistance(mesh):
     return np.min(minVals)
 
 # separationDist = separationDistance(Meshes[-1])
-
+def fillDistanceAvg(mesh):
+    minVals = []
+    for i in range(len(mesh)):
+        vecX = mesh[i,0]*np.ones(len(mesh))  
+        vecY = mesh[i,1]*np.ones(len(mesh))
+        vals = np.sqrt((vecX - mesh[:,0])**2 +(vecY - mesh[:,1])**2)
+        sortedVals = sorted(vals)
+        minVals.append(np.copy(np.min(sortedVals[1]))) #Take 1 since 0 in at 0 index since same point
+    return np.percentile(minVals,90)
