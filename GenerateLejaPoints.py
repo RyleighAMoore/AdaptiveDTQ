@@ -33,6 +33,7 @@ from pyapprox.variables import IndependentMultivariateRandomVariable
 from pyapprox.variable_transformations import \
 AffineRandomVariableTransformation
 
+indices = compute_hyperbolic_indices(2,50,1.0)
 
 def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samples = 5000, dimensions=2, defCandidateSamples=False, candidateSampleMesh = [], returnIndices = False):
     num_vars= 2
@@ -44,7 +45,7 @@ def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samp
     poly_opts = define_poly_options_from_variable_transformation(var_trans)
     poly.configure(poly_opts)
     degree=numBasis
-    indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
+    # indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
     # indices = compute_tensor_product_level_indices(poly.num_vars(),degree,max_norm=True)
     poly.set_indices(indices)
     
@@ -66,7 +67,7 @@ def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samp
     
     degree = np.sqrt(2*num_leja_samples)
     # generate_candidate_samples = lambda n: np.sqrt(2*degree)*np.random.normal(0, 1, (num_vars, n)) 
-    generate_candidate_samples = lambda n: np.sqrt(degree)*np.random.normal(0, 1, (num_vars, n)) 
+    generate_candidate_samples = lambda n: 3*np.random.normal(0, 1, (num_vars, n)) 
 
     if defCandidateSamples == True:
         candidate_samples = candidateSampleMesh
@@ -262,10 +263,10 @@ def generateLejaMeshNotCentered(numPoints, sigmaX, sigmaY, numBasis, meanX, mean
 
 
 
-def getLejaSetFromPoints(Px, Py, mesh, numNewLejaPoints, numBasis):
-    intialPoints = mapPointsTo(Px, Py, mesh, 1, 1)
-    lejaPointsFinal, indices = getLejaPoints(numNewLejaPoints, np.asarray([[Px,Py]]).T, numBasis, defCandidateSamples=True, candidateSampleMesh = intialPoints.T, returnIndices=True)
-    lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, 1, 1)
+def getLejaSetFromPoints(Px, Py, mesh, numNewLejaPoints, numBasis, sigmaX, sigmaY):
+    intialPoints = mapPointsTo(Px, Py, mesh, 1/sigmaX, 1/sigmaY)
+    lejaPointsFinal, indices = getLejaPoints(numNewLejaPoints, np.asarray([[0,0]]).T, numBasis, defCandidateSamples=True, candidateSampleMesh = intialPoints.T, returnIndices=True)
+    lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, sigmaX, sigmaY)
      
     plot= False
     if plot:

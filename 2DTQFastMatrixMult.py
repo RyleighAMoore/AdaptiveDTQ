@@ -75,10 +75,10 @@ while t < 100:
 fig = plt.figure()
 ax = Axes3D(fig)
 index =1
-ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='*')
+ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
 index =0
 # ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
-ax.scatter(mesh[:,0], mesh[:,1], newPDF, c='k', marker='.')
+ax.scatter(meshVals[:,0], meshVals[:,1], newPDF, c='k', marker='.')
 
 # 
 

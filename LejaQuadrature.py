@@ -78,7 +78,7 @@ def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY):
     
     for i in range(len(Mesh)):
         Px = Mesh[i,0]; Py = Mesh[i,1]
-        if np.sqrt((Px-muX)**2 + (Py-muY)**2) < 5*max(sigmaX,sigmaY):
+        if np.sqrt((Px-muX)**2 + (Py-muY)**2) < 4*max(sigmaX,sigmaY):
             MeshToKeep.append([Px,Py])
             PdfToKeep.append(pdf[i])
     # if len(Mesh)> len(MeshToKeep):        
@@ -89,7 +89,7 @@ def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY):
     #     ax.scatter(muX, muY, 0, c='g', marker='*')
     return np.asarray(MeshToKeep), np.asarray(PdfToKeep)
 
-
+indices = compute_hyperbolic_indices(2,20,1.0)
 def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, muY, degree):
     
     univariate_variables = [norm(muX,sigmaX),norm(muY,sigmaY)]
@@ -101,7 +101,7 @@ def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, 
     poly.configure(poly_opts)
     degree=degree
     num_vars = 2
-    indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
+    # indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
     # indices = compute_tensor_product_level_indices(poly.num_vars(),degree,max_norm=True)
     # degrees = [int(train_samples.shape[0]**(1/poly.num_vars()))]*poly.num_vars()
     # indices = tensor_product_indices(degrees)
