@@ -22,7 +22,7 @@ def Test_GetLejaSetFromPoints():
     sigmaX =0.1# np.sqrt(h)*g1()
     sigmaY = 0.1#np.sqrt(h)*g2()
     # mesh = UM.generateRandomPoints(-4*sigmaX,4*sigmaX,-4*sigmaY,4*sigmaY,500)  # unordered mesh
-    mesh = generateLejaMesh(230, 0.1, 0.1, 20)
+    mesh = generateLejaMesh(530, 0.1, 0.1, 40)
     meshtwo = generateLejaMesh(230, 0.2,0.2, 20)
 
     mesh = np.vstack((mesh,meshtwo))
@@ -46,7 +46,7 @@ def Test_GetLejaSetFromPoints():
     # ax = Axes3D(fig)
     # ax.scatter(lejas[:,0], lejas[:,1], pdf, c='r', marker='.')
     
-    
+import time  
 def Test_GetLejaSetFromPoints2():
     Px = 0
     Py = 0
@@ -54,16 +54,20 @@ def Test_GetLejaSetFromPoints2():
     sigmaX =0.1# np.sqrt(h)*g1()
     sigmaY = 0.1#np.sqrt(h)*g2()
     # mesh = UM.generateRandomPoints(-4*sigmaX,4*sigmaX,-4*sigmaY,4*sigmaY,500)  # unordered mesh
-    mesh = generateLejaMesh(230, sigmaX, sigmaY, 20)
+    mesh = generateLejaMesh(230, sigmaX, sigmaY, 50)
     # meshtwo = generateLejaMesh(230, 0.2,0.2, 20)
 
     # mesh = np.vstack((mesh,meshtwo))
     mesh = mapPointsBack(Px, Py, mesh, 1,1)
     # meshtwo = mapPointsBack(Px, Py, meshtwo, 1,1) # for graphing purposes only
-
+    
 
     # mesh1 = mapPointsTo(Px, Py, mesh, 1/sigmaX, 1/sigmaY)
+    start_time = time.time()    
     lejas, indices = getLejaSetFromPoints(0, 0, mesh, 131, 20, sigmaX, sigmaY)
+    end_time = time.time()
+    print("--- %s seconds ---" % (time.time() - start_time))
+
     
     # lejas = mapPointsBack(Px, Py, lejas, sigmaX, sigmaY)
     plt.figure()
@@ -90,7 +94,9 @@ def Test_GetLejaPoints():
     plt.scatter(lejaPoints[:,0], lejaPoints[:,1] , c='g')
     plt.show()
     
-    
 Test_GetLejaSetFromPoints2()
+
+
+
 # Test_GetLejaPoints()
 # Test_GetLejaPoints1()

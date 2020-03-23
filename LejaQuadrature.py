@@ -71,14 +71,14 @@ def newIntegrand(x1,x2,mesh,h):
     return val
 
 
-def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY):
+def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
     MeshToKeep = []
     PdfToKeep = []
     distances = np.sqrt((Mesh[:,0]-muX)**2 + (Mesh[:,1]-muY)**2)
     
     for i in range(len(Mesh)):
         Px = Mesh[i,0]; Py = Mesh[i,1]
-        if np.sqrt((Px-muX)**2 + (Py-muY)**2) < 4*max(sigmaX,sigmaY):
+        if np.sqrt((Px-muX)**2 + (Py-muY)**2) < numStd*max(sigmaX,sigmaY):
             MeshToKeep.append([Px,Py])
             PdfToKeep.append(pdf[i])
     # if len(Mesh)> len(MeshToKeep):        
@@ -117,7 +117,7 @@ def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, 
     basis_matrix = basis_matrix[:,:numRows]
     
     Vinv = np.linalg.inv(basis_matrix)
-    print("cond=",np.sum(np.abs(Vinv[0,:])))
+    # print("cond=",np.sum(np.abs(Vinv[0,:])))
     
     # precond_weights = christoffel_weights(basis_matrix)
     # precond_basis_matrix = precond_weights[:,np.newaxis]*basis_matrix
@@ -201,7 +201,207 @@ def getNewPDFVal(Px, Py, train_samples, train_values, degree, h):
 # # pdf = np.ones(len(pdf))
 
 # value = getNewPDFVal(Px, Py, mesh, pdf, 12, h)
+from LejaQuadrature import getLejaQuadratureRule, getMeshValsThatAreClose, newIntegrand, getNewPDFVal, QuadratureByInterpolation
+import numpy as np
+from scipy.stats import multivariate_normal
+from math import isclose
+from scipy.stats import norm
+from pyapprox.variables import IndependentMultivariateRandomVariable
+from pyapprox.variable_transformations import AffineRandomVariableTransformation
+from pyapprox.multivariate_polynomials import PolynomialChaosExpansion, define_poly_options_from_variable_transformation
+from pyapprox.indexing import compute_hyperbolic_indices, tensor_product_indices,compute_tensor_product_level_indices
+import GenerateLejaPoints as LP
+from GenerateLejaPoints import getLejaSetFromPoints, generateLejaMesh, getLejaPoints, mapPointsBack, mapPointsTo
+import UnorderedMesh as UM
+import numpy as np
+import matplotlib.pyplot as plt
+from Functions import g1, g2
+from mpl_toolkits.mplot3d import Axes3D
+from scipy.interpolate import griddata
+from scipy.spatial import Delaunay
+def Test_LejaQuadratureLinearizationOnLejaPoints_Slow(mesh, pdf):
+    h = 0.01
+    sigmaX=np.sqrt(h)*g1()
+    sigmaY=np.sqrt(h)*g2()
+    sigma = np.sqrt(h)
+
+    # mesh = LP.generateLejaMesh(230, sigmaX, sigmaY, 20)
+    
+    newPDF = []
+    condNums = []
+    # rv = multivariate_normal([0, 0], [[sigma**2, 0], [0, sigma**2]])
+    # pdf = np.asarray([rv.pdf(mesh)]).T
+    countUseMorePoints = 0
+    for ii in range(len(mesh)):
+        print('########################',ii/len(mesh)*100, '%')
+        muX = mesh[ii,0]
+        muY = mesh[ii,1]
+
+        # mesh1, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
+        meshTemp = np.delete(mesh, ii, axis=0)
+        pdfTemp = np.delete(pdf, ii, axis=0)
+        
+        mesh1, indices = getLejaSetFromPoints(muX, muY, meshTemp, 130, 20, sigmaX, sigmaY)
+        meshTemp = np.vstack(([muX,muY], meshTemp))
+        pdfTemp = np.vstack((pdf[ii], pdfTemp))
+        pdfNew = []
+        Pxs = []
+        Pys = []
+        for i in range(len(indices)):
+            pdfNew.append(pdfTemp[indices[i]])
+            Pxs.append(meshTemp[indices[i],0])
+            Pys.append(meshTemp[indices[i],1])
+        pdfNew1 = np.asarray(pdfNew)
+        mesh1 = np.vstack((Pxs, Pys))
+        mesh1 = np.asarray(mesh1).T
+        
+        
+        # print(len(mesh1))
+        integrand = newIntegrand(muX, muY, mesh1, h)
+        testing = np.squeeze(pdfNew1)*integrand
+        
+        value, condNum= QuadratureByInterpolation(mesh1, testing, sigmaX, sigmaY, muX, muY, 20)
+        # print(value)
+        if condNum > 2 or value < 0:
+            countUseMorePoints = countUseMorePoints+1
+            mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
+            
+            needPoints = 130
+            if len(mesh12) < needPoints:
+                mesh12 = mapPointsTo(muX, muY, mesh12, 1/sigmaX, 1/sigmaY)
+                num_leja_samples = 130
+                initial_samples = mesh12
+                numBasis=20
+                allp, new = LP.getLejaPoints(num_leja_samples, initial_samples.T,numBasis, num_candidate_samples = 230, dimensions=2, defCandidateSamples=False, candidateSampleMesh = [], returnIndices = False)
+                mesh12 = mapPointsBack(muX,muY, allp, sigmaX, sigmaY)
+            
+            
+            # plt.figure()
+            # plt.scatter(mesh[:,0], mesh[:,1], c='k', marker='*')
+            # plt.scatter(mesh12[:,0], mesh12[:,1], c='r', marker='.')
+            # plt.scatter(muX, muY, c='g', marker='.')
+    
+            pdfNew = np.asarray(griddata(mesh, pdf, mesh12, method='cubic', fill_value=0))
+            pdfNew[pdfNew < 0] = 0
+            integrand = newIntegrand(muX, muY, mesh12, h)
+            testing = np.squeeze(pdfNew)*integrand
+            
+            
+            value, condNum= QuadratureByInterpolation(mesh12, testing, sigmaX, sigmaY, muX, muY, 20)
+            # print(value)
+            if value<0:
+                value= [10**(-10)]
+                # print('#######################################', muX, muY)
+                # plt.figure()
+                # plt.scatter(mesh[:,0], mesh[:,1], c='k', marker='*')
+                # plt.scatter(mesh12[:,0], mesh12[:,1], c='r', marker='.')
+                # plt.scatter(muX, muY, c='g', marker='.')
+        
+        newPDF.append(value)
+        condNums.append(condNum)
+    # print(countUseMorePoints)
+    newPDF = np.asarray(newPDF)
+    condNums = np.asarray([condNums]).T
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.scatter(mesh[:,0], mesh[:,1], newPDF, c='r', marker='.')
+    
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(mesh1[:,0], mesh1[:,1], testing, c='k', marker='.')
+    return newPDF,condNums, mesh
 
 
 
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf):
+    h = 0.01
+    sigmaX=np.sqrt(h)*g1()
+    sigmaY=np.sqrt(h)*g2()
+    sigma = np.sqrt(h)
 
+    # mesh = LP.generateLejaMesh(230, sigmaX, sigmaY, 20)
+    
+    newPDF = []
+    condNums = []
+    # rv = multivariate_normal([0, 0], [[sigma**2, 0], [0, sigma**2]])
+    # pdf = np.asarray([rv.pdf(mesh)]).T
+    countUseMorePoints = 0
+    for ii in range(len(mesh)):
+        # print('########################',ii/len(mesh)*100, '%')
+        muX = mesh[ii,0]
+        muY = mesh[ii,1]
+
+        # mesh1, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
+        meshTemp = np.delete(mesh, ii, axis=0)
+        pdfTemp = np.delete(pdf, ii, axis=0)
+        
+        mesh1, indices = getLejaSetFromPoints(muX, muY, meshTemp, 130, 15, sigmaX, sigmaY)
+        meshTemp = np.vstack(([muX,muY], meshTemp))
+        pdfTemp = np.vstack((pdf[ii], pdfTemp))
+        pdfNew = []
+        Pxs = []
+        Pys = []
+        for i in range(len(indices)):
+            pdfNew.append(pdfTemp[indices[i]])
+            Pxs.append(meshTemp[indices[i],0])
+            Pys.append(meshTemp[indices[i],1])
+        pdfNew1 = np.asarray(pdfNew)
+        mesh1 = np.vstack((Pxs, Pys))
+        mesh1 = np.asarray(mesh1).T
+        
+        
+        # print(len(mesh1))
+        integrand = newIntegrand(muX, muY, mesh1, h)
+        testing = np.squeeze(pdfNew1)*integrand
+        
+        value, condNum= QuadratureByInterpolation(mesh1, testing, sigmaX, sigmaY, muX, muY, 20)
+        # print(value)
+        if condNum > 2 or value < 0:
+            countUseMorePoints = countUseMorePoints+1
+            mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
+            
+            needPoints = 130
+            if len(mesh12) < needPoints:
+                mesh12 = mapPointsTo(muX, muY, mesh12, 1/sigmaX, 1/sigmaY)
+                num_leja_samples = 130
+                initial_samples = mesh12
+                numBasis=15
+                allp, new = LP.getLejaPoints(num_leja_samples, initial_samples.T,numBasis, num_candidate_samples = 230, dimensions=2, defCandidateSamples=False, candidateSampleMesh = [], returnIndices = False)
+                mesh12 = mapPointsBack(muX,muY, allp, sigmaX, sigmaY)
+            
+            
+            # plt.figure()
+            # plt.scatter(mesh[:,0], mesh[:,1], c='k', marker='*')
+            # plt.scatter(mesh12[:,0], mesh12[:,1], c='r', marker='.')
+            # plt.scatter(muX, muY, c='g', marker='.')
+    
+            pdfNew = np.asarray(griddata(mesh, pdf, mesh12, method='cubic', fill_value=0))
+            pdfNew[pdfNew < 0] = 0
+            integrand = newIntegrand(muX, muY, mesh12, h)
+            testing = np.squeeze(pdfNew)*integrand
+            
+            
+            value, condNum= QuadratureByInterpolation(mesh12, testing, sigmaX, sigmaY, muX, muY, 20)
+            # print(value)
+            if value<0:
+                value= [10**(-10)]
+                # print('#######################################', muX, muY)
+                # plt.figure()
+                # plt.scatter(mesh[:,0], mesh[:,1], c='k', marker='*')
+                # plt.scatter(mesh12[:,0], mesh12[:,1], c='r', marker='.')
+                # plt.scatter(muX, muY, c='g', marker='.')
+        print(condNum)
+        assert value[0] < 20
+        newPDF.append(value)
+        condNums.append(condNum)
+    # print(countUseMorePoints)
+    newPDF = np.asarray(newPDF)
+    condNums = np.asarray([condNums]).T
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(mesh[:,0], mesh[:,1], newPDF, c='r', marker='.')
+    
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(mesh1[:,0], mesh1[:,1], testing, c='k', marker='.')
+    return newPDF,condNums, mesh

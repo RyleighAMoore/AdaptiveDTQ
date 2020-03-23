@@ -55,7 +55,8 @@ h=0.01
 #    return val
 
 # mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)      # ordered mesh  
-# mesh = LP.generateLejaMesh(350, .1, .1, 30)
+mesh = LP.generateLejaMesh(230, .1, .1, 30)
+
 # mesh2 = LP.generateLejaMesh(400, .2, .2, 30)
 # mesh2 = UM.generateRandomPoints(-1,1,-1,1,200)  # unordered mesh
 # plt.figure()
@@ -66,7 +67,7 @@ h=0.01
 # mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)
 
 
-# pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
+pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
 
 # fig = plt.figure()
 # ax = Axes3D(fig)
@@ -83,9 +84,9 @@ h=0.01
 # pickle.dump(mesh, pkl_file)
 # pkl_file.close()
 
-pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
-mesh = pickle.load(pickle_in)
-pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
+# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
+# mesh = pickle.load(pickle_in)
+# pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
 
 # mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)
 
@@ -170,11 +171,33 @@ pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
 # pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal.p","rb")
 # pdf = pickle.load(pickle_in)
 # pdf = pdf[-1]
-#pdf = phat_rav
-#pdf = np.zeros(len(mesh))
-#pdf[-1]=10
-#pdf[1000]=10
+# pdf = phat_rav
+# pdf = np.zeros(len(mesh))
+# pdf[-1]=10
+# pdf[1000]=10
 
+
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQBimodal.p", "rb" ) 
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQBimodal.p", "rb" )
+# Meshes = pickle.load(pkl_file) 
+# # mesh = mesh[10]
+# PdfTraj = pickle.load(pkl_file2) 
+# pdf = pdf[10]
+
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQVolpt2.p", "rb" ) 
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQVolpt2.p", "rb" )
+# mesh2 = pickle.load(pkl_file) 
+# # mesh2 = mesh2[-1]
+# pdf2 = pickle.load(pkl_file2) 
+# # pdf2 = pdf2[-1]
+
+# pdf.append(pdf2[1])
+# pdf.append(pdf2[2])
+# pdf.append(pdf2[3])
+
+# mesh.append(mesh2[1])
+# mesh.append(mesh2[2])
+# mesh.append(mesh2[3])
 
 Meshes = []
 PdfTraj = []
@@ -201,7 +224,7 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(40):
+for i in trange(15):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
@@ -218,29 +241,29 @@ for i in trange(40):
                tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
         
     t=0 
-    import untitled7 as u13
+    # import untitled7 as u13
     import LejaQuadrature as LQ
-    if i >0:
+    if i >-1:
         pdfNew = []
         pdf = np.expand_dims(pdf,axis=1)
         Pxs = []
         Pys = []
-        for point in range(len(mesh)):
-            Px = mesh[point,0]
-            Py = mesh[point,1]
-            integral, integral2 = u13.getNewPDFVal(Px, Py, mesh, pdf, 50, h)
-            integral21 = LQ.getNewPDFVal(Px, Py, mesh, pdf, 50, h)
-            if abs(integral21-integral) > 0.5:
+        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf)
+        # for point in range(len(mesh)):
+            # Px = mesh[point,0]
+            # Py = mesh[point,1]
+            # integral, integral2 = u13.getNewPDFVal(Px, Py, mesh, pdf, 50, h)
+            # integral21 = LQ.getNewPDFVal(Px, Py, mesh, pdf, 50, h)
+            # if abs(integral21-integral) > 0.5:
                 # integral = integral21
-                Pxs.append(Px)
-                Pys.append(Py)
-           
-            
-            pdfNew.append(integral)
-        plt.figure()
-        plt.plot(mesh[:,0], mesh[:,1], '.r')
-        plt.scatter(np.asarray(Pxs),np.asarray(Pys))
-        pdf = np.copy(np.asarray(pdfNew))
+                # Pxs.append(Px)
+                # Pys.append(Py)
+          
+            # pdfNew.append(integral)
+        # plt.figure()
+        # plt.plot(mesh[:,0], mesh[:,1], '.r')
+        # plt.scatter(np.asarray(Pxs),np.asarray(Pys))
+        # pdf = np.copy(np.asarray(pdfNew))
         pdf = np.squeeze(pdf)
         PdfTraj.append(np.copy(pdf))
         Meshes.append(np.copy(mesh))
@@ -285,12 +308,12 @@ timestr = time.strftime("%Y%m%d-%H%M%S")
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal-"+ timestr+".p", "wb" ) 
 # pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesBimodal-"+ timestr+".p", "wb" ) 
 
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal.p", "wb" ) 
-# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesBimodal.p", "wb" ) 
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQVolfull.p", "wb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQVolfull.p", "wb" ) 
 
 # #    
-# pickle.dump(PdfTraj, pkl_file)
-# pickle.dump(Meshes, pkl_file2)
+# pickle.dump(pdf, pkl_file)
+# pickle.dump(mesh, pkl_file2)
 # pkl_file.close()
 # pkl_file2.close()
 # #

@@ -46,4 +46,4 @@ def fillDistanceAvg(mesh):
         vals = np.sqrt((vecX - mesh[:,0])**2 +(vecY - mesh[:,1])**2)
         sortedVals = sorted(vals)
         minVals.append(np.copy(np.min(sortedVals[1]))) #Take 1 since 0 in at 0 index since same point
-    return np.percentile(minVals,90)
+    return np.percentile(minVals,80)

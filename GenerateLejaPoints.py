@@ -33,7 +33,7 @@ from pyapprox.variables import IndependentMultivariateRandomVariable
 from pyapprox.variable_transformations import \
 AffineRandomVariableTransformation
 
-indices = compute_hyperbolic_indices(2,50,1.0)
+indices = compute_hyperbolic_indices(2,20,1.0)
 
 def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samples = 5000, dimensions=2, defCandidateSamples=False, candidateSampleMesh = [], returnIndices = False):
     num_vars= 2
@@ -45,6 +45,7 @@ def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samp
     poly_opts = define_poly_options_from_variable_transformation(var_trans)
     poly.configure(poly_opts)
     degree=numBasis
+    # indices = indicesLarge[:,:num_leja_samples+len(initial_samples)+1]
     # indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
     # indices = compute_tensor_product_level_indices(poly.num_vars(),degree,max_norm=True)
     poly.set_indices(indices)

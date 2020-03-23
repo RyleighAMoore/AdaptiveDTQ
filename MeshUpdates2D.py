@@ -204,7 +204,7 @@ def houseKeepingAfterAdjustingMesh(Mesh, tri):
     tri = Delaunay(Mesh, incremental=True)
     return tri
 
-import untitled7 as u7
+# import untitled7 as u7
 from scipy.interpolate import griddata
 def addPoint(Px,Py, Mesh, Pdf, triangulation, kstep, h):
     # if interior:
@@ -215,6 +215,8 @@ def addPoint(Px,Py, Mesh, Pdf, triangulation, kstep, h):
         interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='linear', fill_value=np.min(Pdf))])
 
     assert interp>=0
+    assert interp < 20
+
         # interp = LQ.interpolateLeja(Mesh, Pdf, newPoint, h)
     # train_samples, train_values = u7.getMeshValsThatAreClose(Mesh, Pdf, 0.1, 0.1, Px, Py)
     # grid_z2 = griddata(train_samples, train_values, np.asarray([[Px,Py]]), method='cubic', fill_value=0)
@@ -238,6 +240,8 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h):
     changedBool = 0
     print("adding boundary points...")
     while keepAdding:
+        # print("adding boundary points...")
+
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation, True)
 
         # print(np.count_nonzero(boundaryPointsToAddAround))
@@ -255,7 +259,10 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h):
             for val in range(len(boundaryPointsToAddAround)-1,-1,-1):
                 if boundaryPointsToAddAround[val] == 1: # if we should extend boundary
                     # newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, minDistanceBetweenPointsBoundary*2, minDistanceBetweenPointsBoundary)
+                    # #mesh12, pdfNew1 = LQ.getMeshValsThatAreClose(Mesh, Pdf, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g1(), Mesh[val,0], Mesh[val,1])
                     allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 3, Mesh, 3, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(),4, 100)
+                    # #allPoints, newPoints = LP.getLejaPoints(130, mesh12.T,20, num_candidate_samples = 230, dimensions=2, defCandidateSamples=False, candidateSampleMesh = [], returnIndices = False)
+                    
                     # plt.figure()
                     # plt.scatter(Mesh[:,0], Mesh[:,1], c='k')
                     # plt.scatter(allPoints[:,0], allPoints[:,1], c='r')
