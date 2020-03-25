@@ -23,24 +23,12 @@ import UnorderedMesh as UM
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from Functions import f1, f2, g1, g2
+import getPCE as PCE
 
    
 def getLejaQuadratureRule(sigmaX, sigmaY, muX, muY):
-    univariate_variables = [norm(muX,sigmaX),norm(muY,sigmaY)]
-    variable = IndependentMultivariateRandomVariable(univariate_variables)
-    var_trans = AffineRandomVariableTransformation(variable)
-    
-    poly = PolynomialChaosExpansion()
-    poly_opts = define_poly_options_from_variable_transformation(var_trans)
-    poly.configure(poly_opts)
-    degree=20
-    
-    indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
-    # indices = compute_tensor_product_level_indices(poly.num_vars(),degree,max_norm=True)
-    poly.set_indices(indices)
-    num_vars = 2
-    deriv_order= 0    
-    probability_measure = True
+    degree = 20
+    poly = PCE.GeneratePCE(degree, muX=0, muY=0, sigmaX=1, sigmaY=1)
     
     num_leja_samples = len(indices[0])-1
     initial_samples = np.asarray([[muX],[muY]])
@@ -211,7 +199,7 @@ from pyapprox.variable_transformations import AffineRandomVariableTransformation
 from pyapprox.multivariate_polynomials import PolynomialChaosExpansion, define_poly_options_from_variable_transformation
 from pyapprox.indexing import compute_hyperbolic_indices, tensor_product_indices,compute_tensor_product_level_indices
 import GenerateLejaPoints as LP
-from GenerateLejaPoints import getLejaSetFromPoints, generateLejaMesh, getLejaPoints, mapPointsBack, mapPointsTo
+from GenerateLejaPoints import getLejaSetFromPoints, getLejaPoints, mapPointsBack, mapPointsTo
 import UnorderedMesh as UM
 import numpy as np
 import matplotlib.pyplot as plt
@@ -313,7 +301,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints_Slow(mesh, pdf):
 
 
 
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf):
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
     h = 0.01
     sigmaX=np.sqrt(h)*g1()
     sigmaY=np.sqrt(h)*g2()
@@ -335,7 +323,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf):
         meshTemp = np.delete(mesh, ii, axis=0)
         pdfTemp = np.delete(pdf, ii, axis=0)
         
-        mesh1, indices = getLejaSetFromPoints(muX, muY, meshTemp, 130, 15, sigmaX, sigmaY)
+        mesh1, indices = getLejaSetFromPoints([0,0,.1,.1], meshTemp, 130, poly)
         meshTemp = np.vstack(([muX,muY], meshTemp))
         pdfTemp = np.vstack((pdf[ii], pdfTemp))
         pdfNew = []
@@ -366,7 +354,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf):
                 num_leja_samples = 130
                 initial_samples = mesh12
                 numBasis=15
-                allp, new = LP.getLejaPoints(num_leja_samples, initial_samples.T,numBasis, num_candidate_samples = 230, dimensions=2, defCandidateSamples=False, candidateSampleMesh = [], returnIndices = False)
+                allp, new  = LP.getLejaPoints(num_leja_samples, initial_samples.T, poly)
                 mesh12 = mapPointsBack(muX,muY, allp, sigmaX, sigmaY)
             
             

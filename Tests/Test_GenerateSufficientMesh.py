@@ -185,14 +185,14 @@ def getSufficientMesh(muX, muY, sigmaX, sigmaY, currMesh, currPDF):
 
 def getSufficientMeshFast(muX, muY, sigmaX, sigmaY, currMesh, currPDF):
     dist = dm.fillDistanceAvg(currMesh) 
-    meshBigger = LP.generateLejaMesh(500, sigmaX*2, sigmaY*2, 50)
-    meshBigger1 = LP.generateLejaMesh(500, sigmaX*2.5, sigmaY*2.5, 50)
-    meshBigger2 = LP.generateLejaMesh(500, sigmaX*1.5, sigmaY*1.5, 50)
+    meshBigger = LP.generateLejaMesh(200, sigmaX*2, sigmaY*2, 50)
+    meshBigger1 = LP.generateLejaMesh(200, sigmaX*2.5, sigmaY*2.5, 50)
+    meshBigger2 = LP.generateLejaMesh(200, sigmaX*1.5, sigmaY*1.5, 50)
     meshNew = np.vstack((meshBigger, meshBigger1))
     meshNew = np.vstack((meshNew, meshBigger2))
 
 
-    keep = checkDist(currMesh, meshNew, 0.05)
+    keep = checkDist(currMesh, meshNew, 0.1)
     plt.figure()
     plt.scatter(currMesh[:,0], currMesh[:,1] , c='g')
     plt.scatter(keep[:,0], keep[:,1] , c='r')
@@ -217,11 +217,15 @@ pdf = np.asarray([rv.pdf(mesh)]).T
 # plt.scatter(mesh[:,0], mesh[:,1] , c='g')
 # plt.show()
 
-# meshNew = getSufficientMeshFast(0, 0, sigmaX, sigmaY, mesh, pdf)
-# meshNew = np.vstack((mesh,meshNew))
-# pdfNewVals = np.asarray([rv.pdf(meshNew)]).T
-# # pdfNew = np.vstack((pdf, np.zeros((len(meshNew),1))))
-# pdfNew = np.vstack((pdf, pdfNewVals))
+meshNew = getSufficientMeshFast(0, 0, sigmaX, sigmaY, mesh, pdf)
+meshNew = np.vstack((mesh,meshNew))
+pdfNewVals = np.asarray([rv.pdf(meshNew)]).T
+# pdfNew = np.vstack((pdf, np.zeros((len(meshNew),1))))
+pdfNew = np.vstack((pdf, pdfNewVals))
+
+plt.figure()
+plt.scatter(meshNew[:,0], meshNew[:,1] , c='g')
+plt.show()
 
 meshNew = mesh
 pdfNew = pdf

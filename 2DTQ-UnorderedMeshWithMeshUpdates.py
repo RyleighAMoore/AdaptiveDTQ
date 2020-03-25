@@ -20,6 +20,7 @@ import time
 import GenerateLejaPoints as LP
 import pickle
 import LejaQuadrature as LQ
+import getPCE as PCE
 
 
 T = 0.01  # final time, code computes PDF of X_T
@@ -39,192 +40,30 @@ ymin=-2
 ymax=2
 h=0.01
 
-
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
-# pickle.dump(mesh, pkl_file)
-# pkl_file.close()
-
-# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesBimodal.p","rb")
-# mesh = pickle.load(pickle_in)
-# mesh = mesh[-1]
-
-#def loopNewPDf(Px, Py, grid, kstep, h, interpPDF):
-#    val = 0
-#    for i in range(len(interpPDF)):
-#        val = val + kstep**2*fun.G(Px, Py, grid[i,0], grid[i,1], h)*interpPDF[i]
-#    return val
-
-# mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)      # ordered mesh  
-mesh = LP.generateLejaMesh(230, .1, .1, 30)
-
-# mesh2 = LP.generateLejaMesh(400, .2, .2, 30)
-# mesh2 = UM.generateRandomPoints(-1,1,-1,1,200)  # unordered mesh
-# plt.figure()
-# plt.plot(mesh[:,0], mesh[:,1], '.r')
-# plt.plot(mesh2[:,0], mesh2[:,1], '.r')
-
-# mesh = np.vstack((mesh,mesh2))
-# mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)
-
+poly = PCE.generatePCE(21)
+mesh, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 1000, poly)
 
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
 
-# fig = plt.figure()
-# ax = Axes3D(fig)
-# index =0
-# ax.scatter(mesh[:,0], mesh[:,1], pdf, c='r', marker='.')
 
 
-# plt.figure()
-# plt.plot(mesh[:,0], mesh[:,1], '.')
-# plt.show()
-
-
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p", "wb" )  
-# pickle.dump(mesh, pkl_file)
-# pkl_file.close()
-
-# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
-# mesh = pickle.load(pickle_in)
-# pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
-
-# mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)
-
-# pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
-
-# mesh = meshSoln
-# pdf = surfaces[15]
-
-
-# xmin = np.min(mesh[:,0]); xmax = np.max(mesh[:,0])
-# ymin = np.min(mesh[:,1]); ymax = np.max(mesh[:,1])
-
-# mesh = UM.generateOrderedGridCenteredAtZero(-1, 1, -1, 1, 0.05, includeOrigin=True)
-# mesh = np.vstack((mesh,mesh2))
-
-#x = np.arange(-0.2, 0.2, .01)
-#y = np.arange(-0.2, 0.2, .01)
-#xx, yy = np.meshgrid(x, y)
-#points = np.ones((np.size(xx),2))
-#points[:,0]= xx.ravel()
-#points[:,1]=yy.ravel()
-#tri1 = Delaunay(points).simplices
-#
-#
-#w = np.arange(0,len(x)-1,1)
-##w=np.sort(np.concatenate((w,w)))
-#cSimplices = []
-#for j in range(len(x)-1):
-#    for i in w:
-#        #cSimplices.append([i+j*len(x),i+1+j*len(x),i+len(x)+j*len(x)])
-#        cSimplices.append([i+j*len(x),i+1+j*len(x),i+len(x)+1+j*len(x)])
-#
-#v = np.arange(len(x),len(x)*2-1,1)
-#for j in range(0,len(x)-1):
-#    for i in v:
-#        cSimplices.append([i+j*len(x),i+1+j*len(x),i-len(x)+j*len(x)])
-#                
-#
-#s = np.asarray(cSimplices, dtype='int32')
-#tri = Delaunay(points)
-#tri.simplices = s
-#mesh = points
-# mesh2 = UM.generateRandomPoints(-2,2,-2,2,500)  # unordered mesh
-
-#rad =  np.sqrt(mesh[:,0]**2 + mesh[:,1]**2)
-#for i in range(len(rad)-1,-1,-1):
-#    if rad[i] > 1.8:
-#        mesh = np.delete(mesh,i,0)
-
-#circle_r = 0.7
-## center of the circle (x, y)
-#circle_x = 0
-#circle_y = 0
-#mesh2 = []
-#for r in range(100):
-#    # random angle
-#    alpha = 2 * math.pi * random.random()
-#    # random radius
-#    r = circle_r * math.sqrt(random.random())
-#    # calculating coordinates
-#    x = r * math.cos(alpha) + circle_x
-#    y = r * math.sin(alpha) + circle_y
-#    mesh2.append([x, y])
-
-#mesh2 = UM.generateOrderedGrid(-0.25, 0.25, -0.25, 0.25, 0.08)      # ordered mesh  
-# mesh = np.vstack((mesh,mesh2))
-
-#mesh = np.vstack((mesh,[0,0]))
-#mesh = np.vstack((mesh,[0.05,0.05]))
-#mesh = np.vstack((mesh,[-0.05,0.05]))
-#mesh = np.vstack((mesh,[0.05,-0.05]))
-#mesh = np.vstack((mesh,[-0.05,-0.05]))
-
-#pdf = np.zeros(len(mesh))
-#mesh2 = mesh2
-#mesh = np.vstack((mesh,mesh2))
-# dx = 1*np.ones((1,len(mesh))).T
-# dy = 1*np.ones((1,len(mesh))).T
-# delta = np.hstack((dx,dy))
-# pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
-
-# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal.p","rb")
-# pdf = pickle.load(pickle_in)
-# pdf = pdf[-1]
-# pdf = phat_rav
-# pdf = np.zeros(len(mesh))
-# pdf[-1]=10
-# pdf[1000]=10
-
-
-# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQBimodal.p", "rb" ) 
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQBimodal.p", "rb" )
-# Meshes = pickle.load(pkl_file) 
-# # mesh = mesh[10]
-# PdfTraj = pickle.load(pkl_file2) 
-# pdf = pdf[10]
-
-# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQVolpt2.p", "rb" ) 
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQVolpt2.p", "rb" )
-# mesh2 = pickle.load(pkl_file) 
-# # mesh2 = mesh2[-1]
-# pdf2 = pickle.load(pkl_file2) 
-# # pdf2 = pdf2[-1]
-
-# pdf.append(pdf2[1])
-# pdf.append(pdf2[2])
-# pdf.append(pdf2[3])
-
-# mesh.append(mesh2[1])
-# mesh.append(mesh2[2])
-# mesh.append(mesh2[3])
 
 Meshes = []
 PdfTraj = []
 PdfTraj.append(np.copy(pdf))
 Meshes.append(np.copy(mesh))
-#
+
 tri = Delaunay(mesh, incremental=True)
-#tri.simplices=s
-#order2 = []
+
 numSD = 4
 
-#def PrepareVerticesInfo(mesh):
-#    for point in trange(len(mesh)):
-#        Vertices.append([])
-#        VerticesNum.append([])
-#        for currGridPoint in range(len(grid)):
-#            vertices, indices = UM.getVerticesForPoint([grid[currGridPoint,0], grid[currGridPoint,1]], mesh, tri) # Points that make up triangle
-#            Vertices[point].append(np.copy(vertices))
-#            VerticesNum[point].append(np.copy(indices))
-#    return Vertices, VerticesNum 
 SlopesMax = []  
 SlopesMin = []
 SlopesMean = []  
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(15):
+for i in trange(10):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
@@ -233,7 +72,7 @@ for i in trange(15):
     if (i >= 0) and adjustGrid:
         assert np.max(PdfTraj[-1] < 10), "PDF Blew up"
         if (i>=0):
-            mesh, pdf, tri, addBool,xmin, xmax, ymin, ymax = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, xmin, xmax, ymin, ymax)
+            mesh, pdf, tri, addBool,xmin, xmax, ymin, ymax = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, xmin, xmax, ymin, ymax, poly)
             if (addBool == 1):
                 tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
             mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True)
@@ -241,36 +80,20 @@ for i in trange(15):
                tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
         
     t=0 
-    # import untitled7 as u13
     import LejaQuadrature as LQ
     if i >-1:
         pdfNew = []
         pdf = np.expand_dims(pdf,axis=1)
         Pxs = []
         Pys = []
-        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf)
-        # for point in range(len(mesh)):
-            # Px = mesh[point,0]
-            # Py = mesh[point,1]
-            # integral, integral2 = u13.getNewPDFVal(Px, Py, mesh, pdf, 50, h)
-            # integral21 = LQ.getNewPDFVal(Px, Py, mesh, pdf, 50, h)
-            # if abs(integral21-integral) > 0.5:
-                # integral = integral21
-                # Pxs.append(Px)
-                # Pys.append(Py)
-          
-            # pdfNew.append(integral)
-        # plt.figure()
-        # plt.plot(mesh[:,0], mesh[:,1], '.r')
-        # plt.scatter(np.asarray(Pxs),np.asarray(Pys))
-        # pdf = np.copy(np.asarray(pdfNew))
+        print("Stepping Forward....")
+        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly)
+       
         pdf = np.squeeze(pdf)
         PdfTraj.append(np.copy(pdf))
         Meshes.append(np.copy(mesh))
         print('Length of mesh = ', len(mesh))
     else:
-        # PdfTraj.append(np.copy(pdf))
-        # Meshes.append(np.copy(mesh))
         print('Length of mesh = ', len(mesh))
 
 
@@ -281,8 +104,6 @@ ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker
 index = 50
 # ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')
 
-#    
-#    
 def update_graph(num):
     graph.set_data (Meshes[num][:,0], Meshes[num][:,1])
     graph.set_3d_properties(PdfTraj[num])

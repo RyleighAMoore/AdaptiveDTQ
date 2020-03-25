@@ -291,18 +291,18 @@ from scipy.interpolate import griddata
 import GenerateLejaPoints as LP
 
 
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf):
+def Test_LejaQuadratureLinearizationOnLejaPoints():
     h = 0.01
     sigmaX=np.sqrt(h)*g1()
     sigmaY=np.sqrt(h)*g2()
     sigma = np.sqrt(h)
 
-    # mesh = LP.generateLejaMesh(230, sigmaX, sigmaY, 20)
+    mesh = LP.generateLejaMesh(230, sigmaX, sigmaY, 20)
     
     newPDF = []
     condNums = []
-    # rv = multivariate_normal([0, 0], [[sigma**2, 0], [0, sigma**2]])
-    # pdf = np.asarray([rv.pdf(mesh)]).T
+    rv = multivariate_normal([0, 0], [[sigma**2, 0], [0, sigma**2]])
+    pdf = np.asarray([rv.pdf(mesh)]).T
     countUseMorePoints = 0
     for ii in range(len(mesh)):
         # print('########################',ii/len(mesh)*100, '%')

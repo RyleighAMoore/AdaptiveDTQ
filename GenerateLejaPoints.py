@@ -32,69 +32,31 @@ import pickle
 from pyapprox.variables import IndependentMultivariateRandomVariable
 from pyapprox.variable_transformations import \
 AffineRandomVariableTransformation
+import getPCE as PCE
+'''
+num_leja_samples: Total number of samples to be returned (including initial samples).
+initial_samples: The samples that we must include in the leja sequence.
+poly: Polynomial chaos expansion, fully implemented with options, indices, etc.
+num_candidate_samples: Number of samples that are chosen from to complete the leja sequence after initial samples are used.
+dimensions: number of dimensions in the problem
+candidateSampleMesh: If num_candidate_samples is zero, this variable defines the candidate samples to use
+returnIndices: Returns the indices of the leja sequence if True.
+'''
 
-indices = compute_hyperbolic_indices(2,20,1.0)
+def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples = 500, candidateSampleMesh = [], returnIndices = False):        
+    assert poly.var_trans.scale_parameters[0][0] == 0.0, "The polynomial should have standard mean"
+    assert poly.var_trans.scale_parameters[0][1] == 1.0, "The polynomial should have standard variance"
+    generate_candidate_samples = lambda n: np.sqrt(2*np.sqrt(2*num_leja_samples))*np.random.normal(0, 1, (num_vars, n)) 
+    num_vars = poly.num_vars()
+    # generate_candidate_samples = lambda n: 4*np.random.normal(0, 1, (num_vars, n)) 
 
-def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samples = 5000, dimensions=2, defCandidateSamples=False, candidateSampleMesh = [], returnIndices = False):
-    num_vars= 2
-    univariate_variables = [norm(0,1),norm(0,1)]
-    variable = IndependentMultivariateRandomVariable(univariate_variables)
-    var_trans = AffineRandomVariableTransformation(variable)
-    
-    poly = PolynomialChaosExpansion()
-    poly_opts = define_poly_options_from_variable_transformation(var_trans)
-    poly.configure(poly_opts)
-    degree=numBasis
-    # indices = indicesLarge[:,:num_leja_samples+len(initial_samples)+1]
-    # indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
-    # indices = compute_tensor_product_level_indices(poly.num_vars(),degree,max_norm=True)
-    poly.set_indices(indices)
-    
-    ''' # old code
-    num_vars=2
-    degree=numBasis
-    
-    poly = PolynomialChaosExpansion()
-    var_trans = define_iid_random_variable_transformation(
-        norm(loc=0,scale=1),num_vars)
-    
-    opts = define_poly_options_from_variable_transformation(var_trans)
-    poly.configure(opts)
-    indices = compute_hyperbolic_indices(num_vars,degree,1.0)
-#    indices = get_total_degree(num_vars, num_points)
-
-    poly.set_indices(indices)
-    '''
-    
-    degree = np.sqrt(2*num_leja_samples)
-    # generate_candidate_samples = lambda n: np.sqrt(2*degree)*np.random.normal(0, 1, (num_vars, n)) 
-    generate_candidate_samples = lambda n: 3*np.random.normal(0, 1, (num_vars, n)) 
-
-    if defCandidateSamples == True:
+    if num_candidate_samples == 0:
         candidate_samples = candidateSampleMesh
     else:
         candidate_samples = generate_candidate_samples(num_candidate_samples)
-    
-    # plt.scatter(candidate_samples[0,:], candidate_samples[1,:])
-    # plt.show()
-    # enforcing lu interpolation to interpolate a set of initial points
-    # before selecting best samples from candidates can cause ill conditioning
-    # to avoid this issue build a leja sequence and use this as initial
-    # samples and then recompute sequence with different candidates
-    
-    # must use canonical_basis_matrix to generate basis matrix
-    #if initial_samples == None:
-    #num_initial_samples = 10
-    #else:
-    # PxInit = initial_samples[0,0]
-    # PyInit = initial_samples[1,0]
-    
-#    initial_samples = var_trans.map_to_canonical_space(initial_samples)
-#    Px = initial_samples[0,0]
-#    Py= initial_samples[1,0]
-#    initial_samples = mapPointsTo(Px, Py, initial_samples.T).T
-    
-    
+        # plt.scatter(candidate_samples[0,:], candidate_samples[1,:], c='r', marker='.')
+
+
     num_initial_samples = len(initial_samples.T)
     precond_func = lambda matrix, samples: christoffel_weights(matrix)
 #    initial_samples, data_structures = get_lu_leja_samples(
@@ -109,28 +71,13 @@ def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samp
         preconditioning_function=precond_func,
         initial_samples=initial_samples)
     
-            
-    # Pxs = []
-    # Pys = []
-    # candidate_samples = np.hstack((initial_samples,candidate_samples))
-    # idx = data_structures[2]
-    # for i in range(0,len(idx)):
-    #     Pxs.append(candidate_samples[0,idx[i]])
-    #     Pys.append(candidate_samples[1,idx[i]])
-    # plt.figure()
-    # plt.scatter(np.asarray(Pxs),np.asarray(Pys))
-
-    
     
     if returnIndices:
-        assert successBool == True
+        assert successBool == True, "Need to implement returning indices when successBool is False."
         
-    
     if successBool ==True:
         if returnIndices:
             indicesLeja = data_structures[2]
-            # indicesLeja[0] = 1 # ADJUST for the zero and the initial values
-            # indicesLeja = indicesLeja -1
             return np.asarray(samples).T, indicesLeja
         
         return np.asarray(samples).T, np.asarray(samples[:,num_initial_samples:]).T
@@ -175,33 +122,17 @@ def getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samp
                 initial_samples_edited = np.copy(samples[0:len(initial_samples_edited[1,:])+1,:])
                 newLejaSamples.append(np.copy(initial_samples_edited[:,-1]))
         
-#        while len(newLejaSamples) < num_leja_samples-num_initial_samples:
-#            num_leja_samples_edited = len(initial_samples_edited[1,:]) +1  # Want to add one leja point
-#            samples, data_structures, successBool = get_lu_leja_samples(poly.canonical_basis_matrix,candidate_samples,num_leja_samples_edited,preconditioning_function=precond_func,initial_samples=initial_samples_edited)                
-#            initial_samples_edited = np.copy(samples[0:len(initial_samples_edited[1,:])+1,:])
-#            newLejaSamples.append(np.copy([initial_samples_edited[:,-1]]))
         for i in range(num_initial_samples_edited, len(samples2[1, :])):    
             newLejaSamples.append(np.asarray(samples2[:, i]))
     samples = samples2[:, :num_leja_samples]
-#    samples = var_trans.map_from_canonical_space(samples)
-#    samples = mapPointsBack(PxInit, PyInit, samples.T)
 
-
-#    plot = True
-#    if plot: 
-#        plt.plot(samples.T[:,0], samples.T[:,1], '*r')
-#        plt.plot(initial_samples.T[:,0], initial_samples.T[:,1], '.k')
-#        plt.show()    
     return np.asarray(samples).T, np.asarray(newLejaSamples)
 
+# one, two = getLejaPoints(231, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
+# plt.figure()
+# plt.scatter(one[:,0], one[:,1])
 
-
-#initial = np.asarray([[0,0], [-.2,0], [0,.2]]).T
-#lejaPoints = getLejaPoints(8, initial)
-
-#neighbors = UM.findNearestKPoints(Px, Py, allPoints, 4)
 """
-point 1x2 array
 allPoints nx2 array of the original point and the neighbors we consider.
 returns transformed points so that point is centered at 0,0
 """
@@ -225,17 +156,29 @@ def mapPointsBack(Px, Py, allPoints, scaleX, scaleY):
     vals = (scaleVec)*np.asarray(allPoints) + delta
     return vals
 
-def getLejaPointsWithStartingPoints(Px, Py, numNeighbors, mesh, numNewLejaPoints, scaleX, scaleY, numBasis, numSamples):
-    neighbors, distances = UM.findNearestKPoints(Px, Py, mesh, numNeighbors) 
-    if len(neighbors > 0): 
+'''
+scaleParams = [muX, muY, sigmaX, sigmaY]
+numNewLejaPoints = number of desired points
+numCandidateSamples = number of samples to chose candidates from.
+poly: standard normal PCE
+neighbors = [numNeighbors, mesh]
+'''
+def getLejaPointsWithStartingPoints(scaleParams, numNewLejaPoints, numCandidateSamples, poly, neighbors=[0,[]]):
+    Px = scaleParams[0]; Py = scaleParams[1]
+    sigmaX = scaleParams[2]; sigmaY = scaleParams[3]
+    if neighbors[0] > 0: 
+        numNeighbors = neighbors[0]; mesh = neighbors[1]
+        neighbors, distances = UM.findNearestKPoints(Px, Py, mesh, numNeighbors) 
         neighbors = np.vstack((neighbors,[Px,Py]))
     else: # make sure we have at least one point.
+        numNeighbors = 0
         neighbors = np.asarray([[Px],[Py]]).T
         
-    intialPoints = mapPointsTo(Px,Py,neighbors, 1/scaleX,1/scaleY)
-    lejaPointsFinal1, newLeja = getLejaPoints(numNewLejaPoints+numNeighbors+1, intialPoints.T, numBasis,num_candidate_samples=numSamples)
-    lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal1, scaleX, scaleY)
-    newLeja = mapPointsBack(Px,Py,newLeja,scaleX,scaleY)
+    intialPoints = mapPointsTo(Px,Py,neighbors, 1/sigmaX,1/sigmaY)
+    lejaPointsFinal1, newLeja = getLejaPoints(numNewLejaPoints+numNeighbors+1, intialPoints.T, poly, num_candidate_samples=numCandidateSamples)
+    lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal1, sigmaX, sigmaY)
+    newLeja = mapPointsBack(Px,Py,newLeja,sigmaX,sigmaY)
+    
     plot= False
     if plot:
         plt.figure()
@@ -249,24 +192,17 @@ def getLejaPointsWithStartingPoints(Px, Py, numNeighbors, mesh, numNewLejaPoints
 
     return lejaPointsFinal, newLeja
 
+# one, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 1000, poly)
+# mesh, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 12, 1000, poly, neighbors=[3,one])
 
-def generateLejaMesh(numPoints, sigmaX, sigmaY, numBasis):
-#    lejaPoints, newPoints = getLejaPointsWithStartingPoints(0, 0, 0,[], numPoints, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(),40)
-     lejaPoints, newPoints = getLejaPointsWithStartingPoints(0, 0, 0, [], numPoints, sigmaX,sigmaY,numBasis, 5000)
 
-     return lejaPoints
- 
+def getLejaSetFromPoints(scaleParams, mesh, numNewLejaPoints, poly):
+    assert numNewLejaPoints <= np.size(mesh,0), "Asked for subset is bigger than whole set"
+    Px = scaleParams[0]; Py = scaleParams[1]
+    sigmaX = scaleParams[2]; sigmaY = scaleParams[3]
     
-def generateLejaMeshNotCentered(numPoints, sigmaX, sigmaY, numBasis, meanX, meanY):
-    lejaPoints, newPoints = getLejaPointsWithStartingPoints(meanX, meanY, 0, [], numPoints, sigmaX,sigmaY,numBasis, 5000)
-    return lejaPoints
-
-
-
-
-def getLejaSetFromPoints(Px, Py, mesh, numNewLejaPoints, numBasis, sigmaX, sigmaY):
-    intialPoints = mapPointsTo(Px, Py, mesh, 1/sigmaX, 1/sigmaY)
-    lejaPointsFinal, indices = getLejaPoints(numNewLejaPoints, np.asarray([[0,0]]).T, numBasis, defCandidateSamples=True, candidateSampleMesh = intialPoints.T, returnIndices=True)
+    candidates = mapPointsTo(Px, Py, mesh, 1/sigmaX, 1/sigmaY)
+    lejaPointsFinal, indices = getLejaPoints(numNewLejaPoints, np.asarray([[0,0]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, sigmaX, sigmaY)
      
     plot= False
@@ -280,58 +216,6 @@ def getLejaSetFromPoints(Px, Py, mesh, numNewLejaPoints, numBasis, sigmaX, sigma
     lejaPointsFinal
     return lejaPointsFinal, indices
 
-
-        
-# mesh = UM.generateOrderedGridCenteredAtZero(-1.8, 1.8, -1.8, 1.8, 0.1)      # ordered mesh 
-
-
-# num = 0
-# point = np.asarray(mesh[num:num+1,:])
-# Px = point[0,0]
-# Py= point[0,1]
-# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
-# mesh = pickle.load(pickle_in)
-# for val in range(len(mesh)-1,-1,-1):
-#     xx = mesh[val,0]
-#     yy = mesh[val,1]
-#     rad = xx**2 +yy**2 
-#     if rad < 0.1:
-#         mesh = np.delete(mesh, val, 0)
-        
-        
-        
-        
-        
-# diff = np.ones((len(mesh),2))
-# diff[:,0]= 3*np.ones((len(mesh)))
-# diff[:,1]= 1*np.ones((len(mesh)))
-# mesh = np.vstack((mesh,mesh+ diff))
-
-# # lejaPointsFinal, newLeja = getLejaPointsWithStartingPoints(0, 0,0, mesh, 100, 1, 1, 15, 1000)
-# mesh = UM.generateRandomPoints(-0.2,0.2,-0.2,0.2,100)  # unordered mesh
-
-# lejaPointsFinal, newLeja = getLejaPoints(len(mesh), mesh.T, 55, num_candidate_samples = 5000, dimensions=2)
-# def update_graph(num):
-#     graph.set_data(lejaPointsFinal[0:num,0], lejaPointsFinal[0:num,1])
-#     # graph.set_3d_properties(PdfTraj[num])
-#     # title.set_text('3D Test, time={}'.format(num))
-#     return graph
-
-
-# fig = plt.figure()
-# ax = fig.add_subplot()
-# # title = ax.set_title('3D Test')
-    
-# graph, = ax.plot(lejaPointsFinal[0,0], lejaPointsFinal[0,1], linestyle="", marker="o")
-# ax.set_xlim(-5, 5)
-# ax.set_ylim(-5, 5)
-
-# ani = animation.FuncAnimation(fig, update_graph, frames=len(lejaPointsFinal),
-#                                           interval=100, blit=False)
-
-# plt.show()
-
-# lejaPoints = generateLejaMesh(10)
-
-# mesh = generateLejaMesh(50, .1, .1, 30)
+# one, two = getLejaPointsWithStartingPoints([0,0,.5,.5], 230, 1000, poly)
+# mesh, mesh2 = getLejaSetFromPoints([0,0,.1,.1], one, 100, poly)
 

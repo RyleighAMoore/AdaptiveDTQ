@@ -39,13 +39,13 @@ adjustBoundary = True
 # maxDistanceBetweenPoints = 0.2
 
 
-def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, xmin, xmax, ymin, ymax):
+def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, xmin, xmax, ymin, ymax, poly):
     changedBool2 = 0
     changedBool1 = 0
     if adjustDensity:
-        Mesh, Pdf, triangulation, changedBool2 = addInteriorPoints(Mesh, Pdf, triangulation, kstep, h)
+        Mesh, Pdf, triangulation, changedBool2 = addInteriorPoints(Mesh, Pdf, triangulation, kstep, h, poly)
     if adjustBoundary:
-        Mesh, Pdf, triangulation, changedBool1 = addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h)
+        Mesh, Pdf, triangulation, changedBool1 = addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h, poly)
     ChangedBool = max(changedBool1, changedBool2)
     return Mesh, Pdf, triangulation, ChangedBool, xmin, xmax, ymin, ymax 
 
@@ -234,7 +234,7 @@ def addPoint(Px,Py, Mesh, Pdf, triangulation, kstep, h):
     return  Mesh, Pdf, triangulation
  
     
-def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h):
+def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h, poly):
     numBoundaryAdded = 0
     keepAdding = True
     changedBool = 0
@@ -260,7 +260,8 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h):
                 if boundaryPointsToAddAround[val] == 1: # if we should extend boundary
                     # newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, minDistanceBetweenPointsBoundary*2, minDistanceBetweenPointsBoundary)
                     # #mesh12, pdfNew1 = LQ.getMeshValsThatAreClose(Mesh, Pdf, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g1(), Mesh[val,0], Mesh[val,1])
-                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 3, Mesh, 3, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(),4, 100)
+                    # allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 3, Mesh, 3, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(),4, 100)
+                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints([Mesh[val,0], Mesh[val,1],np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()], 12, 100, poly, neighbors=[3,Mesh])
                     # #allPoints, newPoints = LP.getLejaPoints(130, mesh12.T,20, num_candidate_samples = 230, dimensions=2, defCandidateSamples=False, candidateSampleMesh = [], returnIndices = False)
                     
                     # plt.figure()
@@ -269,7 +270,9 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h):
                     # plt.scatter(Mesh[val,0], Mesh[val,1], c='b')
                     
                     newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, minDistanceBetweenPointsBoundary)
-                    # newPoints = newPoints[:6]
+                    # newPoints = newPoints[:10]
+                    if len(newPoints)==0:
+                        keepAdding = False
                     for point in range(len(newPoints)):
                         ChangedBool = 1
                         Mesh, Pdf, triangulation = addPoint(newPoints[point,0], newPoints[point,1], Mesh, Pdf, triangulation, kstep, h)
@@ -282,9 +285,12 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h):
         if changedBool == 1:
             tri = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
     print("# boundary points Added = ", numBoundaryAdded)    
+    # plt.figure()
+    # plt.plot(Mesh[:,0], Mesh[:,1], '.k')
+    # plt.show()
     return Mesh, Pdf, triangulation, changedBool
 
-def addInteriorPoints(Mesh, Pdf, triangulation, kstep, h):
+def addInteriorPoints(Mesh, Pdf, triangulation, kstep, h,poly):
     Slopes = getSlopes(Mesh, Pdf)
     denisfyAroundPointIfSlopeLargerThanTolerance = 0.05 # np.quantile(Slopes,0.5)
     interiorPointsToAddAround = np.asarray([np.asarray(Slopes)> denisfyAroundPointIfSlopeLargerThanTolerance]).T
@@ -304,13 +310,15 @@ def addInteriorPoints(Mesh, Pdf, triangulation, kstep, h):
             for val in range(len(Slopes)-1,-1,-1):
                 if (spacing > minDistanceBetweenPoints) and (interiorPointsToAddAround[val] == 1): # if we should extend boundary
     #                newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, kstep/2) 
-                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 4, Mesh, 4, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(), 6,100)
+                    # allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 4, Mesh, 4, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(), 6,100)
+                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints([0,0,np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()], 6, 40, poly, neighbors=[3,Mesh])
+                    
                     newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, min(minDistanceBetweenPoints/Slopes[val], minDistanceBetweenPoints))
                     for point in range(len(newPoints)):
                         ChangedBool = 1
                         numInteriorAdded+=1
                         Mesh, Pdf, triangulation = addPoint(newPoints[point,0], newPoints[point,1], Mesh, Pdf, triangulation, kstep, h)
-    print("# interior points Added = ", numInteriorAdded)  
+        print("# interior points Added = ", numInteriorAdded)  
     return Mesh, Pdf, triangulation, ChangedBool 
 
 

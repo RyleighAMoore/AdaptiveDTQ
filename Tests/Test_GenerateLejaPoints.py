@@ -7,6 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Functions import g1, g2
 from mpl_toolkits.mplot3d import Axes3D
+import getPCE as PCE
+
 
 
 def Test_GetLejaPoints1():
@@ -48,6 +50,7 @@ def Test_GetLejaSetFromPoints():
     
 import time  
 def Test_GetLejaSetFromPoints2():
+    poly = PCE.GeneratePCE(20, muX=0, muY=0, sigmaX=1, sigmaY=1)
     Px = 0
     Py = 0
     h=0.01
@@ -88,13 +91,13 @@ def Test_GetLejaPoints():
     num_leja_samples = 12
     numBasis = 40
     initial_samples = np.asarray([[0],[0]])
-    lejaPoints, newLejas = getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samples = 5000, dimensions=2, defCandidateSamples=False)
+    lejaPoints, newLejas = getLejaPoints(num_leja_samples, initial_samples,numBasis, num_candidate_samples = 500, dimensions=2, defCandidateSamples=False)
     
     plt.figure()
     plt.scatter(lejaPoints[:,0], lejaPoints[:,1] , c='g')
     plt.show()
     
-Test_GetLejaSetFromPoints2()
+# Test_GetLejaSetFromPoints2()
 
 
 
