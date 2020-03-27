@@ -11,7 +11,7 @@ from pyapprox.variable_transformations import AffineRandomVariableTransformation
 from pyapprox.multivariate_polynomials import PolynomialChaosExpansion, define_poly_options_from_variable_transformation
 from pyapprox.indexing import compute_hyperbolic_indices, tensor_product_indices,compute_tensor_product_level_indices
 import GenerateLejaPoints as LP
-from GenerateLejaPoints import getLejaSetFromPoints, generateLejaMesh, getLejaPoints, mapPointsBack, mapPointsTo
+from GenerateLejaPoints import getLejaSetFromPoints, getLejaPoints, mapPointsBack, mapPointsTo
 import UnorderedMesh as UM
 import numpy as np
 import matplotlib.pyplot as plt
@@ -387,6 +387,6 @@ def Test_LejaQuadratureLinearizationOnLejaPoints():
 
     
 
-# Test_GetLejaQuadratureRule()
+Test_GetLejaQuadratureRule()
 # Test_LejaQuadratureOnLejaPoints()
-newPDF,condNums, meshVals = Test_LejaQuadratureLinearizationOnLejaPoints()
+# newPDF,condNums, meshVals = Test_LejaQuadratureLinearizationOnLejaPoints()

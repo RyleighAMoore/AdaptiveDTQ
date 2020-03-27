@@ -28,13 +28,15 @@ import getPCE as PCE
    
 def getLejaQuadratureRule(sigmaX, sigmaY, muX, muY):
     degree = 20
-    poly = PCE.GeneratePCE(degree, muX=0, muY=0, sigmaX=1, sigmaY=1)
+    poly = PCE.generatePCE(degree+10, muX=0, muY=0, sigmaX=1, sigmaY=1)
     
-    num_leja_samples = len(indices[0])-1
+    num_leja_samples = 230
     initial_samples = np.asarray([[muX],[muY]])
-    train_samples = LP.generateLejaMeshNotCentered(num_leja_samples, sigmaX, sigmaY, degree,muX,muY)
+    # train_samples = LP.generateLejaMeshNotCentered(num_leja_samples, sigmaX, sigmaY, degree,muX,muY)
+    train_samples, mesh2 = LP.getLejaPointsWithStartingPoints([muX,muY,sigmaX,sigmaY], num_leja_samples, 5000, poly)
 
-
+    poly = PCE.generatePCE(degree, muX=muX, muY=muY, sigmaX=sigmaX, sigmaY=sigmaY)
+    
     basis_matrix = poly.basis_matrix(train_samples.T)
     precond_weights = christoffel_weights(basis_matrix)
     precond_basis_matrix = precond_weights[:,np.newaxis]*basis_matrix
@@ -48,6 +50,16 @@ def getLejaQuadratureRule(sigmaX, sigmaY, muX, muY):
     weights = np.matmul(e1vector, np.linalg.inv(basis_matrix))
    
     return train_samples, weights
+
+# train_samples1, weights1 = getLejaQuadratureRule(0.1, 0.1 ,1,1)
+# print(np.sum(weights1),1)
+# train_samples, weights = getLejaQuadratureRule(0.1, 0.1,0,0)
+# print(np.sum(weights),1)
+
+    
+# Aa1 = np.matmul(weights1, np.ones(len(train_samples1))) # should be 1
+# Aa = np.matmul(weights, np.ones(len(train_samples))) 
+
 
 
 def newIntegrand(x1,x2,mesh,h):
@@ -79,7 +91,8 @@ def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
 
 indices = compute_hyperbolic_indices(2,20,1.0)
 def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, muY, degree):
-    
+    poly = PCE.generatePCE(degree, muX=muX, muY=muY, sigmaX=sigmaX, sigmaY=sigmaY)
+    '''
     univariate_variables = [norm(muX,sigmaX),norm(muY,sigmaY)]
     variable = IndependentMultivariateRandomVariable(univariate_variables)
     var_trans = AffineRandomVariableTransformation(variable)
@@ -94,6 +107,7 @@ def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, 
     # degrees = [int(train_samples.shape[0]**(1/poly.num_vars()))]*poly.num_vars()
     # indices = tensor_product_indices(degrees)
     poly.set_indices(indices)
+    '''
 
     # train_values = np.log(train_values)
     basis_matrix = poly.basis_matrix(train_samples.T)
@@ -323,7 +337,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
         meshTemp = np.delete(mesh, ii, axis=0)
         pdfTemp = np.delete(pdf, ii, axis=0)
         
-        mesh1, indices = getLejaSetFromPoints([0,0,.1,.1], meshTemp, 130, poly)
+        mesh1, indices = getLejaSetFromPoints([0,0,sigmaX,sigmaY], meshTemp, 130, poly)
         meshTemp = np.vstack(([muX,muY], meshTemp))
         pdfTemp = np.vstack((pdf[ii], pdfTemp))
         pdfNew = []
@@ -348,15 +362,14 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
             countUseMorePoints = countUseMorePoints+1
             mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
             
-            needPoints = 130
-            if len(mesh12) < needPoints:
-                mesh12 = mapPointsTo(muX, muY, mesh12, 1/sigmaX, 1/sigmaY)
-                num_leja_samples = 130
-                initial_samples = mesh12
-                numBasis=15
-                allp, new  = LP.getLejaPoints(num_leja_samples, initial_samples.T, poly)
-                mesh12 = mapPointsBack(muX,muY, allp, sigmaX, sigmaY)
-            
+
+            mesh12 = mapPointsTo(muX, muY, mesh12, 1/sigmaX, 1/sigmaY)
+            num_leja_samples = 130
+            initial_samples = mesh12
+            numBasis=15
+            allp, new  = LP.getLejaPoints(num_leja_samples, initial_samples.T, poly)
+            mesh12 = mapPointsBack(muX,muY, allp, sigmaX, sigmaY)
+        
             
             # plt.figure()
             # plt.scatter(mesh[:,0], mesh[:,1], c='k', marker='*')
@@ -378,7 +391,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
                 # plt.scatter(mesh[:,0], mesh[:,1], c='k', marker='*')
                 # plt.scatter(mesh12[:,0], mesh12[:,1], c='r', marker='.')
                 # plt.scatter(muX, muY, c='g', marker='.')
-        print(condNum)
+        # print(condNum)
         assert value[0] < 20
         newPDF.append(value)
         condNums.append(condNum)

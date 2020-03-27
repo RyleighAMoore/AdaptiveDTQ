@@ -26,7 +26,7 @@ def generatePCE(degree, muX=0, muY=0, sigmaX=1, sigmaY=1):
     
     indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
     
-    # indices = get_total_degree_indices(degree, poly.num_vars())
+    indices = get_total_degree_indices(degree, poly.num_vars())
     # indices = compute_tensor_product_level_indices(poly.num_vars(),degree,max_norm=True)
     poly.set_indices(indices)
     return poly

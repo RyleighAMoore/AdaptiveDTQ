@@ -21,6 +21,7 @@ import GenerateLejaPoints as LP
 import pickle
 import LejaQuadrature as LQ
 import getPCE as PCE
+import distanceMetrics as DM
 
 
 T = 0.01  # final time, code computes PDF of X_T
@@ -40,11 +41,18 @@ ymin=-2
 ymax=2
 h=0.01
 
-poly = PCE.generatePCE(21)
-mesh, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 1000, poly)
+poly = PCE.generatePCE(30)
+mesh, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 5000, poly)
+poly = PCE.generatePCE(20)
 
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
 
+a = DM.fillDistance(mesh)
+
+minDistanceBetweenPoints = 0.07
+minDistanceBetweenPointsBoundary = 0.07
+skipCount = 10
+maxDistanceBetweenPoints = 0.15
 
 
 
@@ -63,7 +71,7 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(10):
+for i in trange(25):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))

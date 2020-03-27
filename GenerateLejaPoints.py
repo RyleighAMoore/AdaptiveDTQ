@@ -43,12 +43,14 @@ candidateSampleMesh: If num_candidate_samples is zero, this variable defines the
 returnIndices: Returns the indices of the leja sequence if True.
 '''
 
-def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples = 500, candidateSampleMesh = [], returnIndices = False):        
+def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples = 5000, candidateSampleMesh = [], returnIndices = False):        
     assert poly.var_trans.scale_parameters[0][0] == 0.0, "The polynomial should have standard mean"
     assert poly.var_trans.scale_parameters[0][1] == 1.0, "The polynomial should have standard variance"
+    assert num_leja_samples <= len(poly.indices.T)
     generate_candidate_samples = lambda n: np.sqrt(2*np.sqrt(2*num_leja_samples))*np.random.normal(0, 1, (num_vars, n)) 
     num_vars = poly.num_vars()
     # generate_candidate_samples = lambda n: 4*np.random.normal(0, 1, (num_vars, n)) 
+    # generate_candidate_samples = lambda n: 10*np.random.normal(0, 1, (num_vars, n)) 
 
     if num_candidate_samples == 0:
         candidate_samples = candidateSampleMesh
@@ -79,7 +81,7 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
         if returnIndices:
             indicesLeja = data_structures[2]
             return np.asarray(samples).T, indicesLeja
-        
+        assert len(np.asarray(samples).T) <= len(poly.indices.T)
         return np.asarray(samples).T, np.asarray(samples[:,num_initial_samples:]).T
   
     if successBool == False:
@@ -125,7 +127,7 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
         for i in range(num_initial_samples_edited, len(samples2[1, :])):    
             newLejaSamples.append(np.asarray(samples2[:, i]))
     samples = samples2[:, :num_leja_samples]
-
+    assert len(np.asarray(samples).T) <= len(poly.indices.T)
     return np.asarray(samples).T, np.asarray(newLejaSamples)
 
 # one, two = getLejaPoints(231, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
@@ -163,7 +165,7 @@ numCandidateSamples = number of samples to chose candidates from.
 poly: standard normal PCE
 neighbors = [numNeighbors, mesh]
 '''
-def getLejaPointsWithStartingPoints(scaleParams, numNewLejaPoints, numCandidateSamples, poly, neighbors=[0,[]]):
+def getLejaPointsWithStartingPoints(scaleParams, numLejaPoints, numCandidateSamples, poly, neighbors=[0,[]]):
     Px = scaleParams[0]; Py = scaleParams[1]
     sigmaX = scaleParams[2]; sigmaY = scaleParams[3]
     if neighbors[0] > 0: 
@@ -175,7 +177,7 @@ def getLejaPointsWithStartingPoints(scaleParams, numNewLejaPoints, numCandidateS
         neighbors = np.asarray([[Px],[Py]]).T
         
     intialPoints = mapPointsTo(Px,Py,neighbors, 1/sigmaX,1/sigmaY)
-    lejaPointsFinal1, newLeja = getLejaPoints(numNewLejaPoints+numNeighbors+1, intialPoints.T, poly, num_candidate_samples=numCandidateSamples)
+    lejaPointsFinal1, newLeja = getLejaPoints(numLejaPoints, intialPoints.T, poly, num_candidate_samples=numCandidateSamples)
     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal1, sigmaX, sigmaY)
     newLeja = mapPointsBack(Px,Py,newLeja,sigmaX,sigmaY)
     
@@ -192,6 +194,7 @@ def getLejaPointsWithStartingPoints(scaleParams, numNewLejaPoints, numCandidateS
 
     return lejaPointsFinal, newLeja
 
+# poly = PCE.generatePCE(20, muX=0, muY=0, sigmaX = 1, sigmaY=1)
 # one, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 1000, poly)
 # mesh, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 12, 1000, poly, neighbors=[3,one])
 

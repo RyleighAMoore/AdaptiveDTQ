@@ -423,4 +423,3 @@ def alpha_shape(points, triangulation, alpha, only_outer=True):
     #     plt.plot(points[[i, j], 0], points[[i, j], 1], 'r')
     # plt.show()
     return edges
-
