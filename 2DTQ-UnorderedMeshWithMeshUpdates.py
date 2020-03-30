@@ -54,7 +54,7 @@ ymax=2
 h=0.01
 
 poly = PCE.generatePCE(30)
-mesh, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,sqrt(h)*fun.g1(),sqrt(h)*fun.g2()], 230, 5000, poly)
+mesh, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,sqrt(h)*fun.g1(),sqrt(h)*fun.g2()], 130, 5000, poly)
 # mesh2 , mesh3 = LP.getLejaPointsWithStartingPoints([0,0,sqrt(h)*fun.g1()*1.5,sqrt(h)*fun.g2()*1.5], 230, 5000, poly)
 # mesh3 = checkDist(mesh, mesh3, 0.03)
 # mesh = np.vstack((mesh,mesh3))
@@ -161,8 +161,8 @@ timestr = time.strftime("%Y%m%d-%H%M%S")
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal-"+ timestr+".p", "wb" ) 
 # pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesBimodal-"+ timestr+".p", "wb" ) 
 
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillFullSplit.p", "wb" ) 
-# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillFullSplit1.p", "wb" ) 
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillLongFullSplit.p", "wb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillLongFullSplit1.p", "wb" ) 
 
 # #    
 # pickle.dump(PdfTraj, pkl_file)

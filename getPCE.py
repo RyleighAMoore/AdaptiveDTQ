@@ -62,26 +62,78 @@ def generatePCE_Uniform(degree):
     poly.set_indices(indices)
     return poly
 
-# poly = generatePCE_Uniform(20)
-
-# poly,indices = generatePCE(20)
 
 # import matplotlib.pyplot as plt
-# import matplotlib.animation as animation
-# import numpy as np
-# from matplotlib.animation import FuncAnimation,FFMpegFileWriter
+# from mpl_toolkits.mplot3d import Axes3D
+# from scipy.integrate import simps
+# import chaospy
 
-# def update_graph(num):
-#     xs = indices[:num,0]
-#     ys = indices[:num,1]
-#     graph = plt.set_data(indices[:num,0], indices[:num,1])
-#     return graph
+# # expansion1 = chaospy.orth_ttr(2, chaospy.Normal(1, .1))
+# distribution = chaospy.J(chaospy.Normal(0, 1), chaospy.Normal(0, 1))
+# poly2 = chaospy.orth_ttr(4, distribution)
 
+# nx = 20
+# x = np.linspace(-6, 6, nx)
+# xs= np.vstack((x,x))
 
+# from scipy.stats import multivariate_normal
+# var = 1
+# poly = generatePCE(3,sigmaX=var, sigmaY=var)
+# rv = multivariate_normal([0, 0], [[var, 0], [0, var]])
+# weights = []
+# vals = []
+# vals2 = []
+# xs = []
+# ys = []
+# for i in x:
+#     for k in x:
+#         point = np.vstack((i,k))
+#         LP = poly.basis_matrix(point)
+#         lp = LP[:,8]
+#         lp2 = poly2(i,k)[8]
+#         weights.append(np.asarray([rv.pdf(point.T)]).T)
+#         vals.append(np.copy(lp))
+#         vals2.append(lp2)
+#         xs.append(i)
+#         ys.append(k)
+ 
 # fig = plt.figure()
-# indices = indices.T  
-# graph = plt.scatter(indices[:100,0], indices[:100,1])
-# ani = animation.FuncAnimation(fig, update_graph, frames=indices,
-#                                           interval=500, blit=False)
+# ax = Axes3D(fig)
+# ax.scatter(np.asarray(xs), np.asarray(ys), np.asarray(vals), c='k', marker='o')
+# ax.scatter(np.asarray(xs), np.asarray(ys), np.asarray(vals2), c='r', marker='.')
 
-# plt.show()
+        
+        
+# # poly1 = np.reshape(np.asarray(vals),(len(x),len(x)))
+# # weights = np.reshape(np.asarray(weights),(len(x),len(x)))
+
+# # fig = plt.figure()
+# # ax = Axes3D(fig)
+# # ax.scatter(np.asarray(xs), np.asarray(ys), np.asarray(vals), c='k', marker='.')
+
+
+# # poly = generatePCE(5,sigmaX=1, sigmaY=1)
+# # point = np.vstack((0,0))
+# # # poly = chaospy.orth_ttr(2, distribution)
+
+# # vals = []
+# # xs = []
+# # ys = []
+# # for i in x:
+# #     for k in x:
+# #         point = np.vstack((i,k))
+# #         # LP = poly.basis_matrix(point)
+# #         # lp = np.sum(LP, axis=1)[0]
+# #         # lp = np.exp(k
+# #         lp = np.sum(poly1(i,k))
+# #         vals.append(np.copy(lp))
+# #         xs.append(i)
+# #         ys.append(k)
+# # poly2 = np.reshape(np.asarray(vals),(len(x),len(x)))
+
+# # fig = plt.figure()
+# # ax = Axes3D(fig)
+# # ax.scatter(np.asarray(xs), np.asarray(ys), np.asarray(vals), c='k', marker='.')
+
+# # # We first integrate over x and then over y
+# # print(simps([simps(zz_x,x) for zz_x in poly1*poly2*weights],x))

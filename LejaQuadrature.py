@@ -90,8 +90,11 @@ def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
     return np.asarray(MeshToKeep), np.asarray(PdfToKeep)
 
 indices = compute_hyperbolic_indices(2,20,1.0)
+import chaospy
 def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, muY, degree):
     poly = PCE.generatePCE(degree, muX=muX, muY=muY, sigmaX=sigmaX, sigmaY=sigmaY)
+    distribution = chaospy.J(chaospy.Normal(muX, sigmaX), chaospy.Normal(muY, sigmaY))
+    poly = chaospy.orth_ttr(20, distribution)
     '''
     univariate_variables = [norm(muX,sigmaX),norm(muY,sigmaY)]
     variable = IndependentMultivariateRandomVariable(univariate_variables)
@@ -110,7 +113,9 @@ def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, 
     '''
 
     # train_values = np.log(train_values)
-    basis_matrix = poly.basis_matrix(train_samples.T)
+    # basis_matrix = poly(train_samples.T)
+    basis_matrix = poly(train_samples[:,0], train_samples[:,1]).T
+
     numRows = np.size(basis_matrix,0)
     numCols = np.size(basis_matrix,1)
     ZeroCoeffs = np.zeros((numCols-numRows,1))
@@ -346,7 +351,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
     # pdf = np.asarray([rv.pdf(mesh)]).T
     countUseMorePoints = 0
     for ii in range(len(mesh)):
-        # print('########################',ii/len(mesh)*100, '%')
+        print('########################',ii/len(mesh)*100, '%')
         muX = mesh[ii,0]
         muY = mesh[ii,1]
 
@@ -375,21 +380,22 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
         
         value, condNum = QuadratureByInterpolation(mesh1, testing, sigmaX, sigmaY, muX, muY, 20)
         # print(value)
-        # condNums.append(condNum)
+        print(condNum)
+        condNums.append(condNum)
         # interpErrors.append(maxinterpError)
 
         if condNum > 2 or value < 0:
             countUseMorePoints = countUseMorePoints+1
             mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
-            
 
             mesh12 = mapPointsTo(muX, muY, mesh12, 1/sigmaX, 1/sigmaY)
             num_leja_samples = 130
             initial_samples = mesh12
             numBasis=15
             allp, new  = LP.getLejaPoints(num_leja_samples, initial_samples.T, poly, num_candidate_samples = 230)
+            
             mesh12 = mapPointsBack(muX,muY, allp, sigmaX, sigmaY)
-        
+            
             
             # plt.figure()
             # plt.scatter(mesh[:,0], mesh[:,1], c='k', marker='*')
@@ -411,7 +417,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
                 # plt.scatter(mesh[:,0], mesh[:,1], c='k', marker='*')
                 # plt.scatter(mesh12[:,0], mesh12[:,1], c='r', marker='.')
                 # plt.scatter(muX, muY, c='g', marker='.')
-        # print(condNum)
+        print(condNum)
         assert value[0] < 20
         newPDF.append(value)
         # interpErrors.append(maxinterpError)
@@ -430,7 +436,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
     # ax = Axes3D(fig)
     # ax.scatter(mesh[:,0], mesh[:,1], newPDF, c='r', marker='.')
     
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # ax.scatter(mesh1[:,0], mesh1[:,1], testing, c='k', marker='.')
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.scatter(Meshes[-1][:,0], Meshes[-1][:,1], np.log(condnums), c='k', marker='.')
     return newPDF,condNums, mesh
