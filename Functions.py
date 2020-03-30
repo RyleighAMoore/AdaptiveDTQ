@@ -22,39 +22,72 @@ def dnorm(x, mu, sigma):
 def dnorm_partialx(x, mu, sigma):
     return np.divide(-x+mu,sigma**2)*np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
 
+from scipy.special import erf
 
-# Volcano
 def f1(x, y):
-    r = np.sqrt(x ** 2 + y ** 2)
-    # return 0
-    return 10*x*(2- r ** 2)
+    return 5*erf(10*x)
 
 
 def f2(x, y):
-    r = np.sqrt(x ** 2 + y ** 2)
-    # return 0
-    return 10*y*(2- r ** 2) 
+    return 0
+    return 5*erf(10*y) 
 
 def g1(x=0,y=0):
-    return 1
+    return 0.5
 
 def g2(x=0,y=0):
-    return 1
-    
-    
+    return 0.5
+
+
 # def f1(x, y):
 #     r = np.sqrt(x ** 2 + y ** 2)
-#     return 4
+#     # return 0
+#     return 1/(.15*np.sqrt(abs(x)+1))*np.sign(x)
+
 
 # def f2(x, y):
 #     r = np.sqrt(x ** 2 + y ** 2)
-#     return 0
+#     # return 0
+#     return 0 
+
+# def g1(x=0,y=0):
+#     return 0.5
+
+# def g2(x=0,y=0):
+#     return 0.5
+
+# Volcano
+# def f1(x, y):
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     # return 0
+#     return 10*x*(0.5- r ** 2)
+
+
+# def f2(x, y):
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     # return 0
+#     return 10*y*(1- r ** 2) 
 
 # def g1(x=0,y=0):
 #     return 1
 
 # def g2(x=0,y=0):
 #     return 1
+    
+    
+# def f1(x, y):
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     return 4*np.sign(x)
+
+# def f2(x, y):
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     return 0
+
+# def g1(x=0,y=0):
+#     return 0.6
+
+# def g2(x=0,y=0):
+#     return 0.6
 
 # def f1(x, y):
 #     r = np.sqrt(x ** 2 + y ** 2)

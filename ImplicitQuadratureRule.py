@@ -34,12 +34,12 @@ from sympy import Matrix
 
 
 
-polyLarge = PCE.generatePCE(20, muX=0, muY=0, sigmaX = 1, sigmaY=1)
-poly = PCE.generatePCE(15, muX=0, muY=0, sigmaX = .1, sigmaY=.1)
+polyLarge = PCE.generatePCE(50, muX=0, muY=0, sigmaX = 1, sigmaY=1)
+poly = PCE.generatePCE(15, muX=0, muY=0, sigmaX = 1, sigmaY=1)
 D = len(poly.indices.T)
-Kmax = len(polyLarge.indices.T)-1 - 40 # Will give Kmax+1 samples
+Kmax = len(polyLarge.indices.T)-1-40 # Will give Kmax+1 samples
 
-samples, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,1,1], Kmax+1, 4000, polyLarge)
+samples, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,1,1], Kmax+1, 5000, polyLarge)
 plt.scatter(samples[:,0], samples[:,1])
 
 initSamples = samples[:D+1,:]
@@ -48,6 +48,9 @@ otherSamples = np.ndarray.tolist(samples[D+1:,:])
 vmat = poly.basis_matrix(samples.T).T
 
 weights = np.asarray([(1/(D+1))*np.ones(len(initSamples))]).T
+# rv = multivariate_normal([0, 0], [[1, 0], [0, 1]])
+# weights = np.asarray([rv.pdf(initSamples)]).T
+
 print(np.sum(weights))
 nodes = np.copy(initSamples)
 for K in range(D, Kmax): # up to Kmax - 1
@@ -56,8 +59,8 @@ for K in range(D, Kmax): # up to Kmax - 1
     nodes = np.vstack((nodes, otherSamples.pop()))
     one = ((K+1)/(K+2))*weights
     two = np.asarray([[1/(K+2)]])
-
     weights = np.concatenate((one, two))
+    # weights = np.asarray([rv.pdf(nodes)]).T 
     
     # Update weights
     vmat = poly.basis_matrix(nodes.T).T
@@ -69,10 +72,10 @@ for K in range(D, Kmax): # up to Kmax - 1
     
     a = weights/c
     aPos = np.ma.masked_where(c<0, a) # only values where c > 0 
-    alpha1 = np.min(aPos)
+    alpha1 = np.min(aPos.compressed())
     
     aNeg =  np.ma.masked_where(c>0, a) # only values where c < 0 
-    alpha2 = np.max(aNeg)
+    alpha2 = np.max(aNeg.compressed())
     
     # Choose alpha1 or alpha2
     alpha = alpha2
@@ -126,7 +129,7 @@ plt.colorbar(label="values")
 plt.show()
     
     
-    
+
     
     
     

@@ -21,11 +21,11 @@ import LejaQuadrature as LQ
 global MaxSlope
 MaxSlope = 0 # Initialize to 0, the real value is set in the code
 addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
-removeZerosValuesIfLessThanTolerance = 10**(-9)
+removeZerosValuesIfLessThanTolerance = 10**(-3)
 minDistanceBetweenPoints = 0.07
 minDistanceBetweenPointsBoundary = 0.07
-skipCount = 10
-maxDistanceBetweenPoints = 0.15
+skipCount = 5
+maxDistanceBetweenPoints = 0.1
 numStdDev = 5 #For grids around each point in the mesh
 
 adjustDensity = True
@@ -56,12 +56,33 @@ def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool):
     and the parts associated with the removed points need to be removed.'''
     ChangedBool2 = 0
     ChangedBool1 = 0
+    ChangedBool3 = 0
     if adjustBoundary:
         Mesh, Pdf, ChangedBool2 = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool)
     if adjustDensity:
         Mesh, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool)
-    ChangedBool = max(ChangedBool1, ChangedBool2)
+    Mesh, Pdf, ChangedBool3 = checkForAndRemoveZeroPoints(Mesh,Pdf, tri)
+    ChangedBool = max(ChangedBool1, ChangedBool2, ChangedBool3)
     return Mesh, Pdf, ChangedBool
+
+def checkForAndRemoveZeroPoints(Mesh, Pdf, tri):
+    print("Checking for small points to remove....")
+    # plt.figure()
+    # plt.scatter(Mesh[:,0], Mesh[:,1])
+    ChangedBool=False
+    if np.min(Pdf) < removeZerosValuesIfLessThanTolerance:
+        zeros =  np.asarray([Pdf < removeZerosValuesIfLessThanTolerance])
+        for i in range(len(zeros)):
+            if zeros.T[i][0]==1:
+                Mesh, Pdf = removePoint(i, Mesh, Pdf)
+        print("Removed", (np.sum(zeros)), "points that were tiny")
+        ChangedBool =True
+    if ChangedBool == 1:
+        tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
+    # plt.scatter(Mesh[:,0], Mesh[:,1], c='r')
+
+    return Mesh, Pdf, ChangedBool
+            
 
 
 def getBoundaryPoints(Mesh, tri, alpha):
@@ -78,7 +99,7 @@ def checkIntegrandForZeroPoints(PDF, tolerance, Mesh, tri, boundaryOnly):
     Uses alpha hull to get the boundary points if boundaryOnly is True.'''
     maxMat = 10*np.ones(len(PDF))
     if boundaryOnly:
-        pointsOnEdge = getBoundaryPoints(Mesh, tri, maxDistanceBetweenPoints)
+        pointsOnEdge = getBoundaryPoints(Mesh, tri, maxDistanceBetweenPoints*2)
         for i in pointsOnEdge:
             maxMat[i]=(np.max(PDF[i]))    
     else:
@@ -132,6 +153,9 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool):
     stillRemoving = True
     ChangedBool = 0
     length = len(Mesh)
+    # plt.figure()
+    # plt.scatter(Mesh[:,0], Mesh[:,1])
+
     while stillRemoving: # Removing boundary points
         boundaryZeroPointsBoolArray = checkIntegrandForZeroPoints(Pdf, removeZerosValuesIfLessThanTolerance,Mesh,tri, True)
         if max(boundaryZeroPointsBoolArray == 1):
@@ -151,6 +175,8 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool):
             print("outlier")
     if ChangedBool == 1:
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
+    
+    # plt.scatter(Mesh[:,0], Mesh[:,1], c='r')
     print("Boundary points removed", length -len(Mesh))  
     return Mesh, Pdf, ChangedBool
 
@@ -162,6 +188,9 @@ def removePoint(index, Mesh, Pdf):
     
 
 def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool):
+    # plt.figure()
+    # plt.scatter(Mesh[:,0], Mesh[:,1])
+    
     ChangedBool=0
     startingLength = len(Mesh)
     Slopes = getSlopes(Mesh, Pdf)
@@ -180,7 +209,7 @@ def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool):
     
     corrIndices = np.sort(corrIndices)
     spacing = distanceMetrics.fillDistance(meshWithSmallSlopes)
-    if spacing < 10: #maxDistanceBetweenPoints*(skipCount+4)/skipCount: # if removing points will be ok.
+    if spacing < 1: #maxDistanceBetweenPoints*(skipCount+1)/skipCount: # if removing points will be ok.
         indices = LPR.getMeshIndicesToRemoveFromMesh(meshWithSmallSlopes, skipCount)
         for j in range(len(indices)-1,-1,-1): # Check if point is likely top of hill - don't remove it
             nearestPoint, distances = UM.findNearestKPoints(Mesh[corrIndices[j],0],Mesh[corrIndices[j],1], meshWithSmallSlopes, 6)            # print("Making Less Dense!...")
@@ -196,6 +225,9 @@ def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool):
     print("Removed ", numReduced, "to decrease density.")
     if ChangedBool:
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
+        
+    # plt.scatter(Mesh[:,0], Mesh[:,1], c='r')
+
     return Mesh, Pdf, ChangedBool
 
 
@@ -261,7 +293,7 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h, poly):
                     # newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, minDistanceBetweenPointsBoundary*2, minDistanceBetweenPointsBoundary)
                     # #mesh12, pdfNew1 = LQ.getMeshValsThatAreClose(Mesh, Pdf, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g1(), Mesh[val,0], Mesh[val,1])
                     # allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 3, Mesh, 3, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(),4, 100)
-                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints([Mesh[val,0], Mesh[val,1],np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()], 12, 100, poly, neighbors=[3,Mesh])
+                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints([Mesh[val,0], Mesh[val,1],np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()], 12, 500, poly, neighbors=[3,Mesh])
                     # #allPoints, newPoints = LP.getLejaPoints(130, mesh12.T,20, num_candidate_samples = 230, dimensions=2, defCandidateSamples=False, candidateSampleMesh = [], returnIndices = False)
                     
                     # plt.figure()
@@ -291,8 +323,10 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h, poly):
     return Mesh, Pdf, triangulation, changedBool
 
 def addInteriorPoints(Mesh, Pdf, triangulation, kstep, h,poly):
+    ChangedBool = 0
+    numInteriorAdded = 0
     Slopes = getSlopes(Mesh, Pdf)
-    denisfyAroundPointIfSlopeLargerThanTolerance = 0.05 # np.quantile(Slopes,0.5)
+    denisfyAroundPointIfSlopeLargerThanTolerance =0.05 #np.quantile(Slopes,0.5) # 0.05
     interiorPointsToAddAround = np.asarray([np.asarray(Slopes)> denisfyAroundPointIfSlopeLargerThanTolerance]).T
     meshWithBigSlopes = []
     indexMax = np.argmax(Pdf) # We want to add around the largest value
@@ -311,7 +345,7 @@ def addInteriorPoints(Mesh, Pdf, triangulation, kstep, h,poly):
                 if (spacing > minDistanceBetweenPoints) and (interiorPointsToAddAround[val] == 1): # if we should extend boundary
     #                newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, kstep/2) 
                     # allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 4, Mesh, 4, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(), 6,100)
-                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints([0,0,np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()], 6, 40, poly, neighbors=[3,Mesh])
+                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints([0,0,np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()/2], 6, 40, poly, neighbors=[0,Mesh])
                     
                     newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, min(minDistanceBetweenPoints/Slopes[val], minDistanceBetweenPoints))
                     for point in range(len(newPoints)):

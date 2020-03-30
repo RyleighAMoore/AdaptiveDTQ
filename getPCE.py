@@ -1,9 +1,12 @@
 from pyapprox.variables import IndependentMultivariateRandomVariable
-from scipy.stats import norm
+from scipy.stats import norm, uniform
 from pyapprox.multivariate_polynomials import PolynomialChaosExpansion, define_poly_options_from_variable_transformation
 from pyapprox.variable_transformations import AffineRandomVariableTransformation
 from pyapprox.indexing import compute_hyperbolic_indices, argsort_indices_leixographically
 import numpy as np
+
+
+
 def get_total_degree_indices(degree, num_vars): 
     values = compute_hyperbolic_indices(num_vars,degree,1.0)
     ordering = argsort_indices_leixographically(values)
@@ -15,8 +18,36 @@ def get_total_degree_indices(degree, num_vars):
     z=np.vstack((xs,ys))
     return z 
 
+indices20 = get_total_degree_indices(20, 2)
+indices30 = get_total_degree_indices(30, 2)
+indices50 = get_total_degree_indices(50, 2)
 def generatePCE(degree, muX=0, muY=0, sigmaX=1, sigmaY=1):
     univariate_variables = [norm(muX,sigmaX),norm(muY,sigmaY)]
+    variable = IndependentMultivariateRandomVariable(univariate_variables)
+    var_trans = AffineRandomVariableTransformation(variable)
+    
+    poly = PolynomialChaosExpansion()
+    poly_opts = define_poly_options_from_variable_transformation(var_trans)
+    poly.configure(poly_opts)
+    if degree ==20:
+        indices = indices20
+    elif degree == 30: 
+        indices = indices30
+    elif degree == 50:
+        indices = indices50
+    else:
+        print("No indices matches the degree")
+      # indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
+    
+        indices = get_total_degree_indices(degree, poly.num_vars())
+    
+    # indices = compute_tensor_product_level_indices(poly.num_vars(),degree,max_norm=True)
+    poly.set_indices(indices)
+    return poly
+
+
+def generatePCE_Uniform(degree):
+    univariate_variables = [uniform(),uniform()]
     variable = IndependentMultivariateRandomVariable(univariate_variables)
     var_trans = AffineRandomVariableTransformation(variable)
     
@@ -31,7 +62,7 @@ def generatePCE(degree, muX=0, muY=0, sigmaX=1, sigmaY=1):
     poly.set_indices(indices)
     return poly
 
-
+# poly = generatePCE_Uniform(20)
 
 # poly,indices = generatePCE(20)
 

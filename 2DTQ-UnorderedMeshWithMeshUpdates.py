@@ -24,6 +24,18 @@ import getPCE as PCE
 import distanceMetrics as DM
 
 
+def checkDist(mesh, newMesh, minDist):
+    points = []
+    for i in range(len(newMesh)):
+        newPointX = newMesh[i,0]
+        newPointY = newMesh[i,1]
+        nearestPoint = UM.findNearestPoint(newPointX, newPointY, mesh)
+        distToNearestPoint = np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
+        if distToNearestPoint > minDist:
+            points.append([newPointX, newPointY])
+            
+    return np.asarray(points)
+
 T = 0.01  # final time, code computes PDF of X_T
 s = 0.75  # the exponent in the relation k = h^s
 h = 0.1  # temporal step size
@@ -42,17 +54,29 @@ ymax=2
 h=0.01
 
 poly = PCE.generatePCE(30)
-mesh, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 5000, poly)
+mesh, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,sqrt(h)*fun.g1(),sqrt(h)*fun.g2()], 230, 5000, poly)
+# mesh2 , mesh3 = LP.getLejaPointsWithStartingPoints([0,0,sqrt(h)*fun.g1()*1.5,sqrt(h)*fun.g2()*1.5], 230, 5000, poly)
+# mesh3 = checkDist(mesh, mesh3, 0.03)
+# mesh = np.vstack((mesh,mesh3))
+
 poly = PCE.generatePCE(20)
+# initial_samples = np.asarray([[0,0]]).T
+# poly = PCE.generatePCE_Uniform(50)
+# lejas, new = LP.getLejaPoints_Uniform(530, initial_samples, poly, num_candidate_samples = 2000, candidateSampleMesh = [], returnIndices = False)
+
+plt.scatter(mesh[:,0], mesh[:,1])
 
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
 
-a = DM.fillDistance(mesh)
+# import pickle
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHill2.p", "rb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHill2.p", "rb" ) 
 
-minDistanceBetweenPoints = 0.07
-minDistanceBetweenPointsBoundary = 0.07
-skipCount = 10
-maxDistanceBetweenPoints = 0.15
+# PdfTraj = pickle.load(pkl_file)
+
+# Meshes = pickle.load(pkl_file2)
+# mesh = Meshes[-1]
+# pdf = PdfTraj[-1]
 
 
 
@@ -71,7 +95,7 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(25):
+for i in trange(35):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
@@ -137,15 +161,15 @@ timestr = time.strftime("%Y%m%d-%H%M%S")
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajBimodal-"+ timestr+".p", "wb" ) 
 # pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesBimodal-"+ timestr+".p", "wb" ) 
 
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQVolfull.p", "wb" ) 
-# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQVolfull.p", "wb" ) 
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillFullSplit.p", "wb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillFullSplit1.p", "wb" ) 
 
 # #    
-# pickle.dump(pdf, pkl_file)
-# pickle.dump(mesh, pkl_file2)
+# pickle.dump(PdfTraj, pkl_file)
+# pickle.dump(Meshes, pkl_file2)
 # pkl_file.close()
 # pkl_file2.close()
-# #
+
 #pickle_in = open("C:/Users/Rylei/SyderProjects/SimpleDTQGit/PickledData/PDF.p","rb")
 #PdfTraj = pickle.load(pickle_in)
 #

@@ -33,6 +33,53 @@ from pyapprox.variables import IndependentMultivariateRandomVariable
 from pyapprox.variable_transformations import \
 AffineRandomVariableTransformation
 import getPCE as PCE
+
+
+
+
+def getLejaPoints_Uniform(num_leja_samples, initial_samples, poly, num_candidate_samples = 5000, candidateSampleMesh = [], returnIndices = False):        
+    # print(num_candidate_samples)
+    # assert poly.var_trans.scale_parameters[0][0] == 0.0, "The polynomial should have standard mean"
+    # assert poly.var_trans.scale_parameters[0][1] == 1.0, "The polynomial should have standard variance"
+    # assert num_leja_samples <= len(poly.indices.T)
+    generate_candidate_samples = lambda n: np.random.uniform(-0.1, 0.1, (num_vars, n)) 
+    num_vars = poly.num_vars()
+    # generate_candidate_samples = lambda n: 4*np.random.normal(0, 1, (num_vars, n)) 
+    # generate_candidate_samples = lambda n: 10*np.random.normal(0, 1, (num_vars, n)) 
+
+    if num_candidate_samples == 0:
+        candidate_samples = candidateSampleMesh
+    else:
+        candidate_samples = generate_candidate_samples(num_candidate_samples)
+        plt.scatter(candidate_samples[0,:], candidate_samples[1,:], c='r', marker='.')
+
+
+    num_initial_samples = len(initial_samples.T)
+    precond_func = lambda matrix, samples: christoffel_weights(matrix)
+#    initial_samples, data_structures = get_lu_leja_samples(
+#        poly.canonical_basis_matrix,generate_candidate_samples,
+#        num_candidate_samples,num_initial_samples,
+#        preconditioning_function=precond_func,
+#        initial_samples=initial_samples)
+    
+    samples, data_structures, successBool = get_lu_leja_samples(
+        poly.canonical_basis_matrix,
+        candidate_samples,num_leja_samples,
+        preconditioning_function=precond_func,
+        initial_samples=initial_samples)
+    
+    
+    if returnIndices:
+        assert successBool == True, "Need to implement returning indices when successBool is False."
+        
+    if successBool ==True:
+        if returnIndices:
+            indicesLeja = data_structures[2]
+            return np.asarray(samples).T, indicesLeja
+        assert len(np.asarray(samples).T) <= len(poly.indices.T)
+        return np.asarray(samples).T, np.asarray(samples[:,num_initial_samples:]).T
+
+
 '''
 num_leja_samples: Total number of samples to be returned (including initial samples).
 initial_samples: The samples that we must include in the leja sequence.
@@ -42,13 +89,14 @@ dimensions: number of dimensions in the problem
 candidateSampleMesh: If num_candidate_samples is zero, this variable defines the candidate samples to use
 returnIndices: Returns the indices of the leja sequence if True.
 '''
-
 def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples = 5000, candidateSampleMesh = [], returnIndices = False):        
+    # print(num_candidate_samples)
     assert poly.var_trans.scale_parameters[0][0] == 0.0, "The polynomial should have standard mean"
     assert poly.var_trans.scale_parameters[0][1] == 1.0, "The polynomial should have standard variance"
     assert num_leja_samples <= len(poly.indices.T)
-    generate_candidate_samples = lambda n: np.sqrt(2*np.sqrt(2*num_leja_samples))*np.random.normal(0, 1, (num_vars, n)) 
     num_vars = poly.num_vars()
+
+    generate_candidate_samples = lambda n: np.sqrt(2*np.sqrt(2*num_leja_samples))*np.random.normal(0, 1, (num_vars, n)) 
     # generate_candidate_samples = lambda n: 4*np.random.normal(0, 1, (num_vars, n)) 
     # generate_candidate_samples = lambda n: 10*np.random.normal(0, 1, (num_vars, n)) 
 
@@ -57,7 +105,6 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
     else:
         candidate_samples = generate_candidate_samples(num_candidate_samples)
         # plt.scatter(candidate_samples[0,:], candidate_samples[1,:], c='r', marker='.')
-
 
     num_initial_samples = len(initial_samples.T)
     precond_func = lambda matrix, samples: christoffel_weights(matrix)
@@ -129,6 +176,8 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
     samples = samples2[:, :num_leja_samples]
     assert len(np.asarray(samples).T) <= len(poly.indices.T)
     return np.asarray(samples).T, np.asarray(newLejaSamples)
+
+
 
 # one, two = getLejaPoints(231, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
 # plt.figure()
@@ -219,6 +268,22 @@ def getLejaSetFromPoints(scaleParams, mesh, numNewLejaPoints, poly):
     lejaPointsFinal
     return lejaPointsFinal, indices
 
+
 # one, two = getLejaPointsWithStartingPoints([0,0,.5,.5], 230, 1000, poly)
 # mesh, mesh2 = getLejaSetFromPoints([0,0,.1,.1], one, 100, poly)
 
+
+# num_leja_samples = 230
+# num_vars=2
+# generate_candidate_samples = lambda n: np.sqrt(2*np.sqrt(2*num_leja_samples))*np.random.normal(0, 1, (num_vars, n)) 
+# candidate_samples = generate_candidate_samples(5000)
+# poly = PCE.generatePCE(20, muX=0, muY=0, sigmaX = 1, sigmaY=1)
+# one, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 231, 5000, poly)
+
+# poly2 = PCE.generatePCE(30, muX=0, muY=0, sigmaX = 1, sigmaY=1)
+# one2, mesh22 = getLejaPointsWithStartingPoints([0,0,.1,.1], 231, 5000, poly2)
+
+# plt.figure()
+# plt.scatter(one[:,0], one[:,1], label='231 points picked by deg 20 poly')
+# plt.scatter(one2[:,0], one2[:,1], marker='.', label='231 points picked by deg 30 poly')
+# plt.legend()

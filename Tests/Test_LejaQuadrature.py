@@ -387,6 +387,6 @@ def Test_LejaQuadratureLinearizationOnLejaPoints():
 
     
 
-Test_GetLejaQuadratureRule()
+# Test_GetLejaQuadratureRule()
 # Test_LejaQuadratureOnLejaPoints()
 # newPDF,condNums, meshVals = Test_LejaQuadratureLinearizationOnLejaPoints()

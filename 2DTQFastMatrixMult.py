@@ -29,11 +29,11 @@ import MeshUpdates2D as MeshUp
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.1
-xmin=-2
-xmax=2
-ymin=-2
-ymax=2
+kstep = 0.05
+xmin=-1.0
+xmax=1.0
+ymin=-1.0
+ymax=1.0
 
 
 def generateGRow(point, allPoints, kstep, h):
@@ -74,9 +74,9 @@ while t < 100:
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =5
+index =1
 ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
-index =5
+index =1
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
 # ax.scatter(meshVals[:,0], meshVals[:,1], newPDF, c='k', marker='.')
 
@@ -97,7 +97,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
 
 graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(surfaces[-1]))
+ax.set_zlim(0, np.max(surfaces[10]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
                                          interval=100, blit=False)
 

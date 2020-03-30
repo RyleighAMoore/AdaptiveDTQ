@@ -126,22 +126,38 @@ def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, 
     # precond_train_values = precond_weights[:,np.newaxis]*train_values
 
     assert np.size(basis_matrix,0) == np.size(basis_matrix,1)
-    coef = np.linalg.lstsq(basis_matrix,train_values,rcond=None)[0]
+    # coef = np.linalg.lstsq(basis_matrix,train_values)[0]
+    coef = np.matmul(Vinv, train_values)
+    # print(np.max(coef-coef2), '---------------')
+    # assert np.max(np.abs(coef-coef2)) <0.01 
     # coef = np.matmul(train_values, Vinv)
     coef = np.asarray([coef]).T
     coef = np.vstack((coef, ZeroCoeffs))
+
+    # if np.sum(np.abs(Vinv[0,:])) <-1:
     # poly.set_coefficients(coef)
     
     # indices = poly.indices
     # recursion_coeffs = np.asarray(poly.recursion_coeffs)
     
-    # mesh = UM.generateOrderedGridCenteredAtZero(-0.5,0.5, -0.5,0.5, 0.1, includeOrigin=True)
+    # mesh = UM.generateOrderedGridCenteredAtZero(-0.4,0.4, -0.4,0.4, 0.01, includeOrigin=True)
     # mesh = LP.generateLejaMeshNotCentered(200, min(sigmaX, sigmaY), min(sigmaY,sigmaY), 40, muX, muY)
-    # vals1 =(poly.value((train_samples).T))
+    # vals1 =(poly.value((mesh).T))
+    # vals2 =(poly.value((train_samples).T))
+    # print('condNum', np.sum(np.abs(Vinv[0,:])))
+    # print(np.max((np.squeeze(vals2,-1)-train_values)), '*****')
+
+    # rv = multivariate_normal([0, 0], [[np.sqrt(0.01)*g1(), 0], [0, np.sqrt(0.01)*g1()]])
+    # pdfNorm = np.asarray([rv.pdf(mesh)]).T
+    
     # fig = plt.figure()
     # ax = Axes3D(fig)
-    # ax.scatter(train_samples[:,0], train_samples[:,1], vals1, c='r', marker='.')
-    # ax.scatter(train_samples[:,0], train_samples[:,1], train_values, c='k', marker='.')
+    # ax.scatter(mesh[:,0], mesh[:,1], vals1, c='r', marker='.')
+    # ax.scatter(train_samples[:,0], train_samples[:,1], train_values, c='k', marker='o')
+    # ax.scatter(mesh[:,0], mesh[:,1], pdfNorm, c='k', marker='.')
+
+    # ax.set_zlim(0, 21)
+
     # print(np.max(train_values-vals1))
     # print(coef[0])
     # if coef[0][0] < 0:
@@ -313,8 +329,8 @@ def Test_LejaQuadratureLinearizationOnLejaPoints_Slow(mesh, pdf):
     # ax.scatter(mesh1[:,0], mesh1[:,1], testing, c='k', marker='.')
     return newPDF,condNums, mesh
 
-
-
+from numba import jit
+# @jit(parallel=True)
 def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
     h = 0.01
     sigmaX=np.sqrt(h)*g1()
@@ -325,6 +341,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
     
     newPDF = []
     condNums = []
+    interpErrors = []
     # rv = multivariate_normal([0, 0], [[sigma**2, 0], [0, sigma**2]])
     # pdf = np.asarray([rv.pdf(mesh)]).T
     countUseMorePoints = 0
@@ -356,8 +373,11 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
         integrand = newIntegrand(muX, muY, mesh1, h)
         testing = np.squeeze(pdfNew1)*integrand
         
-        value, condNum= QuadratureByInterpolation(mesh1, testing, sigmaX, sigmaY, muX, muY, 20)
+        value, condNum = QuadratureByInterpolation(mesh1, testing, sigmaX, sigmaY, muX, muY, 20)
         # print(value)
+        # condNums.append(condNum)
+        # interpErrors.append(maxinterpError)
+
         if condNum > 2 or value < 0:
             countUseMorePoints = countUseMorePoints+1
             mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
@@ -367,7 +387,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
             num_leja_samples = 130
             initial_samples = mesh12
             numBasis=15
-            allp, new  = LP.getLejaPoints(num_leja_samples, initial_samples.T, poly)
+            allp, new  = LP.getLejaPoints(num_leja_samples, initial_samples.T, poly, num_candidate_samples = 230)
             mesh12 = mapPointsBack(muX,muY, allp, sigmaX, sigmaY)
         
             
@@ -382,7 +402,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
             testing = np.squeeze(pdfNew)*integrand
             
             
-            value, condNum= QuadratureByInterpolation(mesh12, testing, sigmaX, sigmaY, muX, muY, 20)
+            value, condNum = QuadratureByInterpolation(mesh12, testing, sigmaX, sigmaY, muX, muY, 20)
             # print(value)
             if value<0:
                 value= [10**(-10)]
@@ -394,8 +414,16 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
         # print(condNum)
         assert value[0] < 20
         newPDF.append(value)
-        condNums.append(condNum)
-    # print(countUseMorePoints)
+        # interpErrors.append(maxinterpError)
+        # condNums.append(condNum)
+    # plt.figure()
+    # plt.scatter(np.reshape(mesh[:,0],-1), np.reshape(mesh[:,1],-1), c=np.reshape(np.log(np.asarray(condNums)),-1), s=300, cmap="seismic", edgecolor="k")
+    # plt.colorbar(label="log(Condition Number)")
+    # plt.show()
+    
+    # plt.figure()
+    # plt.loglog((np.asarray(condNums)), np.asarray((interpErrors)), '.')
+    # print(countUseMorePoints/len(mesh))
     newPDF = np.asarray(newPDF)
     condNums = np.asarray([condNums]).T
     # fig = plt.figure()
