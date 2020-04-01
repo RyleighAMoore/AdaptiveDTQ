@@ -1,142 +1,65 @@
-from pyapprox.variables import IndependentMultivariateRandomVariable
-from scipy.stats import norm, uniform
-from pyapprox.multivariate_polynomials import PolynomialChaosExpansion, define_poly_options_from_variable_transformation
-from pyapprox.variable_transformations import AffineRandomVariableTransformation
-from pyapprox.indexing import compute_hyperbolic_indices, argsort_indices_leixographically
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Mar 31 15:37:13 2020
+
+@author: Ryleigh Moore
+"""
+from __future__ import print_function
+from ortools.linear_solver import pywraplp
 import numpy as np
+# Instantiate a Glop solver, naming it Linear.
+solver = pywraplp.Solver('Linear', pywraplp.Solver.GLOP_LINEAR_PROGRAMMING)
+
+# Create the two variables and let them take on any non-negative value.
+ts1 = solver.NumVar(0, solver.infinity(), 'ts1')
+ts2 = solver.NumVar(0, solver.infinity(), 'ts2')
+
+# Variables
+tE = 168
+h1 = 12
+h2 = 12
+LE = 1*10**5
+vp = 300
+vs = 8
+#tA = tE-ts1-2*h
+tAmin = 20 # Not sure about this value
+Np0 = 1
+
+# Constraint g1: -ts1 > TAmin + h1 + h2 - tE
+constraintg1 = solver.Constraint(tAmin + h1 + h2 - tE, solver.infinity())
+constraintg1.SetCoefficient(ts1, -1)
+constraintg1.SetCoefficient(ts2, 0)
+
+
+# Constraint g2: ts1 + h1 < ts2 - > h1 < ts2-ts1
+constraintg1 = solver.Constraint(h1, solver.infinity())
+constraintg1.SetCoefficient(ts1, -1)
+constraintg1.SetCoefficient(ts2, 1)
+
+# Constraint g3: ts1 - ts2 < 0
+constraintg1 = solver.Constraint(-solver.infinity(), 0)
+constraintg1.SetCoefficient(ts1, 1)
+constraintg1.SetCoefficient(ts2, -1)
+
+# Constraint g2: ts2 + h2 < tE ->  ts2 < tE - h2
+constraintg1 = solver.Constraint(tE-h2, solver.infinity())
+constraintg1.SetCoefficient(ts1, 0)
+constraintg1.SetCoefficient(ts2, 1)
 
 
 
-def get_total_degree_indices(degree, num_vars): 
-    values = compute_hyperbolic_indices(num_vars,degree,1.0)
-    ordering = argsort_indices_leixographically(values)
-    xs = []
-    ys = []
-    for i in range(len(ordering)):
-        xs.append(values[0,ordering[i]])
-        ys.append(values[1,ordering[i]])
-    z=np.vstack((xs,ys))
-    return z 
+alphaE = (tE*0.69)/(np.log((LE*vp)/(Np0)))
+BetaE = alphaE/tE
 
-indices20 = get_total_degree_indices(20, 2)
-indices30 = get_total_degree_indices(30, 2)
-indices50 = get_total_degree_indices(50, 2)
-def generatePCE(degree, muX=0, muY=0, sigmaX=1, sigmaY=1):
-    univariate_variables = [norm(muX,sigmaX),norm(muY,sigmaY)]
-    variable = IndependentMultivariateRandomVariable(univariate_variables)
-    var_trans = AffineRandomVariableTransformation(variable)
-    
-    poly = PolynomialChaosExpansion()
-    poly_opts = define_poly_options_from_variable_transformation(var_trans)
-    poly.configure(poly_opts)
-    if degree ==20:
-        indices = indices20
-    elif degree == 30: 
-        indices = indices30
-    elif degree == 50:
-        indices = indices50
-    else:
-        print("No indices matches the degree")
-      # indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
-    
-        indices = get_total_degree_indices(degree, poly.num_vars())
-    
-    # indices = compute_tensor_product_level_indices(poly.num_vars(),degree,max_norm=True)
-    poly.set_indices(indices)
-    return poly
+alphaD = 
 
+(tE/(2))
 
-def generatePCE_Uniform(degree):
-    univariate_variables = [uniform(),uniform()]
-    variable = IndependentMultivariateRandomVariable(univariate_variables)
-    var_trans = AffineRandomVariableTransformation(variable)
-    
-    poly = PolynomialChaosExpansion()
-    poly_opts = define_poly_options_from_variable_transformation(var_trans)
-    poly.configure(poly_opts)
-    
-    indices = compute_hyperbolic_indices(poly.num_vars(),degree,1.0)
-    
-    indices = get_total_degree_indices(degree, poly.num_vars())
-    # indices = compute_tensor_product_level_indices(poly.num_vars(),degree,max_norm=True)
-    poly.set_indices(indices)
-    return poly
-
-
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from scipy.integrate import simps
-import chaospy
-nx = 20
-x = np.linspace(-6, 6, nx)
-xs= np.vstack((x,x))
-# expansion1 = chaospy.orth_ttr(2, chaospy.Normal(1, .1))
-distribution = chaospy.J(chaospy.Normal(0, 1), chaospy.Normal(0, 1))
-poly = chaospy.orth_ttr(2, distribution)
-
-mat1 = poly(x,x).T
-
-poly2 = generatePCE(2, sigmaX=1, sigmaY=1)
-mat2 = poly2.basis_matrix(xs)
-
-sum1 = np.sum(mat1, axis=1)
-sum2 = np.sum(mat2, axis=1)
-plt.figure()
-plt.plot(x, sum1)
-plt.plot(x, sum2)
+# Objective function 
+objective = solver.Objective()
+objective.SetCoefficient(x, 3)
+objective.SetCoefficient(y, 4)
+objective.SetMaximization()
 
 
 
-
-# from scipy.stats import multivariate_normal
-# var = 1
-# # poly = generatePCE(1,sigmaX=var, sigmaY=var)
-# rv = multivariate_normal([0, 0], [[var, 0], [0, var]])
-# weights = []
-# vals = []
-# xs = []
-# ys = []
-# for i in x:
-#     for k in x:
-#         point = np.vstack((i,k))
-#         # LP = poly.basis_matrix(point)
-#         # lp = np.sum(LP, axis=1)[0]
-#         # lp = k**2
-#         lp = np.sum(poly(i,k))
-#         weights.append(np.asarray([rv.pdf(point.T)]).T)
-#         vals.append(np.copy(lp))
-#         xs.append(i)
-#         ys.append(k)
-        
-# poly1 = np.reshape(np.asarray(vals),(len(x),len(x)))
-# weights = np.reshape(np.asarray(weights),(len(x),len(x)))
-
-# fig = plt.figure()
-# ax = Axes3D(fig)
-# ax.scatter(np.asarray(xs), np.asarray(ys), np.asarray(vals), c='k', marker='.')
-
-
-# # poly = generatePCE(2,sigmaX=var, sigmaY=var)
-# poly = chaospy.orth_ttr(2, distribution)
-
-# vals = []
-# xs = []
-# ys = []
-# for i in x:
-#     for k in x:
-#         point = np.vstack((i,k))
-#         # LP = poly.basis_matrix(point)
-#         # lp = np.sum(LP, axis=1)[0]
-#         # lp = np.exp(k
-#         lp = np.sum(poly(i,k))
-#         vals.append(np.copy(lp))
-#         xs.append(i)
-#         ys.append(k)
-# poly2 = np.reshape(np.asarray(vals),(len(x),len(x)))
-
-# fig = plt.figure()
-# ax = Axes3D(fig)
-# ax.scatter(np.asarray(xs), np.asarray(ys), np.asarray(vals), c='k', marker='.')
-
-# # We first integrate over x and then over y
-# print(simps([simps(zz_x,x) for zz_x in poly1*poly2*weights],x))

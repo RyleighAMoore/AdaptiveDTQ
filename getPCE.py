@@ -66,19 +66,21 @@ def generatePCE_Uniform(degree):
 # import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
 # from scipy.integrate import simps
-# import chaospy
+import chaospy
 
 # # expansion1 = chaospy.orth_ttr(2, chaospy.Normal(1, .1))
-# distribution = chaospy.J(chaospy.Normal(0, 1), chaospy.Normal(0, 1))
+# distribution = chaospy.J(chaospy.Normal(0, .1), chaospy.Normal(0, .1))
 # poly2 = chaospy.orth_ttr(4, distribution)
 
-# nx = 20
-# x = np.linspace(-6, 6, nx)
-# xs= np.vstack((x,x))
+nx = 20
+x = np.linspace(-6, 6, nx)
+xs= np.vstack((x,x))
 
 # from scipy.stats import multivariate_normal
 # var = 1
-# poly = generatePCE(3,sigmaX=var, sigmaY=var)
+poly = generatePCE(3,sigmaX=.1, sigmaY=.1, muX=1, muY=1)
+LP = poly.basis_matrix(xs)
+
 # rv = multivariate_normal([0, 0], [[var, 0], [0, var]])
 # weights = []
 # vals = []
@@ -88,7 +90,7 @@ def generatePCE_Uniform(degree):
 # for i in x:
 #     for k in x:
 #         point = np.vstack((i,k))
-#         LP = poly.basis_matrix(point)
+        # LP = poly.basis_matrix(point)
 #         lp = LP[:,8]
 #         lp2 = poly2(i,k)[8]
 #         weights.append(np.asarray([rv.pdf(point.T)]).T)

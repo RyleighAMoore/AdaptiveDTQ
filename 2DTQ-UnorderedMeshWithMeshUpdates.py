@@ -68,15 +68,19 @@ plt.scatter(mesh[:,0], mesh[:,1])
 
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
 
-# import pickle
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHill2.p", "rb" ) 
-# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHill2.p", "rb" ) 
+import pickle
+pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillLongFullSplit.p", "rb" ) 
+pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillLongFullSplit1.p", "rb" ) 
 
-# PdfTraj = pickle.load(pkl_file)
+PdfTraj = pickle.load(pkl_file)
+Meshes = pickle.load(pkl_file2)
 
-# Meshes = pickle.load(pkl_file2)
-# mesh = Meshes[-1]
-# pdf = PdfTraj[-1]
+
+pkl_file.close()
+pkl_file2.close()
+
+mesh = Meshes[-1]
+pdf = PdfTraj[-1]
 
 
 
@@ -148,7 +152,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[-1]))
+ax.set_zlim(0, np.max(PdfTraj[10]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                           interval=500, blit=False)
 
