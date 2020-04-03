@@ -1,6 +1,5 @@
 import numpy as np
 import opoly1d
-#
 
 
 def opolynd_eval(x, lambdas, ab, poly1d):
@@ -33,8 +32,9 @@ if __name__ == "__main__":
     from mpl_toolkits.mplot3d import Axes3D
     import opoly1d, indexing
     from families import HermitePolynomials
-
-    d = 2
+    
+    #plot 1D
+    d = 1
     k = 6
     
     H = HermitePolynomials()
@@ -42,16 +42,36 @@ if __name__ == "__main__":
     ab = H.recurrence(k+1)
 
     N = 50
+    x = np.linspace(-1, 1, N)
+    XX = np.reshape(x, (len(x),1))
+    lambdas = indexing.total_degree_indices(d, k)
+    p = opolynd_eval(XX, lambdas, ab, H)
+
+    fig = plt.figure()
+    for i in range(len(p.T)):
+        plt.plot(x,p[:,i])
+    plt.show()
+    
+    
+    #plot 2D
+    d = 2
+    k = 6
+    
+    H = HermitePolynomials()
+    H.probability_measure = True
+
+    ab = H.recurrence(k+1)
+
+    N = 50
     x = np.linspace(-6, 6, N)
     X,Y = np.meshgrid(x,x)
-
     XX = np.concatenate((X.reshape(X.size,1), Y.reshape(Y.size,1)), axis=1)
-
+    
     lambdas = indexing.total_degree_indices(d, k)
 
     p = opolynd_eval(XX, lambdas, ab, H)
 
-    j = 4
+    j = 6
     assert j < lambdas.shape[0]
 
     fig = plt.figure()

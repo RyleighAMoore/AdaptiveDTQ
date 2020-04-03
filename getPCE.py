@@ -63,23 +63,43 @@ def generatePCE_Uniform(degree):
     return poly
 
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
 # from scipy.integrate import simps
 import chaospy
 
-# # expansion1 = chaospy.orth_ttr(2, chaospy.Normal(1, .1))
-# distribution = chaospy.J(chaospy.Normal(0, .1), chaospy.Normal(0, .1))
-# poly2 = chaospy.orth_ttr(4, distribution)
+# expansion1 = chaospy.orth_ttr(2, chaospy.Normal(1, .1))
+# distribution = chaospy.J(chaospy.Normal(0, 1))
+# poly2 = chaospy.orth_ttr(10, distribution)
+# distribution3 = chaospy.J(chaospy.Normal(0, .1))
+# poly3 = chaospy.orth_ttr(10, distribution)
 
-nx = 20
-x = np.linspace(-6, 6, nx)
-xs= np.vstack((x,x))
 
-# from scipy.stats import multivariate_normal
-# var = 1
-poly = generatePCE(3,sigmaX=.1, sigmaY=.1, muX=1, muY=1)
-LP = poly.basis_matrix(xs)
+
+# nx = 20
+# x = np.linspace(-1, 1, nx)
+
+# xs= np.vstack((x,x))
+
+# # from scipy.stats import multivariate_normal
+# # var = 1
+# poly = generatePCE(20,sigmaX=.1, sigmaY=.1, muX=0, muY=0)
+# xx = poly.canonical_basis_matrix(xs)
+# polye = generatePCE(20,sigmaX=1, sigmaY=1, muX=0, muY=0)
+
+# xy = polye.basis_matrix(xs)
+# # xres = np.expand_dims(x,0)
+
+# vChaos = poly2(x).T
+# vChaos2 = poly3(x).T
+
+
+# ii=20
+# # plt.plot(x, V[:,:ii], 'k')
+# plt.plot(x, xx[:,:ii], 'or')
+# plt.plot(x, xy[:,:ii], '.b')
+
+# plt.show()
 
 # rv = multivariate_normal([0, 0], [[var, 0], [0, var]])
 # weights = []
@@ -92,7 +112,7 @@ LP = poly.basis_matrix(xs)
 #         point = np.vstack((i,k))
         # LP = poly.basis_matrix(point)
 #         lp = LP[:,8]
-#         lp2 = poly2(i,k)[8]
+        # lp2 = poly2(i,k)[8]
 #         weights.append(np.asarray([rv.pdf(point.T)]).T)
 #         vals.append(np.copy(lp))
 #         vals2.append(lp2)
@@ -139,3 +159,11 @@ LP = poly.basis_matrix(xs)
 
 # # # We first integrate over x and then over y
 # # print(simps([simps(zz_x,x) for zz_x in poly1*poly2*weights],x))
+
+# distribution = chaospy.J(chaospy.Normal(0, 1), chaospy.Normal(0,1))
+# for order in [0, 1, 2, 3, 4, 5, 6, 7, 8 ,9 ,10]:  
+#     abscissas, weights = chaospy.generate_quadrature(
+#     order, distribution, rule="leja")
+#     print(order, abscissas.round(3), weights.round(3))
+# plt.figure()    
+# plt.scatter(abscissas.T[:,0], abscissas.T[:,1])

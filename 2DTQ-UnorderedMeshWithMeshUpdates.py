@@ -54,7 +54,7 @@ ymax=2
 h=0.01
 
 poly = PCE.generatePCE(30)
-mesh, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,sqrt(h)*fun.g1(),sqrt(h)*fun.g2()], 130, 5000, poly)
+mesh, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,sqrt(h)*fun.g1(),sqrt(h)*fun.g2()], 230, 5000, poly)
 # mesh2 , mesh3 = LP.getLejaPointsWithStartingPoints([0,0,sqrt(h)*fun.g1()*1.5,sqrt(h)*fun.g2()*1.5], 230, 5000, poly)
 # mesh3 = checkDist(mesh, mesh3, 0.03)
 # mesh = np.vstack((mesh,mesh3))
@@ -68,19 +68,19 @@ plt.scatter(mesh[:,0], mesh[:,1])
 
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
 
-import pickle
-pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillLongFullSplit.p", "rb" ) 
-pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillLongFullSplit1.p", "rb" ) 
+# import pickle
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillLongFullSplit.p", "rb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillLongFullSplit1.p", "rb" ) 
 
-PdfTraj = pickle.load(pkl_file)
-Meshes = pickle.load(pkl_file2)
+# PdfTraj = pickle.load(pkl_file)
+# Meshes = pickle.load(pkl_file2)
 
 
-pkl_file.close()
-pkl_file2.close()
+# pkl_file.close()
+# pkl_file2.close()
 
-mesh = Meshes[-1]
-pdf = PdfTraj[-1]
+# mesh = Meshes[-1]
+# pdf = PdfTraj[-1]
 
 
 
@@ -98,7 +98,7 @@ SlopesMin = []
 SlopesMean = []  
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
-adjustGrid = True
+adjustGrid = False
 for i in trange(35):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))

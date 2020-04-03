@@ -525,7 +525,6 @@ class OrthogonalPolynomialBasis1D:
 
         p = self.eval(x, range(k))
         return np.sqrt(float(k) / np.sum(p**2, axis=1))
-    
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
@@ -535,18 +534,17 @@ if __name__ == "__main__":
     from math import pi
     
     def fun(x):
-        return 2*x**2
-        # return np.ones(len(x))
+        return x**2
     
     '''
     Example 1: $\int_{-1}^1 x^2 dx$
     Use Legendre polynomials, w(x)=1, x in [-1,1], 0 otherwise
     '''
     J = JacobiPolynomials(alpha=0, beta=0)
-    N = 30
-    k = 30
+    N = 100
+    k = 10
     x, w = J.gauss_quadrature(N)
-    print(np.dot(fun(x),w)*2)
+    print(np.dot(fun(x),w))
     # >> outputs 1/3 but the solution is 2/3
 
     '''
@@ -554,55 +552,11 @@ if __name__ == "__main__":
     Use Hermite polynomials, w(x)=e^{-x^2}
     '''
     H = HermitePolynomials(rho=0)
-    N = 10
+    N = 100
     k = 10
     x, w = H.gauss_quadrature(N)
-    print(np.dot(fun(x),w)*np.sqrt(pi))
-    
-    sigma = .1
-    mu = 0
-    H = HermitePolynomials(rho=0)
-    
-    x, w = H.gauss_quadrature(N)
-    scaling = np.asarray([[mu, sigma]])
-    xCan=VT.map_to_canonical_space(x, 1, scaling) #math to   
-    print(np.dot(fun(xCan),w))
-    
-    # x = np.linspace(-1, 1, 40)
-
-    # Compute interpolant
-    c = np.dot(H.eval(xCan, range(N)).T, w*fun(xCan))
-    print('c=',c[0])
-    
-    vals = np.dot(H.eval(xCan, range(N)), c)
-    
-    plt.figure()
-    plt.plot(x, vals, '.')
-    # plt.plot(x,fun(x))
-    plt.show()
-    # plt.plot(x, V[:,:4])
-
-    # plt.show()
-    
-    # for i in range(k):
-    #     for j in range(k):
-    #         if i ==j:
-    #             print(np.dot(V[:,i]*V[:,j],w))
-            # if i !=j:
-                # print(np.dot(V[:,i]*V[:,j],w)*(1/np.sqrt(pi)*0.1))
-                # assert np.isclose((np.dot(V[:,i]*V[:,j]*(1/np.sqrt(pi)*sigma),w)),0)
-    
-    
-    # # H = HermitePolynomials()
-    # # N = 100
-    # # k = 15
-
-    # # x, w = J.gauss_quadrature(N)
-    # # V = H.eval(x, range(k))
-    
-    # # plt.figure()
-    # # plt.plot(x, V[:,:k])
-    # # plt.show()
+    print(np.dot(fun(x),w))
+    # >> outputs 1/2 but the solution is sqrt(pi)/2
     
     
     

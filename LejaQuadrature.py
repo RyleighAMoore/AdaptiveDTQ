@@ -93,8 +93,8 @@ indices = compute_hyperbolic_indices(2,20,1.0)
 import chaospy
 def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, muY, degree):
     poly = PCE.generatePCE(degree, muX=muX, muY=muY, sigmaX=sigmaX, sigmaY=sigmaY)
-    distribution = chaospy.J(chaospy.Normal(muX, sigmaX), chaospy.Normal(muY, sigmaY))
-    poly = chaospy.orth_ttr(20, distribution)
+    # distribution = chaospy.J(chaospy.Normal(muX, sigmaX), chaospy.Normal(muY, sigmaY))
+    # poly = chaospy.orth_ttr(20, distribution)
     '''
     univariate_variables = [norm(muX,sigmaX),norm(muY,sigmaY)]
     variable = IndependentMultivariateRandomVariable(univariate_variables)
@@ -113,8 +113,8 @@ def QuadratureByInterpolation(train_samples, train_values, sigmaX, sigmaY, muX, 
     '''
 
     # train_values = np.log(train_values)
-    # basis_matrix = poly(train_samples.T)
-    basis_matrix = poly(train_samples[:,0], train_samples[:,1]).T
+    basis_matrix = poly.basis_matrix(train_samples.T)
+    # basis_matrix = poly(train_samples[:,0], train_samples[:,1]).T
 
     numRows = np.size(basis_matrix,0)
     numCols = np.size(basis_matrix,1)
@@ -436,7 +436,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly):
     # ax = Axes3D(fig)
     # ax.scatter(mesh[:,0], mesh[:,1], newPDF, c='r', marker='.')
     
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    ax.scatter(Meshes[-1][:,0], Meshes[-1][:,1], np.log(condnums), c='k', marker='.')
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(Meshes[-1][:,0], Meshes[-1][:,1], np.log(condnums), c='k', marker='.')
     return newPDF,condNums, mesh

@@ -535,7 +535,8 @@ if __name__ == "__main__":
     from math import pi
     
     def fun(x):
-        return 2*x**2
+        return 2*x**2+4
+    
         # return np.ones(len(x))
     
     '''
@@ -570,39 +571,16 @@ if __name__ == "__main__":
     
     # x = np.linspace(-1, 1, 40)
 
-    # Compute interpolant
-    c = np.dot(H.eval(xCan, range(N)).T, w*fun(xCan))
-    print('c=',c[0])
+    V = H.eval(xCan, range(N))
+    vinv = np.linalg.inv(V)
+    c = np.matmul(vinv, fun(x))
+    print(c[0])
     
-    vals = np.dot(H.eval(xCan, range(N)), c)
+    interp = np.matmul(V,c)
     
     plt.figure()
-    plt.plot(x, vals, '.')
-    # plt.plot(x,fun(x))
-    plt.show()
-    # plt.plot(x, V[:,:4])
-
-    # plt.show()
-    
-    # for i in range(k):
-    #     for j in range(k):
-    #         if i ==j:
-    #             print(np.dot(V[:,i]*V[:,j],w))
-            # if i !=j:
-                # print(np.dot(V[:,i]*V[:,j],w)*(1/np.sqrt(pi)*0.1))
-                # assert np.isclose((np.dot(V[:,i]*V[:,j]*(1/np.sqrt(pi)*sigma),w)),0)
+    plt.plot(x, interp,'.')
+    plt.plot(x, fun(x))
     
     
-    # # H = HermitePolynomials()
-    # # N = 100
-    # # k = 15
-
-    # # x, w = J.gauss_quadrature(N)
-    # # V = H.eval(x, range(k))
-    
-    # # plt.figure()
-    # # plt.plot(x, V[:,:k])
-    # # plt.show()
-    
-    
-    
+   
