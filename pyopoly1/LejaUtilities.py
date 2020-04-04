@@ -60,11 +60,25 @@ def get_lu_leja_samples(poly, lambdas, ab, generate_basis_matrix,
 
     assert num_leja_samples <= basis_matrix.shape[1]
     if preconditioning_function is not None:
-        weights = np.sqrt(
-            preconditioning_function(basis_matrix,candidate_samples))
+        weights = np.sqrt(preconditioning_function(candidate_samples))
         basis_matrix = (basis_matrix.T*weights).T
     else:
         weights = None
+    import scipy as sp
+    import matplotlib.pyplot as plt
+
+    # P1,L1,U1 = sp.linalg.lu(basis_matrix)
+    # ind = np.ones(len(P1))
+    # plt.figure()
+    # for i in range(len(P1)):
+    #     ival = np.argmax(P1[:,i])
+    #     ind[i]=ival
+    #     if i<231:
+    #         plt.plot(candidate_samples.T[ival,0], candidate_samples.T[ival,1], '.r')
+    # import matplotlib.pyplot as plt
+    # plt.show()
+    
+    
     L,U,p, successBoolean = truncated_pivoted_lu_factorization(
         basis_matrix,num_leja_samples,num_initial_rows)
     if (p.shape[0]!=num_leja_samples):
@@ -77,7 +91,7 @@ def get_lu_leja_samples(poly, lambdas, ab, generate_basis_matrix,
     # incomplete LU factorization
     L = L[:,:num_leja_samples]
     U = U[:num_leja_samples,:num_leja_samples]
-    data_structures=[L,U,p,weights[p]]
+    data_structures=[L,U,p]
     plot = False
     if plot:
         import matplotlib.pyplot as plt
@@ -239,6 +253,15 @@ def christoffel_weights(basis_matrix):
     Christoffel function.
     """
     return 1./np.sum(basis_matrix**2,axis=1)
+
+def sqrtNormal_weights(candidate_samples):
+    x = candidate_samples[0,:]
+    y= candidate_samples[1,:]
+    sigma_x = 1; sigma_y = 1
+    z = (1/(2*np.pi*sigma_x*sigma_y) * np.exp(-(x**2/(2*sigma_x**2)
+         + y**2/(2*sigma_y**2))))
+    return z
+
 
 def continue_pivoted_lu_factorization(LU_factor,raw_pivots,current_iter,
                                       max_iters,num_initial_rows=0):

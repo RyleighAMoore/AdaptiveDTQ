@@ -48,56 +48,92 @@ if __name__ == "__main__":
     import sys
     sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ')
     
-    import getPCE as PCE
-    import GenerateLejaPoints as LP
+    # import getPCE as PCE
+    # import GenerateLejaPoints as LP
     import UnorderedMesh as UM
+    from LejaPoints import getLejaPoints,mapPointsBack
 
 
     def fun1D(mesh):
         return 2*mesh**2+4
     
     def fun2D(mesh):
+        
         # return np.ones(len(mesh))
         return 2*mesh[:,0]*mesh[:,1]**2 + 4
    
     '''
     1D example of QuadratureByInterpolation
     '''
-    H = HermitePolynomials(rho=0)
-    mu=0
-    sigma=.1
-    scaling = np.asarray([[mu, sigma]])
-    N=4
-    # mesh, w = H.gauss_quadrature(N)
-    mesh = np.linspace(-1,1, N)
-    pdf = fun1D(mesh)
-    QuadratureByInterpolation1D(H, scaling, mesh, pdf)
-    
+    # H = HermitePolynomials(rho=0)
+    # mu=0
+    # sigma=.1
+    # scaling = np.asarray([[mu, sigma]])
+    # N=4
+    # # mesh, w = H.gauss_quadrature(N)
+    # mesh = np.linspace(-1,1, N)
+    # pdf = fun1D(mesh)
+    # QuadratureByInterpolation1D(H, scaling, mesh, pdf)
+    ''''''
     
     '''
     2D example of QuadratureByInterpolation
     '''
+    # d=2
+    # k = 40    
+    # ab = H.recurrence(k+1)
+    # lambdas = indexing.total_degree_indices(d, k)
+    
+    # N = 5
+    # # x = np.linspace(-5,5, N)
+    # mesh, two = getLejaPoints(36, np.asarray([[0,0]]).T, H, lambdas, ab, candidateSampleMesh = [], returnIndices = False)
+    # scaling = np.asarray([[0, 1], [0, 1]])
+    # pdf = fun2D(mesh)
+    
+    # QuadratureByInterpolationND(H, scaling, mesh, pdf, lambdas, ab)
+    ''''''
+    
+    
+    def fun2D(mesh):
+        # return np.ones(len(mesh))
+        # return np.exp(5*mesh[:,0]**2)
+        return 1/UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
+
+    '''
+    2D example of QuadratureByInterpolation
+    '''
+    H = HermitePolynomials(rho=0)
     d=2
     k = 40    
     ab = H.recurrence(k+1)
     lambdas = indexing.total_degree_indices(d, k)
     
-    N = 5
     # x = np.linspace(-5,5, N)
-    x, w = H.gauss_quadrature(N)
-    X,Y = np.meshgrid(x,x)
-    mesh = np.concatenate((X.reshape(X.size,1), Y.reshape(Y.size,1)), axis=1)
-    poly = PCE.generatePCE(30)
-    mesh, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,.1,.1], 10, 5000, poly)
-
-    scaling = np.asarray([[0, 1], [0, 1]])
+    mesh, two = getLejaPoints(40, np.asarray([[0,0]]).T, H, lambdas, ab, candidateSampleMesh = [], returnIndices = False)
+    mesh = mapPointsBack(0, 0, mesh, .01, .01)
+    scaling = np.asarray([[0, .01], [0, .01]])
     pdf = fun2D(mesh)
-    
     QuadratureByInterpolationND(H, scaling, mesh, pdf, lambdas, ab)
+    ''''''
     
+    # inp = np.hstack((mesh,np.expand_dims(pdf,1)))
+    # first = np.asarray([[0],[0]])
+    # pdf3 = np.expand_dims(pdf,0)
+    # # inp2 = np.vstack(([[0],[0]],pdf3))
+    # meanX = np.mean(mesh[:,0])
+    # meanY = np.mean(mesh[:,1])
+    # meanZ = np.mean(pdf)
     
+    # a = inp[:,0] - meanX
+    # b = inp[:,1] - meanY
+    # c = pdf - meanZ
+    # M = np.vstack((a,b))
+    # S1 = (1/(len(a)-1))*np.matmul(M,M.T)
     
+    # M = np.vstack((b,c))
+    # S2 = (1/(len(a)-1))*np.matmul(M,M.T)
     
+    # covar = np.cov(inp)
     
     
     
