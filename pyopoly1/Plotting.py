@@ -112,17 +112,12 @@ ab = H.recurrence(k+1)
 lambdas = indexing.total_degree_indices(d, k)
 H.lambdas = lambdas
 
-mesh, two = getLejaPoints(3, np.asarray([[0,0]]).T,H,candidateSampleMesh = [], returnIndices = False)
+mesh, two = getLejaPoints(230, np.asarray([[0,0]]).T,H,candidateSampleMesh = [], returnIndices = False)
 mesh = mapPointsBack(0, 0, mesh, 0.1, 0.1)
 
 pdf = Gaussian(0, 0,0.1,0.1,mesh)*GVals(0, 0, mesh, 0.01)
 # muNew, sigmaNew, cfinal = productGaussians2D(0, 0, 0, 0, 0.1, 0.1, 0.1, 0.1)
 scaling, newPDF = GetGaussianPart(0, 0, mesh, pdf, 0.01)
-
-# mesh2, two = getLejaPoints(10, np.asarray([[0,0]]).T, H, candidateSampleMesh = [], returnIndices = False)
-# mesh2 = mapPointsBack(0, 0, mesh2, scaling[0,1], scaling[1,1])
-# pdf2 = GVals(0, 0, mesh2, 0.01)*Gaussian(0, 0, 0.1, 0.1, mesh2)
-# scaling2, newPDF2 = GetGaussianPart(0, 0, mesh2, pdf2, 0.01)
 
 value, condNum = QR.QuadratureByInterpolationND(H, scaling, mesh, newPDF)
 print(value,condNum)
