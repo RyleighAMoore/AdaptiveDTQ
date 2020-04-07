@@ -24,7 +24,7 @@ dimensions: number of dimensions in the problem
 candidateSampleMesh: If num_candidate_samples is zero, this variable defines the candidate samples to use
 returnIndices: Returns the indices of the leja sequence if True.
 '''
-def getLejaPoints(num_leja_samples, initial_samples, poly, lambdas, ab, num_candidate_samples = 5000, candidateSampleMesh = [], returnIndices = False):
+def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples = 10000, candidateSampleMesh = [], returnIndices = False):
     num_vars = np.size(initial_samples,0)
     generate_candidate_samples = lambda n: np.sqrt(2*np.sqrt(2*num_leja_samples))*np.random.normal(0, 1, (num_vars, n)) 
 
@@ -43,7 +43,7 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, lambdas, ab, num_cand
 #        preconditioning_function=precond_func,
 #        initial_samples=initial_samples)
     
-    samples, data_structures, successBool = get_lu_leja_samples(poly, lambdas, ab,
+    samples, data_structures, successBool = get_lu_leja_samples(poly,
         opolynd_eval,candidate_samples,num_leja_samples,
         preconditioning_function=precond_func,
         initial_samples=initial_samples)
@@ -71,7 +71,7 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, lambdas, ab, num_cand
             pointsRemoved.append(np.asarray([initial_samples_edited[:,0]]).T)
             initial_samples_edited = np.delete(initial_samples_edited,0,1)
             num_initial_samples_edited = len(initial_samples_edited.T) 
-            samples2, data_structures2, successBool = get_lu_leja_samples(poly.canonical_basis_matrix,candidate_samples,num_leja_samples,preconditioning_function=precond_func,initial_samples=initial_samples_edited)
+            samples2, data_structures2, successBool = get_lu_leja_samples(poly, opolynd_eval,candidate_samples,num_leja_samples,preconditioning_function=precond_func,initial_samples=initial_samples_edited)
             ii+=1
         initial_samples_edited = np.copy(samples2[:, 0:num_initial_samples_edited+1])
         numInitialAdded = num_initial_samples - ii# Able to add a Leja point!
@@ -86,7 +86,8 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, lambdas, ab, num_cand
             num_leja_samples_edited = len(initial_samples_edited[1,:]) # Want to try and add the points
             num_leja_samples_edited = num_leja_samples # Want to try and add the points
 
-            samples2, data_structures2, successBool = get_lu_leja_samples(poly.canonical_basis_matrix,candidate_samples,num_leja_samples_edited,preconditioning_function=precond_func,initial_samples=initial_samples_edited)
+            samples2, data_structures2, successBool = get_lu_leja_samples(poly,
+        opolynd_eval,candidate_samples,num_leja_samples_edited,preconditioning_function=precond_func,initial_samples=initial_samples_edited)
             if successBool == True:
 #                initial_samples_edited = np.copy(samples2[:,0:num_initial_samples_edited])
                 numInitialAdded += 1
@@ -95,7 +96,8 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, lambdas, ab, num_cand
                 pointsRemoved.append(np.asarray([initial_samples_edited[:,0]]).T)
                 initial_samples_edited = np.delete(initial_samples_edited,0,1)
                 num_leja_samples_edited = len(initial_samples_edited[1,:])+1  # Want to add one leja point
-                samples, data_structures, successBool = get_lu_leja_samples(poly.canonical_basis_matrix,candidate_samples,num_leja_samples_edited,preconditioning_function=precond_func,initial_samples=initial_samples_edited)                
+                samples, data_structures, successBool = get_lu_leja_samples(poly,
+        opolynd_eval,candidate_samples,num_leja_samples_edited,preconditioning_function=precond_func,initial_samples=initial_samples_edited)                
                 initial_samples_edited = np.copy(samples[0:len(initial_samples_edited[1,:])+1,:])
                 newLejaSamples.append(np.copy(initial_samples_edited[:,-1]))
         
@@ -106,19 +108,18 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, lambdas, ab, num_cand
     return np.asarray(samples).T, np.asarray(newLejaSamples)
 
 
-# expansion1 = chaospy.orth_ttr(2, chaospy.Normal(1, .1))
-# distribution = chaospy.J(chaospy.Normal(0, 1), chaospy.Normal(0, 1))
-# poly = chaospy.orth_ttr(10, distribution)
-# from families import HermitePolynomials
-# import indexing
-# H = HermitePolynomials(rho=0)
-# d=2
-# k = 20   
-# ab = H.recurrence(k+1)
-# lambdas = indexing.total_degree_indices(d, k)
-# one, two = getLejaPoints(231, np.asarray([[0,0]]).T, H, lambdas, ab, candidateSampleMesh = [], returnIndices = False)
-# # plt.figure()
-# plt.scatter(one[:,0], one[:,1])
+
+from families import HermitePolynomials
+import indexing
+H = HermitePolynomials(rho=0)
+d=2
+k = 20   
+ab = H.recurrence(k+1)
+lambdas = indexing.total_degree_indices(d, k)
+H.lambdas = lambdas
+one, two = getLejaPoints(231, np.asarray([[0,0]]).T, H, candidateSampleMesh = [], returnIndices = False)
+plt.figure()
+plt.scatter(one[:,0], one[:,1])
 
 """
 allPoints nx2 array of the original point and the neighbors we consider.

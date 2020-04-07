@@ -106,7 +106,6 @@ def total_degree_indices(d, k):
 
     ind = np.lexsort(degrees.transpose())
     lambdas = lambdas[ind,:]
-
     return lambdas
 
 def degree_encompassing_N(d, N):

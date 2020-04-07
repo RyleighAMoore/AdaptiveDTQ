@@ -13,9 +13,9 @@ rcParams['font.weight'] = 'bold'
 fontprops = {'fontweight': 'bold'}
 
 # Test function
-u = lambda xx: xx**4
+u = lambda xx: xx**2
 
-N=4
+N=30
 
 H = HermitePolynomials()
 
@@ -25,30 +25,36 @@ sigma = .1
 mu = 0
 scaling = np.asarray([[mu, sigma]])
 
-xCan=VT.map_to_canonical_space(xg, 1, scaling)
+xCan=VT.map_to_canonical_space(xg,scaling)
 
 V = H.eval(xg, range(np.max(N)))
 
-# Compute interpolation grid
-# x,w = H.gauss_quadrature(N)
+w2 = (1/(np.sqrt(2*np.pi)))*np.exp(-xg**2/2)
 
-#Ryleigh
+w2 = w2/np.sum(w2)
+
+plt.plot(xg, w2, '.')
+plt.plot(xg, wg)
+
+wV = (np.sqrt(w2)*V.T).T
+# Quadrature method
+c2 = np.dot(wV.T, np.sqrt(w2)*u(xg))
+
+
+
+
 Vinv = np.linalg.inv(V)
-# test = np.matmul(V,Vinv)
-# test2 = np.matmul(Vinv,V)
-
 c = np.matmul(Vinv, u(xg))
 
-# Compute interpolant
 
 interp = np.dot(V,c)
 
 
-plt.figure()
-lines = []
-lines.append(plt.plot(xg, u(xg))[0])
-lines.append(plt.plot(xg, interp, '.')[0])
+# plt.figure()
+# lines = []
+# lines.append(plt.plot(xg, u(xg))[0])
+# lines.append(plt.plot(xg, interp, '.')[0])
 
-# plt.xlabel(r'$x$', **fontprops)
-# plt.title(r'Plot of $u$ and $N$-point interpolants', **fontprops)
+# # plt.xlabel(r'$x$', **fontprops)
+# # plt.title(r'Plot of $u$ and $N$-point interpolants', **fontprops)
 

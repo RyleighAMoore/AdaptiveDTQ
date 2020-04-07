@@ -1,6 +1,6 @@
 import numpy as np
 
-def get_lu_leja_samples(poly, lambdas, ab, generate_basis_matrix,
+def get_lu_leja_samples(poly, generate_basis_matrix,
                         candidate_samples,num_leja_samples,
                         preconditioning_function=None,initial_samples=None):
     """
@@ -56,11 +56,11 @@ def get_lu_leja_samples(poly, lambdas, ab, generate_basis_matrix,
         num_initial_rows=0
     
     numSamples = len(candidate_samples.T)
-    basis_matrix = generate_basis_matrix(candidate_samples.T, lambdas[:numSamples,:], ab, poly)
+    basis_matrix = generate_basis_matrix(candidate_samples.T, poly.lambdas[:numSamples,:], poly.ab, poly)
 
     assert num_leja_samples <= basis_matrix.shape[1]
     if preconditioning_function is not None:
-        weights = np.sqrt(preconditioning_function(candidate_samples))
+        weights = preconditioning_function(candidate_samples)
         basis_matrix = (basis_matrix.T*weights).T
     else:
         weights = None
@@ -257,10 +257,8 @@ def christoffel_weights(basis_matrix):
 def sqrtNormal_weights(candidate_samples):
     x = candidate_samples[0,:]
     y= candidate_samples[1,:]
-    sigma_x = 1; sigma_y = 1
-    z = (1/(2*np.pi*sigma_x*sigma_y) * np.exp(-(x**2/(2*sigma_x**2)
-         + y**2/(2*sigma_y**2))))
-    return z
+    z = 1/(np.pi) * np.exp(-(x**2/(1)+ y**2/(1)))
+    return np.sqrt(z)
 
 
 def continue_pivoted_lu_factorization(LU_factor,raw_pivots,current_iter,

@@ -29,11 +29,11 @@ import MeshUpdates2D as MeshUp
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.05
-xmin=-1.0
-xmax=1.0
-ymin=-1.0
-ymax=1.0
+kstep = 0.02
+xmin=-0.5
+xmax=0.5
+ymin=-0.5
+ymax=0.5
 
 
 def generateGRow(point, allPoints, kstep, h):
@@ -74,9 +74,9 @@ while t < 100:
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =1
+index =3
 ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
-index =1
+index =5
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
 # ax.scatter(meshVals[:,0], meshVals[:,1], newPDF, c='k', marker='.')
 
@@ -106,10 +106,15 @@ plt.show()
 pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PDFTraj1.p", "wb" ) 
 pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Mesh1.p", "wb" ) 
 
-import pickle  
-pickle.dump(surfaces, pkl_file)
-pickle.dump(mesh, pkl_file2)
-pkl_file.close()
-pkl_file2.close()
+# import pickle  
+# pickle.dump(surfaces, pkl_file)
+# pickle.dump(mesh, pkl_file2)
+# pkl_file.close()
+# pkl_file2.close()
 
 
+
+fig = plt.figure()
+ax = Axes3D(fig)
+index =3
+ax.scatter(mesh[:,0], mesh[:,1], G, c='r', marker='.')

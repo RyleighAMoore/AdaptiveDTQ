@@ -22,30 +22,14 @@ import pickle
 import LejaQuadrature as LQ
 import getPCE as PCE
 import distanceMetrics as DM
+import sys
+sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+from families import HermitePolynomials
+import indexing
+import LejaPoints as LP
 
-
-def checkDist(mesh, newMesh, minDist):
-    points = []
-    for i in range(len(newMesh)):
-        newPointX = newMesh[i,0]
-        newPointY = newMesh[i,1]
-        nearestPoint = UM.findNearestPoint(newPointX, newPointY, mesh)
-        distToNearestPoint = np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
-        if distToNearestPoint > minDist:
-            points.append([newPointX, newPointY])
-            
-    return np.asarray(points)
-
-T = 0.01  # final time, code computes PDF of X_T
-s = 0.75  # the exponent in the relation k = h^s
-h = 0.1  # temporal step size
-init = 0  # initial condition X_0
-numsteps = int(np.ceil(T / h))
-
-assert numsteps > 0, 'The variable numsteps must be greater than 0'
 
 # define spatial grid
-kstep = h ** s
 kstep = 0.1
 xmin=-2
 xmax=2
@@ -53,20 +37,21 @@ ymin=-2
 ymax=2
 h=0.01
 
-poly = PCE.generatePCE(30)
-mesh, mesh2 = LP.getLejaPointsWithStartingPoints([0,0,sqrt(h)*fun.g1(),sqrt(h)*fun.g2()], 230, 5000, poly)
-# mesh2 , mesh3 = LP.getLejaPointsWithStartingPoints([0,0,sqrt(h)*fun.g1()*1.5,sqrt(h)*fun.g2()*1.5], 230, 5000, poly)
-# mesh3 = checkDist(mesh, mesh3, 0.03)
-# mesh = np.vstack((mesh,mesh3))
 
-poly = PCE.generatePCE(20)
-# initial_samples = np.asarray([[0,0]]).T
-# poly = PCE.generatePCE_Uniform(50)
-# lejas, new = LP.getLejaPoints_Uniform(530, initial_samples, poly, num_candidate_samples = 2000, candidateSampleMesh = [], returnIndices = False)
+poly = HermitePolynomials(rho=0)
+d=2
+k = 40    
+ab = poly.recurrence(k+1)
+lambdas = indexing.total_degree_indices(d, k)
+poly.lambdas = lambdas
 
-plt.scatter(mesh[:,0], mesh[:,1])
+mesh, two = LP.getLejaPoints(230, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
+mesh = LP.mapPointsBack(0, 0, mesh, 0.1, 0.1)
 
-pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
+
+# plt.scatter(mesh[:,0], mesh[:,1])
+
+pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
 
 # import pickle
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillLongFullSplit.p", "rb" ) 
@@ -82,8 +67,6 @@ pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], .1, .1)
 # mesh = Meshes[-1]
 # pdf = PdfTraj[-1]
 
-
-
 Meshes = []
 PdfTraj = []
 PdfTraj.append(np.copy(pdf))
@@ -98,7 +81,7 @@ SlopesMin = []
 SlopesMean = []  
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
-adjustGrid = False
+adjustGrid = True
 for i in trange(35):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
@@ -108,10 +91,10 @@ for i in trange(35):
     if (i >= 0) and adjustGrid:
         assert np.max(PdfTraj[-1] < 10), "PDF Blew up"
         if (i>=0):
-            mesh, pdf, tri, addBool,xmin, xmax, ymin, ymax = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, xmin, xmax, ymin, ymax, poly)
+            mesh, pdf, tri, addBool = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly)
             if (addBool == 1):
                 tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-            mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True)
+            mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly)
             if (remBool == 1):
                tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
         
@@ -123,19 +106,24 @@ for i in trange(35):
         Pxs = []
         Pys = []
         print("Stepping Forward....")
-        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly)
+        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h)
        
         pdf = np.squeeze(pdf)
         PdfTraj.append(np.copy(pdf))
         Meshes.append(np.copy(mesh))
         print('Length of mesh = ', len(mesh))
+        fig = plt.figure()
+        ax = Axes3D(fig)
+        index =-1
+        ax.scatter(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], c='r', marker='.')
+        
     else:
         print('Length of mesh = ', len(mesh))
 
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =-1
+index =0
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 index = 50
 # ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')
@@ -152,7 +140,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[10]))
+ax.set_zlim(0, np.max(PdfTraj[1]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                           interval=500, blit=False)
 

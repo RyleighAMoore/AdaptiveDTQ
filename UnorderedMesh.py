@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Aug 28 17:28:43 2019
-
-@author: Ryleigh
-"""
 import numpy as np
 import XGrid
 import random
@@ -93,70 +87,6 @@ def makeOrderedGridAroundPoint(point, spacing, span, xmin, xmax, ymin, ymax):
 
 # grid = makeOrderedGridAroundPoint(point, spacing, span, xmin, xmax, ymin, ymax)
 
-#(Px,Py): point we want to approximate
-# nearestPoints 
-#  x1   y1
-#  x2   y2
-#  x3   y3
-from scipy.interpolate import griddata
-def baryInterp(Px, Py, simplexPoints, degsFreePDF, nearestNeighbor=False):
-    return False
-    '''Xv1 = simplexPoints[0,0]
-    Yv1 = simplexPoints[0,1]
-    Xv2 = simplexPoints[1,0]
-    Yv2 = simplexPoints[1,1]
-    Xv3 = simplexPoints[2,0]
-    Yv3 = simplexPoints[2,1]
-   
-    PDF1 = degsFreePDF[0]
-    PDF2 = degsFreePDF[1]
-    PDF3 = degsFreePDF[2]
-    Wv1 = ((Yv2-Yv3)*(Px-Xv3)+(Xv3-Xv2)*(Py-Yv3))/((Yv2-Yv3)*(Xv1-Xv3)+(Xv3-Xv2)*(Yv1-Yv3))
-    Wv2 = ((Yv3-Yv1)*(Px-Xv3)+(Xv1-Xv3)*(Py-Yv3))/((Yv2-Yv3)*(Xv1-Xv3)+(Xv3-Xv2)*(Yv1-Yv3))
-    Wv3 = 1-Wv1-Wv2
-    if (Wv1 < -10**(-10)) | (Wv2 < -10**(-10)) | (Wv3 < -10**(-10)): #Outside triangulation
-        if nearestNeighbor:
-            PDF1 = np.log(degsFreePDF[0])
-            PDF2 = np.log(degsFreePDF[1])
-            PDF3 = np.log(degsFreePDF[2])
-            PDFNew = np.exp(Wv1*PDF1+Wv2*PDF2+Wv3*PDF3)
-            # print(PDFNew)
-            if PDFNew > np.max(degsFreePDF):
-                return [np.min(degsFreePDF) - np.min(degsFreePDF)/2]
-            return PDFNew
-            
-            # print("Point outside Triangle")
-            #print(min(Wv1,Wv2,Wv3))
-        else:
-            PDFNew = [degsFreePDF[0]-degsFreePDF[0]/2]
-            return PDFNew # Triangle doesn't surround points
-        # plt.figure()
-        # plt.plot(simplexPoints[0,0], simplexPoints[0,1], '*k')
-        # plt.plot(simplexPoints[1,0], simplexPoints[1,1], '*k')
-        # plt.plot(simplexPoints[2,0], simplexPoints[2,1], '*k')
-        # plt.plot(Px, Py, '.r')
-        # plt.show()
-#    assert Wv1 >= 0, 'Weight less than 0'
-#    assert Wv2 >= 0, 'Weight less than 0'
-#    assert Wv3 >= 0, 'Weight less than 0'
-    # plt.figure()
-    # plt.plot(simplexPoints[0,0], simplexPoints[0,1], '*k')
-    # plt.plot(simplexPoints[1,0], simplexPoints[1,1], '*k')
-    # plt.plot(simplexPoints[2,0], simplexPoints[2,1], '*k')
-    # plt.plot(Px, Py, '.r')
-    # plt.show()
-    PDFNew = Wv1*PDF1+Wv2*PDF2+Wv3*PDF3
-    # print(PDFNew)
-
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # ax.scatter(simplexPoints[:,0], simplexPoints[:,1], degsFreePDF, c='r', marker='.')
-    # ax.scatter(Px, Py, PDFNew, c='r', marker='.')
-
-#    PDF = np.exp(PDFNew)
-    return PDFNew'''
-
-# x = baryInterp(-0.5,-0.5, np.asarray([[-0.25,-0.5], [0,1], [1,1]]),[10,10,20])
 
 # generate random points from [xMin,xMax] x [yMin, yMax]
 # returns 
@@ -173,78 +103,16 @@ def generateRandomPoints(xMin,xMax,yMin,yMax, numPoints):
         
     return np.asarray([x1,x2]).T
 
-
-#def generateICGrid(x1, x2, init, h):
-#    w1 = Operations2D.find_nearest(x1, 0)
-#    w2 = Operations2D.find_nearest(x2, 0)
-#    phat = np.zeros([len(x1), len(x2)])
-#    a1 = init + fun.f1(init,0)
-#    b1 = np.abs(fun.g1() * np.sqrt(h))
-#    a2 = init + fun.f2(init,0)
-#    b2 = np.abs(fun.g2() * np.sqrt(h))
-#    phat0 = fun.dnorm(x1, a1, b1)  # pdf after one time step with Dirac \delta(x-init)
-#    phat1 = fun.dnorm(x2, a2, b2)  # pdf after one time step with Dirac \delta(x-init)
-#    phat[w1, :] = phat1
-#    phat[:, w2] = phat0
-#    PDF = np.reshape(phat,[1,np.size(phat)],1).T
-#    
-#    X, Y = np.meshgrid(x1,x2)
-#    xVec = np.reshape(X,[1,np.size(X)],1).T
-#    yVec = np.reshape(Y,[1,np.size(Y)],1).T
-#    points = np.hstack((xVec,yVec))
-#    
-#    return points, PDF
     
 def generateICPDF(x,y,sigma_x, sigma_y):
     z = (1/(2*np.pi*sigma_x*sigma_y) * np.exp(-(x**2/(2*sigma_x**2)
-         + y**2/(2*sigma_y**2))))
-
-#    fig = plt.figure()
-#    ax = Axes3D(fig)
-#    ax.scatter(x, y, z, c='r', marker='.')
-    
+         + y**2/(2*sigma_y**2))))    
     return z
 
 def generateICPDFShifted(x,y,sigma_x, sigma_y, muX, muY):
     z = (1/(2*np.pi*sigma_x*sigma_y) * np.exp(-((x-muX)**2/(2*sigma_x**2)
-         + (y-muY)**2/(2*sigma_y**2))))
-
-#    fig = plt.figure()
-#    ax = Axes3D(fig)
-#    ax.scatter(x, y, z, c='r', marker='.')
-    
+         + (y-muY)**2/(2*sigma_y**2))))    
     return z
-
-# Function that finds the vertices for 
-    # calculation of the barycentric interpolation.
-def getVerticesForPoint(point, allPoints, tri):
-    #tri = Delaunay(allPoints)
-    simplex = tri.find_simplex(point)
-#    if simplex == -1:
-#        print("WARNING: A point in the grid may be outside the bounds.")
-    verts = tri.simplices[simplex]
-    vertices = []
-    vertices.append(allPoints[verts[0]])
-    vertices.append(allPoints[verts[1]])
-    vertices.append(allPoints[verts[2]])
-    vertices = np.asarray(vertices)
-    # plt.figure()
-    # plt.plot(vertices[0,0], vertices[0,1], '*k')
-    # plt.plot(vertices[1,0], vertices[1,1], '*k')
-    # plt.plot(vertices[2,0], vertices[2,1], '*k')
-    # plt.plot(point[0], point[1], '.r')
-    # plt.show()
-    return np.asarray(vertices), verts
-
-    
-def getPDFForPoint(PDF, verts):
-    newPDF = []
-    newPDF.append(PDF[verts[0]])
-    newPDF.append(PDF[verts[1]])
-    newPDF.append(PDF[verts[2]])
-    
-    return np.asarray(newPDF)
-
 
 
 def plotTri(tri, points):
@@ -282,8 +150,7 @@ def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep, includeOrig
     for i in range(1, stepsY):
         y.append(i*kstep)
         y.append(-i*kstep)
-    # x = np.sort(x)
-    # y= np.sort(y)
+
     X, Y = np.meshgrid(x, y)
     x1 = []
     x2 = []

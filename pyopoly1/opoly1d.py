@@ -5,6 +5,7 @@ class OrthogonalPolynomialBasis1D:
     def __init__(self, recurrence=[]):
         self.probability_measure=True
         self.ab = np.zeros([0,2])
+        self.lambdas = []
         pass
 
     def recurrence(self,N):

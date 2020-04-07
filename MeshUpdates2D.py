@@ -15,15 +15,18 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import GenerateLejaPoints as LP
 import distanceMetrics
+import sys
+sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
 import LejaPointsToRemove as LPR
-import LejaQuadrature as LQ
+
+import LejaPoints as LP
 
 global MaxSlope
 MaxSlope = 0 # Initialize to 0, the real value is set in the code
-addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
-removeZerosValuesIfLessThanTolerance = 10**(-3)
-minDistanceBetweenPoints = 0.07
-minDistanceBetweenPointsBoundary = 0.07
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-7)
+removeZerosValuesIfLessThanTolerance = 10**(-7)
+minDistanceBetweenPoints = 0.05
+minDistanceBetweenPointsBoundary = 0.05
 skipCount = 5
 maxDistanceBetweenPoints = 0.1
 numStdDev = 5 #For grids around each point in the mesh
@@ -39,7 +42,7 @@ adjustBoundary = True
 # maxDistanceBetweenPoints = 0.2
 
 
-def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, xmin, xmax, ymin, ymax, poly):
+def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly):
     changedBool2 = 0
     changedBool1 = 0
     if adjustDensity:
@@ -47,9 +50,9 @@ def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, xmin, xmax, ymi
     if adjustBoundary:
         Mesh, Pdf, triangulation, changedBool1 = addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h, poly)
     ChangedBool = max(changedBool1, changedBool2)
-    return Mesh, Pdf, triangulation, ChangedBool, xmin, xmax, ymin, ymax 
+    return Mesh, Pdf, triangulation, ChangedBool
 
-def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool):
+def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly):
     '''Removes the flagged values from the list of mesh values and in Gmat. 
     boolZerosArray is the list of zeros and ones denoting which grid points to remove.
     Gmat, Mesh, Grids, Vertices, and VerticesNum are all used in the 2DTQ-UnorderedMesh method 
@@ -60,7 +63,7 @@ def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool):
     if adjustBoundary:
         Mesh, Pdf, ChangedBool2 = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool)
     if adjustDensity:
-        Mesh, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool)
+        Mesh, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly)
     Mesh, Pdf, ChangedBool3 = checkForAndRemoveZeroPoints(Mesh,Pdf, tri)
     ChangedBool = max(ChangedBool1, ChangedBool2, ChangedBool3)
     return Mesh, Pdf, ChangedBool
@@ -131,23 +134,6 @@ def checkIntegrandForAddingPointsAroundBoundaryPoints(PDF, tolerance, Mesh, tri,
     # print(np.max(np.asarray(maxMat)))
     return np.asarray(addingAround).T
 
-#def checkIntegralForZeroPoints(GMat, PDF, tolerance):
-#    newPDF = []
-#    for i in range(len(PDF)):
-#        newPDF.append(np.matmul(np.asarray(GMat),PDF))
-#    return [np.asarray(newPDF) <= tolerance]
-
-
-# def generateGRow(point, allPoints, kstep, h):
-#     row = []
-#     OrderA = []
-#     for i in range(len(allPoints)):
-#         val = kstep**2*fun.G(point[0], point[1], allPoints[i,0], allPoints[i,1], h)
-#         row.append(val)
-#         OrderA.append([point[0], point[1], allPoints[i,0], allPoints[i,1]])
-#     return row
-
-
 
 def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool):
     stillRemoving = True
@@ -187,7 +173,7 @@ def removePoint(index, Mesh, Pdf):
     return Mesh, Pdf
     
 
-def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool):
+def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly):
     # plt.figure()
     # plt.scatter(Mesh[:,0], Mesh[:,1])
     
@@ -210,7 +196,7 @@ def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool):
     corrIndices = np.sort(corrIndices)
     spacing = distanceMetrics.fillDistance(meshWithSmallSlopes)
     if spacing < 1: #maxDistanceBetweenPoints*(skipCount+1)/skipCount: # if removing points will be ok.
-        indices = LPR.getMeshIndicesToRemoveFromMesh(meshWithSmallSlopes, skipCount)
+        indices = LPR.getMeshIndicesToRemoveFromMesh(meshWithSmallSlopes, skipCount, poly)
         for j in range(len(indices)-1,-1,-1): # Check if point is likely top of hill - don't remove it
             nearestPoint, distances = UM.findNearestKPoints(Mesh[corrIndices[j],0],Mesh[corrIndices[j],1], meshWithSmallSlopes, 6)            # print("Making Less Dense!...")
             distToNearestPoint = np.max(distances)

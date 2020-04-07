@@ -4,24 +4,7 @@ Created on Tue Jan 21 11:21:05 2020
 
 @author: Ryleigh
 """
-import pyapprox
-
 from functools import partial
-from pyapprox.polynomial_sampling import *
-from pyapprox.multivariate_polynomials import PolynomialChaosExpansion, \
-    define_poly_options_from_variable_transformation
-from pyapprox.variable_transformations import \
-     define_iid_random_variable_transformation, RosenblattTransformation, \
-     TransformationComposition 
-from pyapprox.indexing import compute_hyperbolic_indices, get_total_degree
-from pyapprox.univariate_quadrature import gauss_jacobi_pts_wts_1D,\
-    clenshaw_curtis_pts_wts_1D
-from pyapprox.models.genz import GenzFunction
-from scipy.stats import beta as beta, uniform, norm
-from pyapprox.density import tensor_product_pdf
-#from pyapprox.configure_plots import *
-from pyapprox.utilities import get_tensor_product_quadrature_rule
-from pyapprox.tests.test_rosenblatt_transformation import rosenblatt_example_2d
 import matplotlib.pyplot as plt
 import UnorderedMesh as UM
 import numpy as np
@@ -30,29 +13,21 @@ plt.rcParams['text.usetex'] = False
 import GenerateLejaPoints as LP
 import pickle      
 import scipy as sp
+import LejaPoints as LP
+import opolynd
+from LejaUtilities import *
+from opolynd import opolynd_eval
 
 
-
-def getLejaPointsForRemoval(num_leja_samples, initial_samples, Mesh, numBasis, dimensions=2):
+def getLejaPointsForRemoval(num_leja_samples, initial_samples, Mesh, numBasis, poly, dimensions=2):
     num_vars=2
     degree=numBasis
-    
-    poly = PolynomialChaosExpansion()
-    var_trans = define_iid_random_variable_transformation(
-        norm(loc=0,scale=1),num_vars)
-    
-    opts = define_poly_options_from_variable_transformation(var_trans)
-    poly.configure(opts)
-    indices = compute_hyperbolic_indices(num_vars,degree,1.0)
-#    indices = get_total_degree(num_vars, num_points)
-
-    poly.set_indices(indices)
-    
+   
     degree = np.sqrt(2*num_leja_samples)
     candidate_samples = Mesh
     
     num_initial_samples = len(initial_samples.T)
-    precond_func = lambda matrix, samples: christoffel_weights(matrix)
+    precond_func = lambda samples: sqrtNormal_weights(samples)
     
     # basis_matrix = poly.canonical_basis_matrix(candidate_samples)
     # P,L,U = sp.linalg.lu(basis_matrix)
@@ -62,15 +37,14 @@ def getLejaPointsForRemoval(num_leja_samples, initial_samples, Mesh, numBasis, d
     #     PivotList[0,i] = Mesh.T[result,0]
     #     PivotList[1,i] = Mesh.T[result,1]
     
-    samples, data_structures, successBool = get_lu_leja_samples(
-        poly.canonical_basis_matrix,
-        candidate_samples,num_leja_samples,
+    samples, data_structures, successBool = get_lu_leja_samples(poly,
+        opolynd_eval,candidate_samples,num_leja_samples,
         preconditioning_function=precond_func,
         initial_samples=initial_samples)
     
     return np.asarray(samples).T, data_structures[2]
 
-def getLejaPointsToRemove(Px, Py, numNeighbors, mesh, scaleX, scaleY, numBasis):
+def getLejaPointsToRemove(Px, Py, numNeighbors, mesh, scaleX, scaleY, numBasis, poly):
     neighbors, distances = UM.findNearestKPoints(Px, Py, mesh, numNeighbors-1) 
     if len(neighbors > 0): 
         neighbors = np.vstack((neighbors,[Px,Py]))
@@ -84,7 +58,7 @@ def getLejaPointsToRemove(Px, Py, numNeighbors, mesh, scaleX, scaleY, numBasis):
     while lejaPointsFinal is None:
         try:
             # connect
-            lejaPointsFinal, indices = getLejaPointsForRemoval(int(np.ceil(len(mesh))), intialPoints.T, mesh.T, 15+tries, dimensions=2)
+            lejaPointsFinal, indices = getLejaPointsForRemoval(int(np.ceil(len(mesh))), intialPoints.T, mesh.T, 15+tries,poly, dimensions=2)
         except:
             tries = tries+10
             pass
@@ -103,12 +77,12 @@ def getLejaPointsToRemove(Px, Py, numNeighbors, mesh, scaleX, scaleY, numBasis):
     return lejaPointsFinal, indices
 
 
-def getMeshIndicesToRemoveFromMesh(mesh, skipCount):  
+def getMeshIndicesToRemoveFromMesh(mesh, skipCount, poly):  
     initial_samples = np.asarray([[mesh[0,0]], [mesh[0,0]]])
     try:
-        LPVals, indices = getLejaPointsToRemove(mesh[0,0], mesh[0,1], len(mesh), mesh, 0.1, 0.1, 55)
+        LPVals, indices = getLejaPointsToRemove(mesh[0,0], mesh[0,1], len(mesh), mesh, 0.1, 0.1, 55, poly)
     except:
-        LPVals, indices = getLejaPointsToRemove(mesh[0,0], mesh[0,1], len(mesh), mesh, 0.1, 0.1, len(mesh))
+        LPVals, indices = getLejaPointsToRemove(mesh[0,0], mesh[0,1], len(mesh), mesh, 0.1, 0.1, len(mesh),poly)
 
     valsToKeep = np.ndarray.tolist(LPVals)
     meshList = np.ndarray.tolist(mesh)

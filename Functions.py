@@ -1,4 +1,25 @@
 import numpy as np
+from scipy.stats import multivariate_normal
+
+def GVals(Px, Py, mesh, h):
+    vals = []
+    for i in range(len(mesh)):
+        val = G(Px, Py, mesh[i,0], mesh[i,1], h)
+        vals.append(np.copy(val))
+    return np.asarray(vals)
+
+def HVals(x1,x2,mesh,h):
+    y1 = mesh[:,0]
+    y2 = mesh[:,1]
+    scale = h*g1(x1,x2)*g2(x1,x2)/(h*g1(y1,y2)*g2(y1,y2))
+    val = scale*np.exp(-(h**2*f1(y1,y2)**2+2*h*f1(y1,y2)*(x1-y1))/(2*h*g1(x1,x2)**2) + -(h**2*f2(y1,y2)**2+2*h*f2(y1,y2)*(x2-y2))/(2*h*g2(x1,x2)**2))*np.exp((x1-y1+h*f1(y1,y2))**2/(2*h*g1(x1,x2)**2) - (x1-y1+h *f1(y1,y2))**2/(2*h*g1(y1,y2)**2) + (x2-y2+h*f2(y1,y2))**2/(2*h*g2(x1,x2)**2) - (x2-y2+h* f2(y1,y2))**2/(2*h*g2(y1,y2)**2))
+    val = scale*np.exp(-(h**2*f1(y1,y2)**2-2*h*f1(y1,y2)*(x1-y1))/(2*h*g1(x1,x2)**2) + -(h**2*f2(y1,y2)**2-2*h*f2(y1,y2)*(x2-y2))/(2*h*g2(x1,x2)**2))*np.exp((x1-y1-h*f1(y1,y2))**2/(2*h*g1(x1,x2)**2) - (x1-y1-h *f1(y1,y2))**2/(2*h*g1(y1,y2)**2) + (x2-y2-h*f2(y1,y2))**2/(2*h*g2(x1,x2)**2) - (x2-y2-h* f2(y1,y2))**2/(2*h*g2(y1,y2)**2))
+    return val
+
+def Gaussian(muX, muY, sigmaX, sigmaY, mesh, cov1 = 0, cov2 =0):
+    rv = multivariate_normal([muX, muY], [[sigmaX**2, cov1], [cov2, sigmaY**2]])        
+    soln_vals = np.asarray([rv.pdf(mesh)]).T
+    return np.squeeze(soln_vals)
 
 # Drift fuction
 def driftfun(x):
@@ -25,36 +46,36 @@ def dnorm_partialx(x, mu, sigma):
 from scipy.special import erf
 
 def f1(x, y):
+    return 0
     return 5*erf(10*x)
-
 
 def f2(x, y):
     return 0
     return 5*erf(10*y) 
 
 def g1(x=0,y=0):
-    return 0.5
+    return 1
 
 def g2(x=0,y=0):
-    return 0.5
+    return 1
 
 
 # def f1(x, y):
 #     r = np.sqrt(x ** 2 + y ** 2)
-#     # return 0
+#     return 0
 #     return 1/(.15*np.sqrt(abs(x)+1))*np.sign(x)
 
 
 # def f2(x, y):
 #     r = np.sqrt(x ** 2 + y ** 2)
-#     # return 0
+#     return 0
 #     return 0 
 
 # def g1(x=0,y=0):
-#     return 0.5
+#     return 1
 
 # def g2(x=0,y=0):
-#     return 0.5
+#     return 1
 
 # Volcano
 # def f1(x, y):
