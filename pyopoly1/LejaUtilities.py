@@ -60,7 +60,7 @@ def get_lu_leja_samples(poly, generate_basis_matrix,
 
     assert num_leja_samples <= basis_matrix.shape[1]
     if preconditioning_function is not None:
-        weights = preconditioning_function(candidate_samples)
+        weights = preconditioning_function(basis_matrix, candidate_samples)
         basis_matrix = (basis_matrix.T*weights).T
     else:
         weights = None
@@ -257,7 +257,9 @@ def christoffel_weights(basis_matrix):
 def sqrtNormal_weights(candidate_samples):
     x = candidate_samples[0,:]
     y= candidate_samples[1,:]
-    z = 1/(np.pi) * np.exp(-(x**2/(1)+ y**2/(1)))
+    z =(1/np.sqrt(2*np.pi))*np.exp(-(x**2/(2)+ y**2/(2)))
+    # z =(1/np.sqrt(np.pi))*np.exp(-(x**2/(1)+ y**2/(1)))
+    # z =np.exp(-(x**2/(1)+ y**2/(1)))
     return np.sqrt(z)
 
 

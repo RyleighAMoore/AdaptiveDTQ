@@ -16,13 +16,14 @@ def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
     V = poly.eval(xCan, range(len(xCan)))
     vinv = np.linalg.inv(V)
     c = np.matmul(vinv, pdf)
-    print(c[0])
+    # print(c[0])
     plot=False
     if plot:
         interp = np.matmul(V,c)
         plt.figure()
         plt.plot(mesh, interp,'.')
         plt.plot(mesh, pdf)
+    return c[0]
         
 def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
     numVars = np.size(mesh,0)
@@ -41,6 +42,35 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
             ax.scatter(mesh[:,0], mesh[:,1], pdf, c='r', marker='o')
             ax.scatter(mesh[:,0], mesh[:,1], interp, c='k', marker='.')
     return c[0], np.sum(np.abs(vinv[0,:]))
+
+import Scaling
+import sys
+sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ')
+from Functions import *
+def QuadratureByInterpolationND_CombineGaussianParts(poly, scalingOrig, mesh, pdf, h):
+    muXOrig = scalingOrig[0,0]; muYOrig = scalingOrig[1,0]
+    sigmaXOrig = scalingOrig[0,1]; sigmaYOrig = scalingOrig[1,1]
+    
+    sigmaX = np.sqrt(h)*g1()
+    sigmaY = np.sqrt(h)*g2()
+    
+
+    #Original pdf
+    # pdfO = GVals(0, 0, mesh, 0.01)*Gaussian(0, 0, 0.1, 0.1, mesh)    
+
+    # New pdf
+    pdf = HVals(0, 0, mesh, 0.01)
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(mesh[:,0], mesh[:,1], pdf,  c='r', marker='o')
+    
+    muNew, sigmaNew, cfinal = productGaussians2D(muXOrig, muYOrig, 0, 0, sigmaXOrig, sigmaYOrig, .1, .1)
+    
+    scaling = np.asarray([[0, sigmaNew[0,0]], [0, sigmaNew[1,1]]])
+        
+    value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
+    print(value*cfinal)
+    return value*cfinal
         
 
 if __name__ == "__main__":
@@ -66,15 +96,15 @@ if __name__ == "__main__":
     '''
     1D example of QuadratureByInterpolation
     '''
-    # H = HermitePolynomials(rho=0)
-    # mu=0
-    # sigma=.1
-    # scaling = np.asarray([[mu, sigma]])
-    # N=4
-    # # mesh, w = H.gauss_quadrature(N)
-    # mesh = np.linspace(-1,1, N)
-    # pdf = fun1D(mesh)
-    # QuadratureByInterpolation1D(H, scaling, mesh, pdf)
+    H = HermitePolynomials(rho=0)
+    mu=0
+    sigma=.1
+    scaling = np.asarray([[mu, sigma]])
+    N=2
+    # mesh, w = H.gauss_quadrature(N)
+    mesh = np.linspace(-1,1, N)
+    pdf = fun1D(mesh)
+    QuadratureByInterpolation1D(H, scaling, mesh, pdf)
     ''''''
     
     '''
@@ -153,63 +183,63 @@ if __name__ == "__main__":
     ''''''
 
     
-    def ComputeUpdateIntegralWithCorrection(Px, Py, mesh, correctionVal, H):
-            mesh = mapPointsBack(Px, Py, mesh, 0.1, 0.1)
+    # def ComputeUpdateIntegralWithCorrection(Px, Py, mesh, correctionVal, H):
+    #         mesh = mapPointsBack(Px, Py, mesh, 0.1, 0.1)
            
-            # plt.figure()
-            # plt.scatter(mesh[:,0], mesh[:,1])
+    #         # plt.figure()
+    #         # plt.scatter(mesh[:,0], mesh[:,1])
             
-            pdf = fun2D(mesh,0.1)*newIntegrand(Px,Py,mesh,0.01) #/UM.generateICPDFShifted(mesh[:,0], mesh[:,1], correctionVal, correctionVal, Px,Py)
+    #         pdf = fun2D(mesh,0.1)*newIntegrand(Px,Py,mesh,0.01) #/UM.generateICPDFShifted(mesh[:,0], mesh[:,1], correctionVal, correctionVal, Px,Py)
             
             
-            # fig = plt.figure()
-            # ax = Axes3D(fig)
-            # ax.scatter(mesh[:,0], mesh[:,1], pdf,  c='r', marker='o')
+    #         # fig = plt.figure()
+    #         # ax = Axes3D(fig)
+    #         # ax.scatter(mesh[:,0], mesh[:,1], pdf,  c='r', marker='o')
             
-            # muNew, sigmaNew, cfinal = productGaussians2D(Px, Py, Px, Py, 0.1, 0.1, correctionVal, correctionVal)
+    #         # muNew, sigmaNew, cfinal = productGaussians2D(Px, Py, Px, Py, 0.1, 0.1, correctionVal, correctionVal)
             
-            # sigmaX = sigmaNew[0,0]
-            # sigmaY = sigmaNew[1,1]
-            # muX = muNew[0]
-            # muY = muNew[1]
-            scaling = np.asarray([[Px, 0.1], [Py, 0.1]])
+    #         # sigmaX = sigmaNew[0,0]
+    #         # sigmaY = sigmaNew[1,1]
+    #         # muX = muNew[0]
+    #         # muY = muNew[1]
+    #         scaling = np.asarray([[Px, 0.1], [Py, 0.1]])
 
-            value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
-            # valueFinal = value*cfinal
-            # print(valueFinal, condNum)
-            return value
+    #         value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
+    #         # valueFinal = value*cfinal
+    #         # print(valueFinal, condNum)
+    #         return value
         
         
-    def ComputeUpdateIntegralWithCorrection(Px, Py, mesh, correctionVal, H):
-        h=0.01
-        ic = 0.1
-        mesh = mapPointsBack(Px, Py, mesh, 0.1, 0.1)
-        # plt.figure()
-        # plt.scatter(mesh[:,0], mesh[:,1])
-        #*newIntegrand(Px,Py,mesh,h)
-        pdf = fun2D(mesh, ic)*newIntegrand(Px,Py,mesh,h) 
-        vals = np.cov(mesh.T, aweights = pdf)
-        # print(vals)
-        pdf = pdf #/ UM.generateICPDFShifted(mesh[:,0], mesh[:,1], correctionVal, correctionVal,0,0)
+    # def ComputeUpdateIntegralWithCorrection(Px, Py, mesh, correctionVal, H):
+    #     h=0.01
+    #     ic = 0.1
+    #     mesh = mapPointsBack(Px, Py, mesh, 0.1, 0.1)
+    #     # plt.figure()
+    #     # plt.scatter(mesh[:,0], mesh[:,1])
+    #     #*newIntegrand(Px,Py,mesh,h)
+    #     pdf = fun2D(mesh, ic)*newIntegrand(Px,Py,mesh,h) 
+    #     vals = np.cov(mesh.T, aweights = pdf)
+    #     # print(vals)
+    #     pdf = pdf #/ UM.generateICPDFShifted(mesh[:,0], mesh[:,1], correctionVal, correctionVal,0,0)
 
-        # fig = plt.figure()
-        # ax = Axes3D(fig)
-        # ax.scatter(mesh[:,0], mesh[:,1], pdf,  c='r', marker='o')
+    #     # fig = plt.figure()
+    #     # ax = Axes3D(fig)
+    #     # ax.scatter(mesh[:,0], mesh[:,1], pdf,  c='r', marker='o')
         
-        muNew, sigmaNew, cfinal = productGaussians2D(0, 0, Px, Py, ic, ic, correctionVal, correctionVal)
-        # print(muNew)
-        sigmaX = sigmaNew[0,0]
-        sigmaY = sigmaNew[1,1]
-        muX = muNew[0]
-        muY = muNew[1]
-        # scaling = np.asarray([[muX, sigmaX], [muY, sigmaY]])
-        scaling = np.asarray([[Px, 0.1], [Py, 0.1]])
+    #     muNew, sigmaNew, cfinal = productGaussians2D(0, 0, Px, Py, ic, ic, correctionVal, correctionVal)
+    #     # print(muNew)
+    #     sigmaX = sigmaNew[0,0]
+    #     sigmaY = sigmaNew[1,1]
+    #     muX = muNew[0]
+    #     muY = muNew[1]
+    #     # scaling = np.asarray([[muX, sigmaX], [muY, sigmaY]])
+    #     scaling = np.asarray([[Px, 0.1], [Py, 0.1]])
 
-        value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
-        valueFinal = value*cfinal
-        # print(valueFinal, condNum)
+    #     value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
+    #     valueFinal = value*cfinal
+    #     # print(valueFinal, condNum)
         
-        return valueFinal
+    #     return valueFinal
     
     # mesh2, two = getLejaPoints(60, np.asarray([[0,0]]).T, H, candidateSampleMesh = [], returnIndices = False)
     # mesh = UM.generateOrderedGridCenteredAtZero(-1, 1, -1, 1, 0.05, includeOrigin=True)
@@ -221,54 +251,54 @@ if __name__ == "__main__":
     # ax.scatter(mesh[:,0], mesh[:,1], np.asarray(pdfNew),  c='r', marker='o')
     # ax.scatter(mesh[:,0], mesh[:,1], surfaces[1],  c='k', marker='.')
 
-    from Functions import *
+    # from Functions import *
 
-    def ComputeUpdateIntegralWithCorrection(Px, Py, mesh, correctionVal, H):
-        h = 0.01
-        ic = 0.1
-        mesh = mapPointsBack(Px, Py, mesh, 0.1, 0.1)
-        # fig = plt.figure()
-        # ax = Axes3D(fig)
-        G = GVals(Px,Py, mesh, h)
-        pdf = fun2D(mesh, 0.1)*fun2D(mesh, 0.1)*newIntegrand(Px,Py,mesh,h)
+    # def ComputeUpdateIntegralWithCorrection(Px, Py, mesh, correctionVal, H):
+    #     h = 0.01
+    #     ic = 0.1
+    #     mesh = mapPointsBack(Px, Py, mesh, 0.1, 0.1)
+    #     # fig = plt.figure()
+    #     # ax = Axes3D(fig)
+    #     G = GVals(Px,Py, mesh, h)
+    #     pdf = fun2D(mesh, 0.1)*fun2D(mesh, 0.1)*newIntegrand(Px,Py,mesh,h)
 
-        # ax.scatter(mesh[:,0], mesh[:,1], G,  c='k', marker='o')
-        meanX = np.mean(mesh[:,0]*pdf)
-        meanY = np.mean(mesh[:,1]*pdf)
-        vals = np.cov(mesh.T, aweights = pdf)
-        cv1 = np.sqrt(vals[0,0])
-        cv2 = np.sqrt(vals[1,1])
+    #     # ax.scatter(mesh[:,0], mesh[:,1], G,  c='k', marker='o')
+    #     meanX = np.mean(mesh[:,0]*pdf)
+    #     meanY = np.mean(mesh[:,1]*pdf)
+    #     vals = np.cov(mesh.T, aweights = pdf)
+    #     cv1 = np.sqrt(vals[0,0])
+    #     cv2 = np.sqrt(vals[1,1])
         
-        # rv = multivariate_normal([meanX, meanY], [[, 0], [0, .1]])        
-        # soln_vals = np.asarray([rv.pdf(soln_mesh)]).T
+    #     # rv = multivariate_normal([meanX, meanY], [[, 0], [0, .1]])        
+    #     # soln_vals = np.asarray([rv.pdf(soln_mesh)]).T
         
-        pdf = pdf / UM.generateICPDFShifted(mesh[:,0], mesh[:,1], cv1, cv2 ,meanX, meanY)
-        # print(cv1,cv2)
+    #     pdf = pdf / UM.generateICPDFShifted(mesh[:,0], mesh[:,1], cv1, cv2 ,meanX, meanY)
+    #     # print(cv1,cv2)
 
         
-        # ax.scatter(mesh[:,0], mesh[:,1], np.log(pdf),  c='r', marker='.')
+    #     # ax.scatter(mesh[:,0], mesh[:,1], np.log(pdf),  c='r', marker='.')
         
-        # muNew, sigmaNew, cfinal = productGaussians2D(meanX, meanY, Px, Py, ic, ic, cv1, cv2)
-        # print(muNew)
-        # sigmaX = sigmaNew[0,0]
-        # sigmaY = sigmaNew[1,1]
-        # muX = muNew[0]
-        # muY = muNew[1]
-        scaling =  np.asarray([[meanX, cv1], [meanY, cv2]])
-        value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
-        valueFinal = value
-        # print(valueFinal, condNum)
+    #     # muNew, sigmaNew, cfinal = productGaussians2D(meanX, meanY, Px, Py, ic, ic, cv1, cv2)
+    #     # print(muNew)
+    #     # sigmaX = sigmaNew[0,0]
+    #     # sigmaY = sigmaNew[1,1]
+    #     # muX = muNew[0]
+    #     # muY = muNew[1]
+    #     scaling =  np.asarray([[meanX, cv1], [meanY, cv2]])
+    #     value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
+    #     valueFinal = value
+    #     # print(valueFinal, condNum)
         
-        return valueFinal
+    #     return valueFinal
     
-    mesh2, two = getLejaPoints(30, np.asarray([[0,0]]).T, H, candidateSampleMesh = [], returnIndices = False)
-    mesh = UM.generateOrderedGridCenteredAtZero(-1, 1, -1, 1, 0.05, includeOrigin=True)
-    pdfNew = []
+    # mesh2, two = getLejaPoints(30, np.asarray([[0,0]]).T, H, candidateSampleMesh = [], returnIndices = False)
+    # mesh = UM.generateOrderedGridCenteredAtZero(-1, 1, -1, 1, 0.05, includeOrigin=True)
+    # pdfNew = []
     
-    for i in range(len(mesh)):
-        pdfNew.append(np.copy(ComputeUpdateIntegralWithCorrection(mesh[i,0] , mesh[i,1],  mesh2, 0.1, H)))
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    ax.scatter(mesh[:,0], mesh[:,1], np.asarray(pdfNew),  c='r', marker='o')
-    # ax.scatter(mesh[:,0], mesh[:,1], surfaces[1],  c='k', marker='.')
+    # for i in range(len(mesh)):
+    #     pdfNew.append(np.copy(ComputeUpdateIntegralWithCorrection(mesh[i,0] , mesh[i,1],  mesh2, 0.1, H)))
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(mesh[:,0], mesh[:,1], np.asarray(pdfNew),  c='r', marker='o')
+    # # ax.scatter(mesh[:,0], mesh[:,1], surfaces[1],  c='k', marker='.')
     

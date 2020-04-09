@@ -26,7 +26,8 @@ returnIndices: Returns the indices of the leja sequence if True.
 '''
 def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples = 10000, candidateSampleMesh = [], returnIndices = False):
     num_vars = np.size(initial_samples,0)
-    generate_candidate_samples = lambda n: np.sqrt(2*np.sqrt(2*num_leja_samples))*np.random.normal(0, 1, (num_vars, n)) 
+    # generate_candidate_samples = lambda n: np.sqrt(2*np.sqrt(2*num_leja_samples))*np.random.normal(0, 1, (num_vars, n)) 
+    generate_candidate_samples = lambda n: 7*np.random.normal(0, 1, (num_vars, n)) 
 
     if num_candidate_samples == 0:
         candidate_samples = candidateSampleMesh
@@ -36,7 +37,7 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
 
     num_initial_samples = len(initial_samples.T)
     # precond_func = lambda matrix, samples: christoffel_weights(matrix)
-    precond_func = lambda samples: sqrtNormal_weights(samples)
+    precond_func = lambda matrix, samples: sqrtNormal_weights(samples)
 #    initial_samples, data_structures = get_lu_leja_samples(
 #        poly.canonical_basis_matrix,generate_candidate_samples,
 #        num_candidate_samples,num_initial_samples,
@@ -109,17 +110,17 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
 
 
 
-from families import HermitePolynomials
-import indexing
-H = HermitePolynomials(rho=0)
-d=2
-k = 20   
-ab = H.recurrence(k+1)
-lambdas = indexing.total_degree_indices(d, k)
-H.lambdas = lambdas
-one, two = getLejaPoints(231, np.asarray([[0,0]]).T, H, candidateSampleMesh = [], returnIndices = False)
-plt.figure()
-plt.scatter(one[:,0], one[:,1])
+# from families import HermitePolynomials
+# import indexing
+# H = HermitePolynomials(rho=0)
+# d=2
+# k = 20   
+# ab = H.recurrence(k+1)
+# lambdas = indexing.total_degree_indices(d, k)
+# H.lambdas = lambdas
+# one, two = getLejaPoints(231, np.asarray([[0,0]]).T, H, candidateSampleMesh = [], returnIndices = False)
+# plt.figure()
+# plt.scatter(one[:,0], one[:,1])
 
 """
 allPoints nx2 array of the original point and the neighbors we consider.

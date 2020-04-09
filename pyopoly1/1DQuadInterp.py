@@ -43,17 +43,17 @@ c2 = np.dot(wV.T, np.sqrt(w2)*u(xg))
 
 
 
-Vinv = np.linalg.inv(V)
+Vinv = np.linalg.inv(wV)
 c = np.matmul(Vinv, u(xg))
 
 
 interp = np.dot(V,c)
 
 
-# plt.figure()
-# lines = []
-# lines.append(plt.plot(xg, u(xg))[0])
-# lines.append(plt.plot(xg, interp, '.')[0])
+plt.figure()
+lines = []
+lines.append(plt.plot(xg, u(xg))[0])
+lines.append(plt.plot(xg, interp, '.')[0])
 
 # # plt.xlabel(r'$x$', **fontprops)
 # # plt.title(r'Plot of $u$ and $N$-point interpolants', **fontprops)

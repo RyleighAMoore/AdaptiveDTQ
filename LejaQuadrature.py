@@ -66,7 +66,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h):
     # pdf = np.asarray([rv.pdf(mesh)]).T
     countUseMorePoints = 0
     for ii in range(len(mesh)):
-        # print('########################',ii/len(mesh)*100, '%')
+        print('########################',ii/len(mesh)*100, '%')
         muX = mesh[ii,0]
         muY = mesh[ii,1]
 
@@ -74,7 +74,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h):
         meshTemp = np.delete(mesh, ii, axis=0)
         pdfTemp = np.delete(pdf, ii, axis=0)
         
-        mesh1, indices = getLejaSetFromPoints([muX,muY,sigmaX,sigmaY], meshTemp, 160, poly)
+        mesh1, indices = getLejaSetFromPoints([muX,muY,sigmaX,sigmaY], meshTemp, 15, poly)
         # plt.figure()
         # plt.plot(mesh1[:,0], mesh1[:,1], 'or')
         # plt.plot(mesh[:,0], mesh[:,1], '.k')
@@ -106,11 +106,11 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h):
         scaling = np.asarray([[muX, sigmaX], [muY, sigmaY]])
         value, condNum = QuadratureByInterpolationND(poly, scaling, mesh1, testing)
         # print(value)
-        # print(condNum)
+        print(condNum)
         condNums.append(condNum)
         # interpErrors.append(maxinterpError)
 
-        if condNum > 3 or value < 0:
+        if condNum >10 or value < 0:
             countUseMorePoints = countUseMorePoints+1
             mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
             # plt.figure()
@@ -119,7 +119,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h):
             # plt.scatter(muX, muY, c='g', marker='.')
             
             mesh12 = mapPointsTo(muX, muY, mesh12, 1/sigmaX, 1/sigmaY)
-            num_leja_samples = 230
+            num_leja_samples = 15
             initial_samples = mesh12
             numBasis=15
             initial_samples = np.asarray([[0,0]])
@@ -160,7 +160,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h):
     
     # plt.figure()
     # plt.loglog((np.asarray(condNums)), np.asarray((interpErrors)), '.')
-    print(countUseMorePoints/len(mesh))
+    print(countUseMorePoints/len(mesh), "*********************************")
     newPDFs = np.asarray(newPDF)
     condNums = np.asarray([condNums]).T
     # fig = plt.figure()
@@ -186,7 +186,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoint(mesh, pdf, poly, h):
     # pdf = np.asarray([rv.pdf(mesh)]).T
     countUseMorePoints = 0
     for ii in range(len(mesh)):
-        # print('########################',ii/len(mesh)*100, '%')
+        print('########################',ii/len(mesh)*100, '%')
         muX = mesh[ii,0]
         muY = mesh[ii,1]
 
@@ -208,7 +208,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoint(mesh, pdf, poly, h):
             mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
 
             mesh12 = mapPointsTo(muX, muY, mesh12, 1/sigmaX, 1/sigmaY)
-            num_leja_samples = 130
+            num_leja_samples = 30
             initial_samples = mesh12
             numBasis=15
             allp, new  = getLejaPoints(num_leja_samples, initial_samples.T, poly, num_candidate_samples = 230)

@@ -27,7 +27,7 @@ def getLejaPointsForRemoval(num_leja_samples, initial_samples, Mesh, numBasis, p
     candidate_samples = Mesh
     
     num_initial_samples = len(initial_samples.T)
-    precond_func = lambda samples: sqrtNormal_weights(samples)
+    precond_func = lambda matrix, samples: sqrtNormal_weights(samples)
     
     # basis_matrix = poly.canonical_basis_matrix(candidate_samples)
     # P,L,U = sp.linalg.lu(basis_matrix)

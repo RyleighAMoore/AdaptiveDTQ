@@ -64,8 +64,8 @@ pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
 # pkl_file.close()
 # pkl_file2.close()
 
-# mesh = Meshes[-1]
-# pdf = PdfTraj[-1]
+# mesh = Meshes[5]
+# pdf = PdfTraj[5]
 
 Meshes = []
 PdfTraj = []
@@ -123,7 +123,7 @@ for i in trange(35):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =0
+index =5
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 index = 50
 # ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')

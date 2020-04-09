@@ -29,11 +29,11 @@ import MeshUpdates2D as MeshUp
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.02
-xmin=-0.5
-xmax=0.5
-ymin=-0.5
-ymax=0.5
+kstep = 0.05
+xmin=-1
+xmax=1
+ymin=-1
+ymax=1
 
 
 def generateGRow(point, allPoints, kstep, h):
@@ -74,9 +74,9 @@ while t < 100:
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =3
+index =7
 ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
-index =5
+index =7
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
 # ax.scatter(meshVals[:,0], meshVals[:,1], newPDF, c='k', marker='.')
 
