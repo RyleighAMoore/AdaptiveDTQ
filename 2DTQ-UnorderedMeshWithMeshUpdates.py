@@ -82,7 +82,7 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(35):
+for i in trange(31):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
@@ -106,16 +106,23 @@ for i in trange(35):
         Pxs = []
         Pys = []
         print("Stepping Forward....")
-        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h)
-       
+        if i ==0:
+            pdf = LQ.StepForwardFirstStep_ICofGaussian(mesh, pdf, poly, h, icSigma = 0.1)
+        elif i < 5:
+            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 130)
+        elif i < 8:
+            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 20)
+        else:
+            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 15)
+
         pdf = np.squeeze(pdf)
         PdfTraj.append(np.copy(pdf))
         Meshes.append(np.copy(mesh))
         print('Length of mesh = ', len(mesh))
-        fig = plt.figure()
-        ax = Axes3D(fig)
-        index =-1
-        ax.scatter(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], c='r', marker='.')
+        # fig = plt.figure()
+        # ax = Axes3D(fig)
+        # index =-1
+        # ax.scatter(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], c='r', marker='.')
         
     else:
         print('Length of mesh = ', len(mesh))
@@ -123,7 +130,7 @@ for i in trange(35):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =5
+index =1
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 index = 50
 # ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')
@@ -140,7 +147,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[1]))
+ax.set_zlim(0, np.max(PdfTraj[-1]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                           interval=500, blit=False)
 

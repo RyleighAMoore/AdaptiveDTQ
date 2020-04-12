@@ -13,6 +13,7 @@ sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
 import QuadratureRules as QR
 from scipy.interpolate import griddata, interp2d   
 
+
 def newIntegrand(x1,x2,mesh,h):
     y1 = mesh[:,0]
     y2 = mesh[:,1]
@@ -41,8 +42,9 @@ def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
     return np.asarray(MeshToKeep), np.asarray(PdfToKeep)
 
 from LejaPoints import getLejaSetFromPoints, mapPointsBack, mapPointsTo, getLejaPoints
-from QuadratureRules import QuadratureByInterpolationND
+from QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolationND_FirstStepWithICGaussian
 from families import HermitePolynomials
+from Scaling import GaussScale
 import indexing
 H = HermitePolynomials(rho=0)
 d=2
@@ -52,9 +54,7 @@ lambdas = indexing.total_degree_indices(d, k)
 H.lambdas = lambdas
 allp, new = getLejaPoints(60, np.asarray([[0,0]]).T, H, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
 
-
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h):
-    h = 0.01
+def StepForwardFirstStep_ICofGaussian(mesh, pdf, poly, h, icSigma = 0.1):
     sigmaX=np.sqrt(h)*g1()
     sigmaY=np.sqrt(h)*g2()
     sigma = np.sqrt(h)
@@ -69,12 +69,43 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h):
         print('########################',ii/len(mesh)*100, '%')
         muX = mesh[ii,0]
         muY = mesh[ii,1]
+        
+        scale0 = GaussScale(2)
+        scale0.setMu(np.asarray([[0,0]]).T)
+        scale0.setSigma(np.asarray([icSigma,icSigma]))
+        
+        
+        value =  QuadratureByInterpolationND_FirstStepWithICGaussian(muX,muY, poly, scale0, mesh, h)
+        assert value >0
+        newPDF.append(value)
+        
+    newPDFs = np.asarray(newPDF)
+    condNums = np.asarray([condNums]).T
+    return newPDFs
+
+
+
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
+    sigmaX=np.sqrt(h)*g1()
+    sigmaY=np.sqrt(h)*g2()
+    sigma = np.sqrt(h)
+    
+    newPDF = []
+    condNums = []
+    interpErrors = []
+    # rv = multivariate_normal([0, 0], [[sigma**2, 0], [0, sigma**2]])
+    # pdf = np.asarray([rv.pdf(mesh)]).T
+    countUseMorePoints = 0
+    for ii in range(len(mesh)):
+        # print('########################',ii/len(mesh)*100, '%')
+        muX = mesh[ii,0]
+        muY = mesh[ii,1]
 
         # mesh1, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
         meshTemp = np.delete(mesh, ii, axis=0)
         pdfTemp = np.delete(pdf, ii, axis=0)
         
-        mesh1, indices = getLejaSetFromPoints([muX,muY,sigmaX,sigmaY], meshTemp, 15, poly)
+        mesh1, indices = getLejaSetFromPoints([muX,muY,sigmaX,sigmaY], meshTemp, numNodes, poly)
         # plt.figure()
         # plt.plot(mesh1[:,0], mesh1[:,1], 'or')
         # plt.plot(mesh[:,0], mesh[:,1], '.k')
@@ -103,13 +134,17 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h):
         integrand = newIntegrand(muX, muY, mesh1, h)
         testing = np.squeeze(pdfNew1)*integrand
         
-        scaling = np.asarray([[muX, sigmaX], [muY, sigmaY]])
+        # scaling = np.asarray([[muX, sigmaX], [muY, sigmaY]])
+        scaling = GaussScale(2)
+        scaling.setMu(np.asarray([[muX,muY]]).T)
+        scaling.setSigma(np.asarray([sigmaX,sigmaX]))
+      
         value, condNum = QuadratureByInterpolationND(poly, scaling, mesh1, testing)
         # print(value)
-        print(condNum)
+        # print(condNum)
         condNums.append(condNum)
         # interpErrors.append(maxinterpError)
-
+    
         if condNum >10 or value < 0:
             countUseMorePoints = countUseMorePoints+1
             mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
@@ -119,9 +154,9 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h):
             # plt.scatter(muX, muY, c='g', marker='.')
             
             mesh12 = mapPointsTo(muX, muY, mesh12, 1/sigmaX, 1/sigmaY)
-            num_leja_samples = 15
+            num_leja_samples = numNodes
             initial_samples = mesh12
-            numBasis=15
+            numBasis=numNodes
             initial_samples = np.asarray([[0,0]])
             
             # allp, new = getLejaPoints(230, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)

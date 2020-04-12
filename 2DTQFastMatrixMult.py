@@ -26,10 +26,10 @@ import MeshUpdates2D as MeshUp
 # numsteps = int(np.ceil(T / h))
 
 # assert numsteps > 0, 'The variable numsteps must be greater than 0'
-h=0.01
+h=0.001
 s=0.75
 kstep = h ** s
-kstep = 0.05
+kstep = 0.03
 xmin=-1
 xmax=1
 ymin=-1
@@ -46,6 +46,7 @@ def generateGRow(point, allPoints, kstep, h):
     return row
 
 mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)
+mesh2 = np.copy(mesh)
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
 # 
 # for i in range(len(pdf)):
@@ -65,7 +66,7 @@ for point in trange(len(mesh)):
 surfaces = [] 
 surfaces.append(np.copy(pdf))
 t=0
-while t < 100:
+while t < 201:
     print(t)
     pdf = np.matmul(GMat, pdf)
     surfaces.append(np.copy(pdf))
@@ -74,9 +75,9 @@ while t < 100:
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =7
-ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
-index =7
+index =0
+ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='o')
+index =0
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
 # ax.scatter(meshVals[:,0], meshVals[:,1], newPDF, c='k', marker='.')
 

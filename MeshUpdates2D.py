@@ -25,8 +25,8 @@ global MaxSlope
 MaxSlope = 0 # Initialize to 0, the real value is set in the code
 addPointsToBoundaryIfBiggerThanTolerance = 10**(-7)
 removeZerosValuesIfLessThanTolerance = 10**(-7)
-minDistanceBetweenPoints = 0.05
-minDistanceBetweenPointsBoundary = 0.05
+minDistanceBetweenPoints = 0.07
+minDistanceBetweenPointsBoundary = 0.07
 skipCount = 5
 maxDistanceBetweenPoints = 0.1
 numStdDev = 5 #For grids around each point in the mesh
@@ -231,7 +231,8 @@ def addPoint(Px,Py, Mesh, Pdf, triangulation, kstep, h):
     
     if interp < 0:
         interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='linear', fill_value=np.min(Pdf))])
-
+    if interp <0:
+        interp = np.asarray([[10**(-10)]])
     assert interp>=0
     assert interp < 20
 
@@ -259,9 +260,7 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h, poly):
     print("adding boundary points...")
     while keepAdding:
         # print("adding boundary points...")
-
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation, True)
-
         # print(np.count_nonzero(boundaryPointsToAddAround))
         # plt.figure()
         # pointsX = []
@@ -273,13 +272,13 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h, poly):
         # plt.plot(np.asarray(pointsX), np.asarray(pointsY), '.')
         # plt.show()
         
-        if max(boundaryPointsToAddAround == 1) and np.count_nonzero(boundaryPointsToAddAround) > 0:
+        if max(boundaryPointsToAddAround == 1):
             for val in range(len(boundaryPointsToAddAround)-1,-1,-1):
                 if boundaryPointsToAddAround[val] == 1: # if we should extend boundary
                     # newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, minDistanceBetweenPointsBoundary*2, minDistanceBetweenPointsBoundary)
                     # #mesh12, pdfNew1 = LQ.getMeshValsThatAreClose(Mesh, Pdf, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g1(), Mesh[val,0], Mesh[val,1])
                     # allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 3, Mesh, 3, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(),4, 100)
-                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints([Mesh[val,0], Mesh[val,1],np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()], 12, 500, poly, neighbors=[3,Mesh])
+                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints([Mesh[val,0], Mesh[val,1],np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()], 12, 20, poly, neighbors=[1,Mesh])
                     # #allPoints, newPoints = LP.getLejaPoints(130, mesh12.T,20, num_candidate_samples = 230, dimensions=2, defCandidateSamples=False, candidateSampleMesh = [], returnIndices = False)
                     
                     # plt.figure()

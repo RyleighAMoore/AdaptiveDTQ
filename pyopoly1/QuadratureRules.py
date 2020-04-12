@@ -47,30 +47,22 @@ import Scaling
 import sys
 sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ')
 from Functions import *
-def QuadratureByInterpolationND_CombineGaussianParts(poly, scalingOrig, mesh, pdf, h):
-    muXOrig = scalingOrig[0,0]; muYOrig = scalingOrig[1,0]
-    sigmaXOrig = scalingOrig[0,1]; sigmaYOrig = scalingOrig[1,1]
-    
+from Scaling import GaussScale
+from Plotting import productGaussians2D
+def QuadratureByInterpolationND_FirstStepWithICGaussian(Px,Py, poly, scale0, mesh, h):
     sigmaX = np.sqrt(h)*g1()
     sigmaY = np.sqrt(h)*g2()
+    scale = GaussScale(2)
+    scale.setMu(np.asarray([[Px,Py]]).T)
+    scale.setSigma(np.asarray([sigmaX,sigmaY]))
     
+    pdfNew = HVals(Px, Py, mesh, h)
 
-    #Original pdf
-    # pdfO = GVals(0, 0, mesh, 0.01)*Gaussian(0, 0, 0.1, 0.1, mesh)    
-
-    # New pdf
-    pdf = HVals(0, 0, mesh, 0.01)
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # ax.scatter(mesh[:,0], mesh[:,1], pdf,  c='r', marker='o')
+    scaleNew, cfinal = productGaussians2D(scale, scale0)
     
-    muNew, sigmaNew, cfinal = productGaussians2D(muXOrig, muYOrig, 0, 0, sigmaXOrig, sigmaYOrig, .1, .1)
-    
-    scaling = np.asarray([[0, sigmaNew[0,0]], [0, sigmaNew[1,1]]])
+    soln, cond = QuadratureByInterpolationND(poly, scaleNew, mesh, pdfNew)
         
-    value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
-    print(value*cfinal)
-    return value*cfinal
+    return soln*cfinal
         
 
 if __name__ == "__main__":

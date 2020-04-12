@@ -23,20 +23,20 @@ def test_Hermite1D():
     H = HermitePolynomials(rho=0)
     mu=0
     sigma=.5
-    scales = GaussScale(1)
-    scaling.mu = mu
-    scaling.sigma = sigma
-    scaling = np.asarray([[mu, sigma]])
+    scale = GaussScale(1)
+    scale.setMu([[mu]])
+    scale.setCov([[sigma**2]])
+    # scaling = np.asarray([[mu, sigma]])
     N=3
     
     mesh, w = H.gauss_quadrature(N)
     # mesh = np.linspace(-1,1, N)
     pdf = mesh**2+mesh+2
-    ans1 = QuadratureByInterpolation1D(H, scaling, mesh, pdf)
+    ans1 = QuadratureByInterpolation1D(H, scale, mesh, pdf)
     
     # Compute again using nodes and weights
     mesh, w = H.gauss_quadrature(N)
-    mesh = VT.map_from_canonical_space(mesh, scaling)
+    mesh = VT.map_from_canonical_space(mesh, scale)
     pdf = mesh**2+mesh+2
     
     ans2 = np.dot(w.T, pdf)
@@ -45,7 +45,6 @@ def test_Hermite1D():
     assert isclose(ans2, 2.25)
     print("test_Hermite1D - PASS")
     
-test_Hermite1D()
 
 '''2D example of QuadratureByInterpolation with corrected integrand
 #int -inf to inf int -inf to inf of (1/(sqrt(2pi)*0.5) e^(-(x)^2/(2*0.5^2)) 1/(sqrt(2pi)*0.5) e^(-(y)^2/(2*0.5^2))) (x^2+y +3x)dxdy = 0.25
@@ -61,18 +60,21 @@ def test_Hermite2D():
     sigmaX = 0.5
     sigmaY = 0.5
     
+    scale = GaussScale(2)
+    scale.setMu(np.asarray([[0,0]]).T)
+    scale.setSigma(np.asarray([sigmaX,sigmaY]))
+    
     mesh, two = getLejaPoints(N, np.asarray([[0,0]]).T, H, candidateSampleMesh = [], returnIndices = False)
     
     mesh = mapPointsBack(0, 0, mesh, sigmaX, sigmaY)
     
     pdf = mesh[:,0]**2 + mesh[:,1] + 3*mesh[:,0]
-    
-    scaling = np.asarray([[0, sigmaX], [0, sigmaY]])
-    
-    value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
+        
+    value, condNum = QuadratureByInterpolationND(H, scale, mesh, pdf)
     assert isclose(value, 0.25)
     print("test_Hermite2D - PASS")
-    
+
+
     
 '''2D example of QuadratureByInterpolation with corrected integrand
 #int -inf to inf int -inf to inf of (1/(sqrt(2pi)*0.5) e^(-(x)^2/(2*0.5^2)) 1/(sqrt(2pi)*0.3) e^(-(y)^2/(2*0.3^2))) (x^2+2y^2)dxdy = 0.43
@@ -88,14 +90,17 @@ def test_Hermite2D_diffSigma():
     sigmaX = 0.5
     sigmaY = 0.3
     
+    scale = GaussScale(2)
+    scale.setMu(np.asarray([[0,0]]).T)
+    scale.setSigma(np.asarray([sigmaX,sigmaY]))
+    
     mesh, two = getLejaPoints(N, np.asarray([[0,0]]).T, H, candidateSampleMesh = [], returnIndices = False)
     
     mesh = mapPointsBack(0, 0, mesh, sigmaX, sigmaY)
     
     pdf = mesh[:,0]**2 + 2*mesh[:,1]**2
-    scaling = np.asarray([[0, sigmaX], [0, sigmaY]])
     
-    value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
+    value, condNum = QuadratureByInterpolationND(H, scale, mesh, pdf)
     assert isclose(value, 0.43)
     print("test_Hermite2D_diffSigma - PASS")
 
@@ -114,14 +119,17 @@ def test_Hermite2D_diffSigma_diffMu():
     sigmaX = 0.5
     sigmaY = 0.3
     
+    scale = GaussScale(2)
+    scale.setMu(np.asarray([[0.5,-0.2]]).T)
+    scale.setSigma(np.asarray([sigmaX,sigmaY]))
+    
     mesh, two = getLejaPoints(N, np.asarray([[0,0]]).T, H, candidateSampleMesh = [], returnIndices = False)
     
     mesh = mapPointsBack(0, 0, mesh, sigmaX, sigmaY)
     
     pdf = mesh[:,0]**2 + 2*mesh[:,1]**2
-    scaling = np.asarray([[0.5, sigmaX], [-0.2, sigmaY]])
     
-    value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
+    value, condNum = QuadratureByInterpolationND(H, scale, mesh, pdf)
     assert isclose(value, 0.76)
     print("test_Hermite2D_diffSigma_diffMu - PASS")
 
@@ -147,6 +155,14 @@ def test_Hermite2D_Gauss_viaHLinCombGauss(N, meshL):
     mesh = meshL[:N,:]
     assert len(mesh) >= N
     
+    scale = GaussScale(2)
+    scale.setMu(np.asarray([[0,0]]).T)
+    scale.setSigma(np.asarray([sigmaX,sigmaY]))
+    
+    scale0 = GaussScale(2)
+    scale0.setMu(np.asarray([[0,0]]).T)
+    scale0.setSigma(np.asarray([0.1,0.1]))
+    
     pdfO = GVals(0, 0, mesh, 0.01)*Gaussian(0, 0, 0.1, 0.1, mesh)    
     
     pdf = HVals(0, 0, mesh, 0.01)
@@ -156,93 +172,93 @@ def test_Hermite2D_Gauss_viaHLinCombGauss(N, meshL):
     
     # scaling, pdf = GetGaussianPart(0, 0, mesh, pdf, 0.01, round=1)
 
-    muNew, sigmaNew, cfinal = productGaussians2D(0, 0, 0, 0, sigmaX, sigmaY, .1, .1)
+    scaleNew, cfinal = productGaussians2D(scale, scale0)
 
-    scaling = np.asarray([[0, sigmaNew[0,0]], [0, sigmaNew[1,1]]])
-        
-    value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
+    value, condNum = QuadratureByInterpolationND(H, scaleNew, mesh, pdf)
     print(value*cfinal)
+    
     return value*cfinal
 
+
 #Tries to divide gaussian out of whole integrand
-def test_Hermite2D_Gauss_viaG(N, meshL):
-    H = HermitePolynomials(rho=0)
-    d=2
-    k=50
-    N=N  
-    ab = H.recurrence(k+1)
-    lambdas = total_degree_indices(d, k)
-    H.lambdas = lambdas
-    sigmaX = 0.1*g1()
-    sigmaY = 0.1*g2()
-    mesh = meshL[:N,:]
-    assert len(mesh) >= N
+# def test_Hermite2D_Gauss_viaG(N, meshL):
+#     H = HermitePolynomials(rho=0)
+#     d=2
+#     k=50
+#     N=N  
+#     ab = H.recurrence(k+1)
+#     lambdas = total_degree_indices(d, k)
+#     H.lambdas = lambdas
+#     sigmaX = 0.1*g1()
+#     sigmaY = 0.1*g2()
+#     mesh = meshL[:N,:]
+#     assert len(mesh) >= N
 
     
-    pdfO = GVals(0, 0, mesh, 0.01)*Gaussian(0, 0, 0.1, 0.1, mesh)
+#     pdfO = GVals(0, 0, mesh, 0.01)*Gaussian(0, 0, 0.1, 0.1, mesh)
 
-    pdf = HVals(0, 0, mesh, 0.01)*Gaussian(0, 0, 0.1, 0.1, mesh)
+#     pdf = HVals(0, 0, mesh, 0.01)*Gaussian(0, 0, 0.1, 0.1, mesh)
     
-    scaling, pdf = GetGaussianPart(0, 0, mesh, pdfO, 0.01, round=2)
+#     scaling, pdf = GetGaussianPart(0, 0, mesh, pdfO, 0.01, round=2)
     
-    pdfNew = pdf*Gaussian(scaling[0,0], scaling[1,0], scaling[0,1], scaling[1,1], mesh)
+#     pdfNew = pdf*Gaussian(scaling[0,0], scaling[1,0], scaling[0,1], scaling[1,1], mesh)
     
-    scaling = np.asarray([[scaling[0,0], scaling[0,1]], [scaling[1,0],scaling[1,1]]])
+#     scaling = np.asarray([[scaling[0,0], scaling[0,1]], [scaling[1,0],scaling[1,1]]])
         
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # ax.scatter(mesh[:,0], mesh[:,1], pdfO,  c='r', marker='o')
-    # ax.scatter(mesh[:,0], mesh[:,1], pdfNew,  c='k', marker='*')
+#     # fig = plt.figure()
+#     # ax = Axes3D(fig)
+#     # ax.scatter(mesh[:,0], mesh[:,1], pdfO,  c='r', marker='o')
+#     # ax.scatter(mesh[:,0], mesh[:,1], pdfNew,  c='k', marker='*')
     
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # ax.scatter(mesh[:,0], mesh[:,1], pdf,  c='r', marker='o')
+#     # fig = plt.figure()
+#     # ax = Axes3D(fig)
+#     # ax.scatter(mesh[:,0], mesh[:,1], pdf,  c='r', marker='o')
 
-    print(scaling)
+#     print(scaling)
 
-    value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
-    print(value)
-    return value
+#     value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
+#     print(value)
+#     return value
     # assert isclose(value, 0.76)
     # print("test_Hermite2D_diffSigma_diffMu - PASS")
     
-def test_Hermite2D_Gauss_viaHLinCombGaussTest(N, meshL):
-    H = HermitePolynomials(rho=0)
-    d=2
-    k=50
-    N=N  
-    ab = H.recurrence(k+1)
-    lambdas = total_degree_indices(d, k)
-    H.lambdas = lambdas
-    sigmaX = 0.1*g1()
-    sigmaY = 0.1*g2()
-    mesh = meshL[:N,:]
-    assert len(mesh) >= N
+# def test_Hermite2D_Gauss_viaHLinCombGaussTest(N, meshL):
+#     H = HermitePolynomials(rho=0)
+#     d=2
+#     k=50
+#     N=N  
+#     ab = H.recurrence(k+1)
+#     lambdas = total_degree_indices(d, k)
+#     H.lambdas = lambdas
+#     sigmaX = 0.1*g1()
+#     sigmaY = 0.1*g2()
+#     mesh = meshL[:N,:]
+#     assert len(mesh) >= N
     
-    pdfO = GVals(0, 0, mesh, 0.01)*Gaussian(0, 0, 0.1, 0.1, mesh)    
-    pdfpart = HVals(0, 0, mesh, 0.01)*Gaussian(0, 0, 0.1, 0.1, mesh)   
-    # pdfpart = HVals(0, 0, mesh, 0.01)
+#     pdfO = GVals(0, 0, mesh, 0.01)*Gaussian(0, 0, 0.1, 0.1, mesh)    
+#     pdfpart = HVals(0, 0, mesh, 0.01)*Gaussian(0, 0, 0.1, 0.1, mesh)   
+#     # pdfpart = HVals(0, 0, mesh, 0.01)
 
-    scaling, pdf = GetGaussianPart(0, 0, mesh, pdfpart, 0.01, round=2)
+#     scaling, pdf = GetGaussianPart(0, 0, mesh, pdfpart, 0.01, round=2)
     
-    print(scaling)
-    muNew, sigmaNew, cfinal1 = productGaussians2D(0, 0, 0, 0, sigmaX, sigmaY, scaling[0,1], scaling[1,1])
-    # muNew, sigmaNew, cfinal2 = productGaussians2D(0, 0, muNew[0][0], muNew[1][0], 0.1, 0.1, sigmaNew[0,0], sigmaNew[1,1])
-    cfinal2=1
+#     print(scaling)
+#     muNew, sigmaNew, cfinal1 = productGaussians2D(0, 0, 0, 0, sigmaX, sigmaY, scaling[0,1], scaling[1,1])
+#     # muNew, sigmaNew, cfinal2 = productGaussians2D(0, 0, muNew[0][0], muNew[1][0], 0.1, 0.1, sigmaNew[0,0], sigmaNew[1,1])
+#     cfinal2=1
     
-    # pdfTest = cfinal1*cfinal2*pdf*Gaussian(0, 0, sigmaNew[0,0], sigmaNew[1,1], mesh)
+#     # pdfTest = cfinal1*cfinal2*pdf*Gaussian(0, 0, sigmaNew[0,0], sigmaNew[1,1], mesh)
     
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # ax.scatter(mesh[:,0], mesh[:,1], (pdf),  c='r', marker='o')
-    # ax.scatter(mesh[:,0], mesh[:,1], pdfTest,  c='k', marker='.')
+#     # fig = plt.figure()
+#     # ax = Axes3D(fig)
+#     # ax.scatter(mesh[:,0], mesh[:,1], (pdf),  c='r', marker='o')
+#     # ax.scatter(mesh[:,0], mesh[:,1], pdfTest,  c='k', marker='.')
     
     
-    scaling = np.asarray([[muNew[0][0], sigmaNew[0,0]], [muNew[1][0], sigmaNew[1,1]]])
+#     scaling = np.asarray([[muNew[0][0], sigmaNew[0,0]], [muNew[1][0], sigmaNew[1,1]]])
         
-    value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
-    print(value*cfinal1*cfinal2)
-    return value*cfinal1*cfinal2
+#     value, condNum = QuadratureByInterpolationND(H, scaling, mesh, pdf)
+#     print(value*cfinal1*cfinal2)
+#     return value*cfinal1*cfinal2
 
 
 
@@ -273,7 +289,7 @@ Ns = [5,10,11,12,13,14, 15, 20,25,30,40,100,200,300]
 # Ns = [10,30]
 
 Meshes = []
-for num in range(10):
+for num in range(1):
     print(num)
     meshL, two = getLejaPoints(300, np.asarray([[0,0]]).T, H, candidateSampleMesh = [], returnIndices = False)
     meshL = mapPointsBack(0, 0, meshL, sigmaX, sigmaY)

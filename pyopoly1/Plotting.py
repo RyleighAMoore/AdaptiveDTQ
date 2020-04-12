@@ -19,19 +19,50 @@ import UnorderedMesh as UM
 from LejaPoints import getLejaPoints,mapPointsBack
 
 
-def productGaussians2D(muX1, muY1, muX2, muY2, sX1, sY1, sX2, sY2):
-    cov1 = np.zeros((2,2)); cov1[0,0] = sX1**2; cov1[1,1] = sY1**2
-    cov2 = np.zeros((2,2)); cov2[0,0] = sX2**2; cov2[1,1] = sY2**2
-    mu1 = np.zeros((2,1)); mu1[0] =muX1; mu1[1] = muY1  
-    mu2 = np.zeros((2,1)); mu2[0] =muX2; mu1[1] = muY2 
+# def productGaussians2D(muX1, muY1, muX2, muY2, sX1, sY1, sX2, sY2):
+#     cov1 = np.zeros((2,2)); cov1[0,0] = sX1**2; cov1[1,1] = sY1**2
+#     cov2 = np.zeros((2,2)); cov2[0,0] = sX2**2; cov2[1,1] = sY2**2
+#     mu1 = np.zeros((2,1)); mu1[0] =muX1; mu1[1] = muY1  
+#     mu2 = np.zeros((2,1)); mu2[0] =muX2; mu1[1] = muY2 
     
-    sigmaNew = np.linalg.inv(np.linalg.inv(cov1)+ np.linalg.inv(cov2))     
-    muNew = np.matmul(np.linalg.inv(np.linalg.inv(cov1) + np.linalg.inv(cov2)), np.matmul(np.linalg.inv(cov1),mu1) + np.matmul(np.linalg.inv(cov2),mu2))
+#     sigmaNew = np.linalg.inv(np.linalg.inv(cov1)+ np.linalg.inv(cov2))     
+#     muNew = np.matmul(np.linalg.inv(np.linalg.inv(cov1) + np.linalg.inv(cov2)), np.matmul(np.linalg.inv(cov1),mu1) + np.matmul(np.linalg.inv(cov2),mu2))
     
-    c = 1/(np.sqrt(np.linalg.det(2*np.pi*(cov1+cov2))))
-    cc = np.matmul(np.matmul(-(1/2)*(mu1-mu2).T, np.linalg.inv(cov1+cov2)),(mu1-mu2))
+#     c = 1/(np.sqrt(np.linalg.det(2*np.pi*(cov1+cov2))))
+#     cc = np.matmul(np.matmul(-(1/2)*(mu1-mu2).T, np.linalg.inv(cov1+cov2)),(mu1-mu2))
+#     cfinal = c*np.exp(cc)
+#     return muNew, np.sqrt(sigmaNew), cfinal[0][0]
+
+from Scaling import GaussScale
+
+def productGaussians2D(scaling,scaling2):
+    
+    sigmaNew = np.linalg.inv(np.linalg.inv(scaling.cov)+ np.linalg.inv(scaling2.cov))     
+    muNew = np.matmul(np.linalg.inv(np.linalg.inv(scaling.cov) + np.linalg.inv(scaling2.cov)), np.matmul(np.linalg.inv(scaling.cov),scaling.mu) + np.matmul(np.linalg.inv(scaling2.cov),scaling2.mu))
+    
+    c = 1/(np.sqrt(np.linalg.det(2*np.pi*(scaling.cov+scaling2.cov))))
+    cc = np.matmul(np.matmul(-(1/2)*(scaling.mu-scaling2.mu).T, np.linalg.inv(scaling.cov+scaling2.cov)),(scaling.mu-scaling2.mu))
     cfinal = c*np.exp(cc)
-    return muNew, np.sqrt(sigmaNew), cfinal[0][0]
+    
+    scale = GaussScale(len(muNew))
+    scale.setMu(muNew)
+    scale.setCov(sigmaNew)
+    
+    return scale, cfinal[0][0]
+
+# from Scaling import GaussScale
+# mu, cov, cfinal= productGaussians2D(1, 1, 0, 0, 0.1, 0.1, 0.5, 0.5)
+
+# scale = GaussScale(2)
+# scale.setMu(np.asarray([[0,0]]).T)
+# scale.setSigma(np.asarray([0.5,0.5]))
+
+# scale2 = GaussScale(2)
+# scale2.setMu(np.asarray([[1,1]]).T)
+# scale2.setSigma(np.asarray([0.1,0.1]))
+
+# mu2, cov2, cfinal2= productGaussians2D2(scale, scale2)
+
 
 def PlotG(Px, Py, h):
     mesh = UM.generateOrderedGridCenteredAtZero(-0.5, 0.5, -0.5, 0.5, 0.05, includeOrigin=True)
