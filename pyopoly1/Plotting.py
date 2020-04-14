@@ -99,41 +99,7 @@ def PlotGH(Px, Py, h):
 
 # PlotGH(0,0,0.01)
 
-def GetGaussianPart(Px, Py, mesh, pdf, h, round=1):
-    muX = np.mean(mesh[:,0]*pdf)
-    muY = np.mean(mesh[:,1]*pdf)
-    muX = mesh[np.argmax(pdf),0]
-    muY = mesh[np.argmax(pdf),1]
-    
-    muX = 0
-    muY = 0
 
-    vals = np.cov(mesh.T, aweights =pdf)
-    sigmaX = np.sqrt(vals[0,0])
-    sigmaY = np.sqrt(vals[1,1])
-
-    sigmaX = np.round(sigmaX,round)
-    sigmaY =np.round(sigmaY,round)
-    
-    Gauss = Gaussian(muX, muY, sigmaX, sigmaY, mesh)
-    
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # ax.scatter(mesh[:,0], mesh[:,1], np.log(Gauss),  c='k', marker='o')
-    # ax.scatter(mesh[:,0], mesh[:,1], np.log(pdf/Gauss),  c='r', marker='.')
-    # plt.show()
-    
-    
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # ax.scatter(mesh[:,0], mesh[:,1], Gauss,  c='k', marker='o')
-    # ax.scatter(mesh[:,0], mesh[:,1], pdf/Gauss,  c='r', marker='.')
-    # plt.xlim([-5*sigmaX, 5*sigmaX])
-    # plt.ylim([-5*sigmaY, 5*sigmaY])
-    # plt.show()
-    scaling = np.asarray([[muX, sigmaX], [muY, sigmaY]])
-    
-    return scaling, pdf/Gauss
 
 
 

@@ -18,6 +18,9 @@ import QuadRules
 from tqdm import tqdm, trange
 import UnorderedMesh as UM
 import MeshUpdates2D as MeshUp
+sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+from Scaling import GaussScale
+
 
 # T = 0.01  # final time, code computes PDF of X_T
 # s = 0.75  # the exponent in the relation k = h^s
@@ -26,14 +29,14 @@ import MeshUpdates2D as MeshUp
 # numsteps = int(np.ceil(T / h))
 
 # assert numsteps > 0, 'The variable numsteps must be greater than 0'
-h=0.001
+h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.03
-xmin=-1
-xmax=1
-ymin=-1
-ymax=1
+kstep = 0.05
+xmin=-1.2
+xmax=1.2
+ymin=-1.2
+ymax=1.2
 
 
 def generateGRow(point, allPoints, kstep, h):
@@ -47,7 +50,11 @@ def generateGRow(point, allPoints, kstep, h):
 
 mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)
 mesh2 = np.copy(mesh)
-pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+# pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+scale = GaussScale(2)
+scale.setMu(np.asarray([[0,0]]).T)
+scale.setSigma(np.asarray([np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()]))
+pdf = fun.Gaussian(scale, mesh)
 # 
 # for i in range(len(pdf)):
 #     pdf[i] = (16*(mesh[i,0]+ mesh[i,1]))**2
@@ -75,10 +82,10 @@ while t < 201:
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =0
+index =8
 ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='o')
 index =0
-ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
+# ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
 # ax.scatter(meshVals[:,0], meshVals[:,1], newPDF, c='k', marker='.')
 
 # 
@@ -98,7 +105,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
 
 graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(surfaces[10]))
+ax.set_zlim(0, np.max(surfaces[-1]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
                                          interval=100, blit=False)
 

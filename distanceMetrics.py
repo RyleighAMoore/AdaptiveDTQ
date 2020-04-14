@@ -47,3 +47,21 @@ def fillDistanceAvg(mesh):
         sortedVals = sorted(vals)
         minVals.append(np.copy(np.min(sortedVals[1]))) #Take 1 since 0 in at 0 index since same point
     return np.percentile(minVals,80)
+
+# minmin = []
+# maxmin = []
+# for i in range(len(Meshes)):
+#     x = Meshes[i][:,0]
+#     y = Meshes[i][:,1]
+#     m = separationDistance(Meshes[i])
+#     M = fillDistance(Meshes[i])
+#     minmin.append(m)
+#     maxmin.append(M)
+
+# plt.figure()
+# plt.plot(range(len(Meshes)), minmin)
+# plt.plot(range(len(Meshes)), maxmin)
+
+
+    
+    

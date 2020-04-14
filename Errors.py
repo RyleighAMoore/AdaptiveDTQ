@@ -43,34 +43,46 @@ from indexing import total_degree_indices
 L2Errors = []
 LinfErrors = []
 L1Errors = []
-for step in range(len(Meshes)):
+L2wErrors = []
+for step in range(len(PdfTraj)):
     # Interpolate the fine grid soln to the leja points
-    gridSolnOnLejas = griddata(mesh2, surfaces[10*step], Meshes[step], method='cubic', fill_value=0)
+    gridSolnOnLejas = griddata(mesh2, surfaces[1*step], Meshes[step], method='cubic', fill_value=np.min(surfaces[1*step]))
         
     #compute errors
-    l2w = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step]))**2))/len(PdfTraj)
+    l2w = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step]))**2*gridSolnOnLejas)/np.sum(gridSolnOnLejas))
     print(l2w)
-    L2Errors.append(l2w)
+    L2wErrors.append(l2w)
     
-    l1 = np.sum(np.abs(gridSolnOnLejas - PdfTraj[step])*gridSolnOnLejas)/len(PdfTraj)
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(Meshes[step][:,0], Meshes[step][:,1], np.abs((gridSolnOnLejas - PdfTraj[step])), c='k', marker='.')
+    
+    l2 = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step])*1)**2)/len(PdfTraj[step]))
+    L2Errors.append(l2)
+    
+    l1 = np.sum(np.abs(gridSolnOnLejas - PdfTraj[step])*gridSolnOnLejas)/len(PdfTraj[step])
     L1Errors.append(l1)
     
-    linf = np.sum(np.abs(gridSolnOnLejas - PdfTraj[step]))
+    linf = np.max(np.abs(gridSolnOnLejas - PdfTraj[step]))
     LinfErrors.append(linf)
     
 
 # fig = plt.figure()
 # ax = Axes3D(fig)
-# ax.scatter(Meshes[0][:,0], Meshes[0][:,1], gridSolnOnLejas, c='k', marker='.')
-# ax.scatter(Meshes[0][:,0], Meshes[0][:,1], PdfTraj[0], c='r', marker='.')
-# # ax.scatter(mesh2[:,0], mesh2[:,1], surfaces[0], c='k', marker='.')
+# ax.scatter(Meshes[1][:,0], Meshes[1][:,1], np.abs((surfaces[10] - PdfTraj[1])), c='k', marker='.')
+# ax.scatter(Meshes[1][:,0], Meshes[1][:,1], PdfTraj[0], c='r', marker='.')
+# ax.scatter(mesh2[:,0], mesh2[:,1], surfaces[0], c='k', marker='.')
 
 
-x = range(len(PdfTraj))
+x = range(len(L2Errors))
 plt.figure()
-plt.semilogy(x, np.asarray(LinfErrors))
-plt.semilogy(x, np.asarray(L2Errors))
-plt.semilogy(x, np.asarray(L1Errors))
+plt.semilogy(x, np.asarray(LinfErrors), label = 'Linf Error')
+plt.semilogy(x, np.asarray(L2Errors), label = 'L2 Error')
+plt.semilogy(x, np.asarray(L1Errors), label = 'L1 Error')
+plt.semilogy(x, np.asarray(L2wErrors), label = 'L2w Error')
+plt.xlabel('Time Step')
+plt.ylabel('Error')
+plt.legend()
 
 diffs = []
 for step in range(len(PdfTraj)):

@@ -16,10 +16,19 @@ def HVals(x1,x2,mesh,h):
     val = scale*np.exp(-(h**2*f1(y1,y2)**2-2*h*f1(y1,y2)*(x1-y1))/(2*h*g1(x1,x2)**2) + -(h**2*f2(y1,y2)**2-2*h*f2(y1,y2)*(x2-y2))/(2*h*g2(x1,x2)**2))*np.exp((x1-y1-h*f1(y1,y2))**2/(2*h*g1(x1,x2)**2) - (x1-y1-h *f1(y1,y2))**2/(2*h*g1(y1,y2)**2) + (x2-y2-h*f2(y1,y2))**2/(2*h*g2(x1,x2)**2) - (x2-y2-h* f2(y1,y2))**2/(2*h*g2(y1,y2)**2))
     return val
 
-def Gaussian(muX, muY, sigmaX, sigmaY, mesh, cov1 = 0, cov2 =0):
-    rv = multivariate_normal([muX, muY], [[sigmaX**2, cov1], [cov2, sigmaY**2]])        
+def Gaussian(scaling, mesh):
+    rv = multivariate_normal(scaling.mu.T[0], scaling.cov)        
     soln_vals = np.asarray([rv.pdf(mesh)]).T
     return np.squeeze(soln_vals)
+
+
+def covPart(Px, Py, mesh, cov):
+    vals = []
+    for i in range(len(mesh)):
+        val = np.exp(-2*cov*(mesh[i,0]-Px)*(mesh[i,1]-Py))
+        vals.append(np.copy(val))
+    return np.asarray(vals)
+
 
 # Drift fuction
 def driftfun(x):
@@ -51,7 +60,7 @@ def f1(x, y):
 
 def f2(x, y):
     return 0
-    return 3*erf(10*y) 
+    return 5*erf(10*y) 
 
 def g1(x=0,y=0):
     return 1

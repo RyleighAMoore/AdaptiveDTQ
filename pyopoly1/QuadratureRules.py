@@ -9,6 +9,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import opolynd
 from mpl_toolkits.mplot3d import Axes3D
+import Scaling
+import sys
+sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ')
+from Functions import *
+from Scaling import GaussScale
+from Plotting import productGaussians2D
 
 
 def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
@@ -26,7 +32,6 @@ def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
     return c[0]
         
 def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
-    numVars = np.size(mesh,0)
     xCan=VT.map_to_canonical_space(mesh, scaling)
     numSamples = len(xCan)                 
     V = opolynd.opolynd_eval(xCan, poly.lambdas[:numSamples,:], poly.ab, poly)
@@ -43,12 +48,7 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
             ax.scatter(mesh[:,0], mesh[:,1], interp, c='k', marker='.')
     return c[0], np.sum(np.abs(vinv[0,:]))
 
-import Scaling
-import sys
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ')
-from Functions import *
-from Scaling import GaussScale
-from Plotting import productGaussians2D
+
 def QuadratureByInterpolationND_FirstStepWithICGaussian(Px,Py, poly, scale0, mesh, h):
     sigmaX = np.sqrt(h)*g1()
     sigmaY = np.sqrt(h)*g2()
@@ -63,6 +63,38 @@ def QuadratureByInterpolationND_FirstStepWithICGaussian(Px,Py, poly, scale0, mes
     soln, cond = QuadratureByInterpolationND(poly, scaleNew, mesh, pdfNew)
         
     return soln*cfinal
+
+
+from QuadratureUtils import GetGaussianPart
+from GaussFit import fitGaussian
+def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly):
+    # scale, pdfNew = GetGaussianPart(mesh, pdf, h)
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(mesh[:,0], mesh[:,1],pdf, c='r', marker='.')
+
+    scale1, A, gauss, covPart = fitGaussian(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
+    # print(scale1.cov)
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(mesh[:,0], mesh[:,1],pdf/np.expand_dims(zpred.T,1), c='r', marker='.')
+    
+    pdfNew = pdf/np.expand_dims(gauss,1)*np.expand_dims(covPart,1)
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(mesh[:,0], mesh[:,1], pdfNew, c='r', marker='.')
+    
+    # scaleNew, cfinal = productGaussians2D(scale, scaling)
+    
+    value, condNum = QuadratureByInterpolationND(poly, scale1, mesh, pdfNew)
+    # print(value*A)
+    v = value*A
+    # if v > 20:
+    #     fig = plt.figure()
+    #     ax = Axes3D(fig)
+    #     ax.scatter(mesh[:,0], mesh[:,1], pdfNew, c='r', marker='.')
+    
+    return v[0], condNum
         
 
 if __name__ == "__main__":

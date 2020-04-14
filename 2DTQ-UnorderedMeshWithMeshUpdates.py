@@ -27,6 +27,8 @@ sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
 from families import HermitePolynomials
 import indexing
 import LejaPoints as LP
+import MeshUpdates2D as meshUp
+from Scaling import GaussScale
 
 
 # define spatial grid
@@ -37,6 +39,7 @@ ymin=-2
 ymax=2
 h=0.01
 
+IC= np.sqrt(h)*fun.g2()
 
 poly = HermitePolynomials(rho=0)
 d=2
@@ -46,13 +49,20 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 
 mesh, two = LP.getLejaPoints(230, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
-mesh = LP.mapPointsBack(0, 0, mesh, 0.1, 0.1)
+mesh = LP.mapPointsBack(0, 0, mesh, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2())
 
 
 # plt.scatter(mesh[:,0], mesh[:,1])
 
-pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], IC,IC)
+# phat = as.matrix(dnorm(x=xvec, mean=(init+driftfun(init)), sd=abs(difffun(init))*sqrt(h)))
 
+scale = GaussScale(2)
+scale.setMu(np.asarray([[0,0]]).T)
+scale.setSigma(np.asarray([np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()]))
+pdf = fun.Gaussian(scale, mesh)
+
+meshUp.setGlobalVarsForMesh(mesh)
 # import pickle
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillLongFullSplit.p", "rb" ) 
 # pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillLongFullSplit1.p", "rb" ) 
@@ -81,7 +91,7 @@ SlopesMin = []
 SlopesMean = []  
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
-adjustGrid = True
+adjustGrid = False
 for i in trange(31):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
@@ -106,14 +116,14 @@ for i in trange(31):
         Pxs = []
         Pys = []
         print("Stepping Forward....")
-        if i ==0:
-            pdf = LQ.StepForwardFirstStep_ICofGaussian(mesh, pdf, poly, h, icSigma = 0.1)
+        # if i ==0:
+        #     pdf = LQ.StepForwardFirstStep_ICofGaussian(mesh, pdf, poly, h,12, icSigma =IC)
+        if i < 2:
+            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 12)
         elif i < 5:
-            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 130)
-        elif i < 8:
-            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 20)
+            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 12)
         else:
-            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 15)
+            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 12)
 
         pdf = np.squeeze(pdf)
         PdfTraj.append(np.copy(pdf))
@@ -130,7 +140,7 @@ for i in trange(31):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =1
+index =0
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 index = 50
 # ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')
@@ -147,7 +157,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[-1]))
+ax.set_zlim(0, np.max(PdfTraj[0]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                           interval=500, blit=False)
 
