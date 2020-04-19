@@ -1,29 +1,44 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr  6 21:49:18 2020
-
-@author: Rylei
-"""
-import math
+from pylab import *
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import Functions as fun
+import Integrand
+import Operations2D
+import XGrid
+from mpl_toolkits.mplot3d import Axes3D
+import QuadRules
+from tqdm import tqdm, trange
+import random
+import UnorderedMesh as UM
+from scipy.spatial import Delaunay
+import MeshUpdates2D as MeshUp
+import pickle
+import os
+import datetime
+import time
+import GenerateLejaPoints as LP
+import pickle
+import LejaQuadrature as LQ
+import getPCE as PCE
+import distanceMetrics as DM
+import sys
+sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+from families import HermitePolynomials
+import indexing
+import LejaPoints as LP
+import MeshUpdates2D as meshUp
+from Scaling import GaussScale
+import opoly1d
+import Functions
 
-a,w = np.polynomial.hermite.hermgauss(32)
 
-Ipeak = 4
-sigmax = 0.2e-3
-sigmay = 0.3e-3
-sqrt2 = math.sqrt(2.)
+poly = HermitePolynomials(rho=0)
+d=2
+k = 40    
+ab = poly.recurrence(k+1)
+lambdas = indexing.total_degree_indices(d, k)
+poly.lambdas = lambdas
 
-def h(x, y):
-    return Ipeak*1.0/math.pi
+coeffs = canonical_connection(self, N)
 
-s = 0.0
-for k in range(0, len(a)):
-    x = sqrt2 * sigmax * a[k]
-    t = 0.0
-    for l in range(0, len(a)):
-        y = sqrt2 * sigmay * a[l]
-        t += w[l] * h(x, y)
-    s += w[k]*t
-
-print(s)

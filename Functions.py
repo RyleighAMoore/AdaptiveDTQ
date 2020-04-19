@@ -54,6 +54,7 @@ def dnorm_partialx(x, mu, sigma):
 
 from scipy.special import erf
 
+
 def f1(x, y):
     return 0
     return 5*erf(10*x)

@@ -119,11 +119,11 @@ for i in trange(31):
         # if i ==0:
         #     pdf = LQ.StepForwardFirstStep_ICofGaussian(mesh, pdf, poly, h,12, icSigma =IC)
         if i < 2:
-            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 12)
+            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 6)
         elif i < 5:
-            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 12)
+            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 6)
         else:
-            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 12)
+            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,6)
 
         pdf = np.squeeze(pdf)
         PdfTraj.append(np.copy(pdf))
@@ -140,7 +140,7 @@ for i in trange(31):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =0
+index =1
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 index = 50
 # ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')

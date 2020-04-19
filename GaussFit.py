@@ -10,6 +10,7 @@ sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly')
 from Scaling import GaussScale
 from variableTransformations import *
 from Functions import covPart
+import math
 
 
 def fitGaussian(Px,Py, mesh, pdf):
@@ -23,10 +24,12 @@ def fitGaussian(Px,Py, mesh, pdf):
     pred_params, uncert_cov = opt.curve_fit(gauss2d, xy, zobs, p0=guess)
 
     zpred = gauss2d(xy, *pred_params)
-    
+    if math.isnan(zpred[3]) or math.isnan(zpred[5]):
+        t=9
 
     scale = GaussScale(2)
     scale.setMu(np.asarray([[pred_params[1],pred_params[2]]]).T)
+    print((1/(2*pred_params[3]))**(1/2), (1/(2*pred_params[5]))**(1/2))
     scale.setSigma([(1/(2*pred_params[3]))**(1/2), (1/(2*pred_params[5]))**(1/2)])
     A = pred_params[0]*(2*np.pi*(1/(2*pred_params[3]))**(1/2)* (1/(2*pred_params[5]))**(1/2))
     
@@ -62,6 +65,7 @@ def gauss2d(xy, amp, x0, y0, a, b, c):
     inner = a * (x - x0)**2
     inner += 2 * b * (x - x0)**2 * (y - y0)**2
     inner += c * (y - y0)**2
+    print(np.max(-inner))
     return amp * np.exp(-inner)
 
 def generate_example_data(num, params):
