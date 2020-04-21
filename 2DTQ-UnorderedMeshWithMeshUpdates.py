@@ -63,19 +63,19 @@ scale.setSigma(np.asarray([np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()]))
 pdf = fun.Gaussian(scale, mesh)
 
 meshUp.setGlobalVarsForMesh(mesh)
-# import pickle
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillLongFullSplit.p", "rb" ) 
-# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillLongFullSplit1.p", "rb" ) 
+import pickle
+pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillLongFullSplit.p", "rb" ) 
+pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillLongFullSplit1.p", "rb" ) 
 
-# PdfTraj = pickle.load(pkl_file)
-# Meshes = pickle.load(pkl_file2)
+PdfTraj = pickle.load(pkl_file)
+Meshes = pickle.load(pkl_file2)
 
 
-# pkl_file.close()
-# pkl_file2.close()
+pkl_file.close()
+pkl_file2.close()
 
-# mesh = Meshes[5]
-# pdf = PdfTraj[5]
+mesh = Meshes[5]
+pdf = PdfTraj[5]
 
 Meshes = []
 PdfTraj = []

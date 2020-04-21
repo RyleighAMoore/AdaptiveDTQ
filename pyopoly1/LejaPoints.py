@@ -187,15 +187,38 @@ def getLejaPointsWithStartingPoints(scaleParams, numLejaPoints, numCandidateSamp
 # mesh, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 12, 1000, poly, neighbors=[3,one])
 
 
-def getLejaSetFromPoints(scaleParams, mesh, numNewLejaPoints, poly):
-    assert numNewLejaPoints <= np.size(mesh,0), "Asked for subset is bigger than whole set"
-    Px = scaleParams[0]; Py = scaleParams[1]
-    sigmaX = scaleParams[2]; sigmaY = scaleParams[3]
+def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, indexInitPoint):
+    if pdf.shape == (len(pdf), ):
+        pdf = np.expand_dims(pdf,1)
+        
+    assert numLejaPointsToReturn <= np.size(mesh,0), "Asked for subset is bigger than whole set"
+    Px = scale.mu[0][0]; Py = scale.mu[1][0]
+    sigmaX = scale.cov[0,0]; sigmaY = scale.cov[1,1]
     
-    candidates = mapPointsTo(Px, Py, mesh, 1/sigmaX, 1/sigmaY)
-    lejaPointsFinal, indices = getLejaPoints(numNewLejaPoints, np.asarray([[0,0]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
+    #Since initial point is part of the mesh (when indexInitPoint >=0) we should remove it from the list so it isn't duplicated.
+    meshShortIC = np.delete(mesh, indexInitPoint, axis=0)
+    pdfShortIC = np.delete(pdf, indexInitPoint, axis=0)
+        
+    candidates = mapPointsTo(Px, Py, meshShortIC, 1/sigmaX, 1/sigmaY)
+    lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[0,0]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, sigmaX, sigmaY)
-     
+    
+    meshFull = np.vstack(([Px,Py], meshShortIC))
+    
+    pdfFull = np.vstack((pdf[indexInitPoint], pdfShortIC))
+    
+    pdfNew = []
+    Pxs = []
+    Pys = []
+    # pdfGrid = np.asarray(griddata(mesh, pdf, mesh1, method='cubic', fill_value=0))
+    for i in range(len(indices)):
+        pdfNew.append(pdfFull[indices[i]])
+        Pxs.append(meshFull[indices[i],0])
+        Pys.append(meshFull[indices[i],1])
+    pdfNew = np.asarray(pdfNew)
+    meshFull = np.vstack((Pxs, Pys))
+    meshFull = np.asarray(meshFull).T
+    
     plot= False
     if plot:
         plt.figure()
@@ -205,6 +228,53 @@ def getLejaSetFromPoints(scaleParams, mesh, numNewLejaPoints, poly):
         plt.legend()
         plt.show()
     lejaPointsFinal
-    return lejaPointsFinal, indices
+    return meshFull, pdfNew
 
+
+if __name__ == "__main__":
+    from Scaling import GaussScale
+    from families import HermitePolynomials
+    import indexing
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+    
+    poly = HermitePolynomials(rho=0)
+    d=2
+    k = 40    
+    ab = poly.recurrence(k+1)
+    lambdas = indexing.total_degree_indices(d, k)
+    poly.lambdas = lambdas
+    
+    mesh, two = getLejaPoints(230, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
+    pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 1,1)
+    
+    ii=4
+    scale = GaussScale(2)
+    scale.setMu(np.asarray([[mesh[ii,0],mesh[ii,1]]]).T)
+    scale.setSigma(np.asarray([1,1]))
+    numLejaPointsToReturn = 30
+    
+    meshFull, pdfNew = getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, ii)
+    
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.scatter(mesh[:,0], mesh[:,1], pdf, c='k', marker='.')
+    ax.scatter(meshFull[:,0], meshFull[:,1], pdfNew, c='r', marker='o')
+    ax.scatter(mesh[ii,0], mesh[ii,1], np.max(pdf), c='g', marker='o')
+
+
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 

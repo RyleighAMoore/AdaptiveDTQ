@@ -15,6 +15,7 @@ sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ')
 from Functions import *
 from Scaling import GaussScale
 from Plotting import productGaussians2D
+import UnorderedMesh as UM
 
 
 def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
@@ -68,6 +69,7 @@ def QuadratureByInterpolationND_FirstStepWithICGaussian(Px,Py, poly, scale0, mes
 from QuadratureUtils import GetGaussianPart
 from GaussFit import fitGaussian
 from QuadraticFit import fitQuad
+
 def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly):
     # scale, pdfNew = GetGaussianPart(mesh, pdf, h)
     # fig = plt.figure()
@@ -77,6 +79,16 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly):
     # scale1, A, gauss, covPart = fitGaussian(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
     
     scale1, pdfNew = fitQuad(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
+    
+    meshalt = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
+    gauss2 = Gaussian(scaling, meshalt)
+        
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(mesh[:,0], mesh[:,1],np.asarray(pdfNew), c='r', marker='.')
+    # ax.scatter(meshalt[:,0], meshalt[:,1], gauss2)
+    # plt.show()
+    
     
     # print(scale1.cov)
     # fig = plt.figure()
@@ -92,7 +104,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly):
     
     # scaleNew, cfinal = productGaussians2D(scale, scaling)
     value, condNum = QuadratureByInterpolationND(poly, scale1, mesh, pdfNew)
-    # print(value*A)
+    print(value, condNum)
     # v = value*A
     # if v > 20:
     #     fig = plt.figure()

@@ -80,11 +80,11 @@ def fitQuad(Px,Py, mesh, pdf):
     mesh = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
     gauss2 = fun.Gaussian(scaling, mesh)
         
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    ax.scatter(x, y,np.expand_dims(np.exp(zobs),1)/np.expand_dims(gauss,1), c='r', marker='.')
-    ax.scatter(x, y,np.exp(zobs), c='k', marker='.')
-    ax.scatter(mesh[:,0], mesh[:,1], gauss2)
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(x, y,np.expand_dims(np.exp(zobs),1)/np.expand_dims(gauss,1), c='r', marker='.')
+    # ax.scatter(x, y,np.exp(zobs), c='k', marker='.')
+    # ax.scatter(mesh[:,0], mesh[:,1], gauss2)
     # plot(xy, zobs, pred_params)
     # plt.show()
     
@@ -209,5 +209,5 @@ def plot(xy, zobs, pred_params):
 
     return fig
 
-main()
+# main()
 # 
