@@ -383,7 +383,7 @@ def checkIfDistToClosestPointIsOk(newPoints, Mesh, minDist):
     for i in range(len(newPoints)):
         newPointX = newPoints[i,0]
         newPointY = newPoints[i,1]
-        nearestPoint = UM.findNearestPoint(newPointX, newPointY, Mesh)
+        nearestPoint = UM.findNearestPoint(newPointX, newPointY, Mesh, samePointRet0= True)
         distToNearestPoint = np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
         if distToNearestPoint > minDist and distToNearestPoint < maxDistanceBetweenPoints:
             points.append([newPointX, newPointY])

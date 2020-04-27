@@ -32,11 +32,11 @@ from Scaling import GaussScale
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.05
-xmin=-1.2
-xmax=1.2
-ymin=-1.2
-ymax=1.2
+kstep = 0.03
+xmin=-0.8
+xmax=0.8
+ymin=-0.8
+ymax=0.8
 
 
 def generateGRow(point, allPoints, kstep, h):
@@ -82,10 +82,10 @@ while t < 101:
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =8
-ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='o')
-index =0
-# ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
+index =1
+ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
+index =1
+ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='o')
 # ax.scatter(meshVals[:,0], meshVals[:,1], newPDF, c='k', marker='.')
 
 # 

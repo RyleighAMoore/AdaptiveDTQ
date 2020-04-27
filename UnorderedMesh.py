@@ -42,7 +42,7 @@ def findNearestKPoints(xCoord, yCoord, AllPoints, numNeighbors, getIndices = Fal
 
 # neighbors, distances = findNearestKPoints(-1.7, 1, Meshes[0], 1)
 
-def findNearestPoint(xCoord, yCoord, AllPoints, includeIndex=False):
+def findNearestPoint(xCoord, yCoord, AllPoints, includeIndex=False, samePointRet0 = False):
     normList = []
     for point in range(len(AllPoints)):
         xVal = AllPoints[point,0]
@@ -57,7 +57,10 @@ def findNearestPoint(xCoord, yCoord, AllPoints, includeIndex=False):
             except: 
                 t=0
         else:
-            return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]]])
+            if samePointRet0:
+               return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]]) 
+            else:
+                return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]]])
     else:
         if includeIndex:
             return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]]), idx[0]

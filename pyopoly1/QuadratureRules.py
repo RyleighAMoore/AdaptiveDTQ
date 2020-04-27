@@ -16,6 +16,8 @@ from Functions import *
 from Scaling import GaussScale
 from Plotting import productGaussians2D
 import UnorderedMesh as UM
+import LejaPoints as LP
+from QuadratureUtils import *
 
 
 def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
@@ -69,31 +71,54 @@ def QuadratureByInterpolationND_FirstStepWithICGaussian(Px,Py, poly, scale0, mes
 from QuadratureUtils import GetGaussianPart
 from GaussFit import fitGaussian
 from QuadraticFit import fitQuad
+from scipy.interpolate import griddata
+import Functions as fun
 
-def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly):
-    # scale, pdfNew = GetGaussianPart(mesh, pdf, h)
+def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, fullMesh, fullPDF):
+    # scale1, pdfNew = GetGaussianPart(mesh, pdf, h)
     # fig = plt.figure()
     # ax = Axes3D(fig)
     # ax.scatter(mesh[:,0], mesh[:,1],pdf, c='r', marker='.')
 
     # scale1, A, gauss, covPart = fitGaussian(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
+    sigmaX = np.sqrt(h)*fun.g1()
+    sigmaY = np.sqrt(h)*fun.g2()
     
-    scale1, pdfNew = fitQuad(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
+    constPart = 1/(2*np.pi*sigmaX*sigmaY)*(1/(sigmaX*sigmaY))*(sigmaX*sigmaY)*1/(2*np.pi*sigmaX*sigmaY)
+    pdfWOConst = pdf/constPart
+    scale1, temp = fitQuad(scaling.mu[0][0],scaling.mu[1][0], mesh, pdfWOConst)
     
-    meshalt = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
-    gauss2 = Gaussian(scaling, meshalt)
-        
+    mesh2, two = LP.getLejaPoints(12, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
+    mesh2 = LP.mapPointsBack(scale1.mu[0], scale1.mu[1], mesh2, np.sqrt(scale1.cov[0,0]), np.sqrt(scale1.cov[1,1]))
+    # meshScale1, pdfScale1 = LP.getLejaSetFromPoints(scale1, fullMesh, 6, poly, fullPDF, 0)
+    
+    rect = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
+    gaussWeight = fun.Gaussian(scale1, rect)
+   
+   
+    # plt.figure()
+    # plt.scatter(mesh[:,0], mesh[:,1])
+    # plt.scatter(mesh2[:,0], mesh2[:,1], c='red')
+    gauss2 = fun.Gaussian(scale1, mesh2)
+    # pdfOnNewGrid = np.asarray([griddata(fullMesh, fullPDF, mesh2, method='cubic', fill_value=np.min(pdf))])[0]
+    pdfOnNewGrid = GVals(scaling.mu[0][0], scaling.mu[1][0], mesh2, h)*UM.generateICPDF(mesh2[:,0], mesh2[:,1], np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2())
+    
+    pdf2 = np.expand_dims(pdfOnNewGrid,1) /np.expand_dims(gauss2, axis=1)
+    
     # fig = plt.figure()
     # ax = Axes3D(fig)
-    # ax.scatter(mesh[:,0], mesh[:,1],np.asarray(pdfNew), c='r', marker='.')
-    # ax.scatter(meshalt[:,0], meshalt[:,1], gauss2)
+    # ax.scatter(rect[:,0], rect[:,1],gaussWeight, c='r', marker='.')
+    # # ax.scatter(mesh2[:,0], mesh2[:,1],np.ones(len(mesh2)), c='k', marker='o')
+    # ax.scatter(mesh2[:,0], mesh2[:,1],pdf2, c='k', marker='o')
     # plt.show()
     
-    
-    # print(scale1.cov)
     # fig = plt.figure()
     # ax = Axes3D(fig)
-    # ax.scatter(mesh[:,0], mesh[:,1],pdf/np.expand_dims(zpred.T,1), c='r', marker='.')
+    # ax.scatter(fullMesh[:,0], fullMesh[:,1], fullPDF, c='r', marker='.')
+    # ax.scatter(mesh2[:,0], mesh2[:,1],pdfOnNewGrid, c='k', marker='o')
+    # ax.scatter(mesh[:,0], mesh[:,1], pdf, c='g', marker='.')
+
+
     
     # pdfNew = pdf/np.expand_dims(gauss,1)*np.expand_dims(covPart,1)
     # print(scaling.mu)
@@ -103,7 +128,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly):
     # ax.scatter(mesh[:,0], mesh[:,1], pdfNew, c='r', marker='.')
     
     # scaleNew, cfinal = productGaussians2D(scale, scaling)
-    value, condNum = QuadratureByInterpolationND(poly, scale1, mesh, pdfNew)
+    value, condNum = QuadratureByInterpolationND(poly, scale1, mesh2, pdf2)
     print(value, condNum)
     # v = value*A
     # if v > 20:

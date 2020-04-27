@@ -200,6 +200,10 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, indexIni
     pdfShortIC = np.delete(pdf, indexInitPoint, axis=0)
         
     candidates = mapPointsTo(Px, Py, meshShortIC, 1/sigmaX, 1/sigmaY)
+    
+    plt.figure()
+    plt.scatter(candidates[:,0], candidates[:,1])
+    
     lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[0,0]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, sigmaX, sigmaY)
     
@@ -231,13 +235,15 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, indexIni
     return meshFull, pdfNew
 
 
+
 if __name__ == "__main__":
     from Scaling import GaussScale
     from families import HermitePolynomials
     import indexing
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
-    
+    h=0.01
+    import Functions as fun
     poly = HermitePolynomials(rho=0)
     d=2
     k = 40    
@@ -245,14 +251,17 @@ if __name__ == "__main__":
     lambdas = indexing.total_degree_indices(d, k)
     poly.lambdas = lambdas
     
+    IC = np.sqrt(h)*fun.g1()
     mesh, two = getLejaPoints(230, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
-    pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 1,1)
+    mesh = mapPointsBack(0, 0, mesh, IC, IC)
+    pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], IC, IC)
     
     ii=4
     scale = GaussScale(2)
     scale.setMu(np.asarray([[mesh[ii,0],mesh[ii,1]]]).T)
-    scale.setSigma(np.asarray([1,1]))
-    numLejaPointsToReturn = 30
+    S = IC
+    scale.setSigma(np.asarray([S, S]))
+    numLejaPointsToReturn = 6
     
     meshFull, pdfNew = getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, ii)
     
