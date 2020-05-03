@@ -51,7 +51,7 @@ def findNearestPoint(xCoord, yCoord, AllPoints, includeIndex=False, samePointRet
     idx = np.argsort(normList)
     #print(idx)
     if normList[idx[0]] == 0: # point is part of the set
-        if includeIndex:
+        if includeIndex == True:
             try:
                 return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]]]), idx[1]
             except: 
@@ -60,7 +60,7 @@ def findNearestPoint(xCoord, yCoord, AllPoints, includeIndex=False, samePointRet
             if samePointRet0:
                return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]]) 
             else:
-                return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]]])
+                return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]])
     else:
         if includeIndex:
             return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]]), idx[0]

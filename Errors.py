@@ -67,9 +67,9 @@ for step in range(len(PdfTraj)):
     LinfErrors.append(linf)
     
 
-# fig = plt.figure()
-# ax = Axes3D(fig)
-# ax.scatter(Meshes[1][:,0], Meshes[1][:,1], np.abs((surfaces[10] - PdfTraj[1])), c='k', marker='.')
+fig = plt.figure()
+ax = Axes3D(fig)
+ax.scatter(Meshes[1][:,0], Meshes[1][:,1], np.abs((gridSolnOnLejas - PdfTraj[1])), c='k', marker='.')
 # ax.scatter(Meshes[1][:,0], Meshes[1][:,1], PdfTraj[0], c='r', marker='.')
 # ax.scatter(mesh2[:,0], mesh2[:,1], surfaces[0], c='k', marker='.')
 

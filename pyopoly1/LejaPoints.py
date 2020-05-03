@@ -164,7 +164,7 @@ def getLejaPointsWithStartingPoints(scaleParams, numLejaPoints, numCandidateSamp
         numNeighbors = 0
         neighbors = np.asarray([[Px],[Py]]).T
         
-    intialPoints = mapPointsTo(Px,Py,neighbors, 1/sigmaX,1/sigmaY)
+    intialPoints = mapPointsTo(Px,Py,neighbors, 1,1)
     lejaPointsFinal1, newLeja = getLejaPoints(numLejaPoints, intialPoints.T, poly, num_candidate_samples=numCandidateSamples)
     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal1, sigmaX, sigmaY)
     newLeja = mapPointsBack(Px,Py,newLeja,sigmaX,sigmaY)
@@ -186,14 +186,19 @@ def getLejaPointsWithStartingPoints(scaleParams, numLejaPoints, numCandidateSamp
 # one, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 1000, poly)
 # mesh, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 12, 1000, poly, neighbors=[3,one])
 
-
+import UnorderedMesh as UM
 def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, indexInitPoint):
     if pdf.shape == (len(pdf), ):
         pdf = np.expand_dims(pdf,1)
         
     assert numLejaPointsToReturn <= np.size(mesh,0), "Asked for subset is bigger than whole set"
-    Px = scale.mu[0][0]; Py = scale.mu[1][0]
-    sigmaX = scale.cov[0,0]; sigmaY = scale.cov[1,1]
+    Px = mesh[indexInitPoint,0]; Py = mesh[indexInitPoint,1]
+    
+    nearest = UM.findNearestPoint(scale.mu[0][0], scale.mu[1][0], mesh, includeIndex=False, samePointRet0 = False)[0]
+    
+    Px = nearest[0]; Py = nearest[1]
+    
+    sigmaX = np.sqrt(scale.cov[0,0]); sigmaY = np.sqrt(scale.cov[1,1])
     
     #Since initial point is part of the mesh (when indexInitPoint >=0) we should remove it from the list so it isn't duplicated.
     meshShortIC = np.delete(mesh, indexInitPoint, axis=0)
@@ -201,8 +206,8 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, indexIni
         
     candidates = mapPointsTo(Px, Py, meshShortIC, 1/sigmaX, 1/sigmaY)
     
-    plt.figure()
-    plt.scatter(candidates[:,0], candidates[:,1])
+    # plt.figure()
+    # plt.scatter(candidates[:,0], candidates[:,1])
     
     lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[0,0]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, sigmaX, sigmaY)
@@ -244,6 +249,7 @@ if __name__ == "__main__":
     from mpl_toolkits.mplot3d import Axes3D
     h=0.01
     import Functions as fun
+    import ICMeshGenerator as M
     poly = HermitePolynomials(rho=0)
     d=2
     k = 40    
@@ -251,29 +257,45 @@ if __name__ == "__main__":
     lambdas = indexing.total_degree_indices(d, k)
     poly.lambdas = lambdas
     
-    IC = np.sqrt(h)*fun.g1()
+    IC = np.sqrt(0.005)
     mesh, two = getLejaPoints(230, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
-    mesh = mapPointsBack(0, 0, mesh, IC, IC)
+    # mesh = mapPointsBack(0, 0, mesh, IC, IC)
+    mesh = M.getICMesh()
+    
+    meshtest, two = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, returnIndices = False)
+    meshtest = mapPointsBack(0, 0, meshtest, IC, IC)
+
+    newmesh, two = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=0, candidateSampleMesh = mesh.T, returnIndices = False)
+    newmesh = mapPointsBack(0, 0, newmesh, IC, IC)
+
+
     pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], IC, IC)
     
-    ii=4
+    ii=0
     scale = GaussScale(2)
     scale.setMu(np.asarray([[mesh[ii,0],mesh[ii,1]]]).T)
     S = IC
     scale.setSigma(np.asarray([S, S]))
-    numLejaPointsToReturn = 6
+    numLejaPointsToReturn = 12
     
     meshFull, pdfNew = getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, ii)
     
+    grd = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
+    gauss2 = fun.Gaussian(scale, grd)
+    
     fig = plt.figure()
     ax = Axes3D(fig)
+    ax.scatter(grd[:,0], grd[:,1], gauss2, c='b', marker='.')
     ax.scatter(mesh[:,0], mesh[:,1], pdf, c='k', marker='.')
     ax.scatter(meshFull[:,0], meshFull[:,1], pdfNew, c='r', marker='o')
+
     ax.scatter(mesh[ii,0], mesh[ii,1], np.max(pdf), c='g', marker='o')
 
 
+    plt.figure()
+    plt.scatter(meshFull[:,0], meshFull[:,1], label='Chosen points')
+    plt.scatter(meshtest[:,0], meshtest[:,1],c='r', label='Real points')
 
-    
 
     
     

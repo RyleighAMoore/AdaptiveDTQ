@@ -126,7 +126,7 @@ def checkIntegrandForZeroPoints(PDF, tolerance, Mesh, tri, boundaryOnly):
 def checkIntegrandForAddingPointsAroundBoundaryPoints(PDF, tolerance, Mesh, tri, boundaryOnly):
     maxMat = -1*np.ones(len(PDF))
     if boundaryOnly:
-        pointsOnEdge = getBoundaryPoints(Mesh, tri, maxDistanceBetweenPoints)
+        pointsOnEdge = getBoundaryPoints(Mesh, tri, maxDistanceBetweenPoints*2)
         for i in pointsOnEdge:
             maxMat[i]=(np.max(PDF[i]))    
     else:

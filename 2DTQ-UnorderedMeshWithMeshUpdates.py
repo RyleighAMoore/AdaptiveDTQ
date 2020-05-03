@@ -29,7 +29,7 @@ import indexing
 import LejaPoints as LP
 import MeshUpdates2D as meshUp
 from Scaling import GaussScale
-
+import ICMeshGenerator as M
 
 # define spatial grid
 kstep = 0.1
@@ -48,11 +48,11 @@ ab = poly.recurrence(k+1)
 lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 
-mesh, two = LP.getLejaPoints(30, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
-mesh = LP.mapPointsBack(0, 0, mesh, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2())
+# mesh, two = LP.getLejaPoints(130, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
+# mesh = LP.mapPointsBack(0, 0, mesh, np.sqrt(h)*fun.g1()/2, np.sqrt(h)*fun.g2()/2)
+mesh = M.getICMesh()
 
-
-# plt.scatter(mesh[:,0], mesh[:,1])
+plt.scatter(mesh[:,0], mesh[:,1])
 
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], IC,IC)
 # phat = as.matrix(dnorm(x=xvec, mean=(init+driftfun(init)), sd=abs(difffun(init))*sqrt(h)))
@@ -63,9 +63,9 @@ scale.setSigma(np.asarray([np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()]))
 pdf = fun.Gaussian(scale, mesh)
 
 meshUp.setGlobalVarsForMesh(mesh)
-import pickle
-pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillLongFullSplit.p", "rb" ) 
-pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillLongFullSplit1.p", "rb" ) 
+# import pickle
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillLongFullSplit.p", "rb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillLongFullSplit1.p", "rb" ) 
 
 # PdfTraj = pickle.load(pkl_file)
 # Meshes = pickle.load(pkl_file2)
@@ -76,6 +76,8 @@ pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHill
 
 # mesh = Meshes[5]
 # pdf = PdfTraj[5]
+
+# pdf = np.ones(len(mesh))
 
 Meshes = []
 PdfTraj = []
@@ -92,7 +94,7 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = False
-for i in trange(31):
+for i in trange(1):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
@@ -118,12 +120,12 @@ for i in trange(31):
         print("Stepping Forward....")
         # if i ==0:
         #     pdf = LQ.StepForwardFirstStep_ICofGaussian(mesh, pdf, poly, h,12, icSigma =IC)
-        if i < 2:
-            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,6)
-        elif i < 5:
-            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 6)
-        else:
-            pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,6)
+        # if i < 2:
+        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,20)
+        # elif i < 5:
+        #     pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 12)
+        # else:
+        #     pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12)
 
         pdf = np.squeeze(pdf)
         PdfTraj.append(np.copy(pdf))

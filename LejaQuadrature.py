@@ -113,9 +113,12 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
         scale.setMu(np.asarray([[muX,muY]]).T)
         scale.setSigma(np.asarray([sigmaX,sigmaY]))
         
-        # mesh1, pdfNew1 = LP.getLejaSetFromPoints(scale, mesh, numNodes, poly, pdf, ii)
-        mesh1 = mesh
-        pdfNew1 = pdf
+        # mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
+
+        mesh1, pdfNew1 = LP.getLejaSetFromPoints(scale, mesh, numNodes, poly, pdf, ii)
+        # mesh1 = mesh
+        # pdfNew1 = pdf
+        
         
         # fig = plt.figure()
         # ax = Axes3D(fig)
@@ -123,18 +126,17 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
         # ax.scatter(mesh[:,0], mesh[:,1], pdf, c='k', marker='.')
         # ax.scatter(muX, muY, pdf, c='k', marker='.')
 
-        integrand = newIntegrand(muX, muY, mesh1, h)
-        testing = np.squeeze(pdfNew1)*integrand
+        # integrand = newIntegrand(muX, muY, mesh1, h)
+        # testing = np.squeeze(pdfNew1)*integrand
         
-        # scaling = np.asarray([[muX, sigmaX], [muY, sigmaY]])
         scaling = GaussScale(2)
         scaling.setMu(np.asarray([[muX,muY]]).T)
-        scaling.setSigma(np.asarray([sigmaX,sigmaX]))
+        scaling.setSigma(np.asarray([sigmaX,sigmaY]))
       
         pdffull = np.expand_dims(GVals(muX, muY, mesh1, h),1)*pdfNew1
-        value, condNum = QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh1, pdffull, h, poly, mesh, np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf)
-    
-         
+        value, condNum = QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh1, pdffull, h, poly, mesh, np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf, ii)
+
+        fullVals = np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf
         if np.isnan(value) or value <0:
             condNum = 11
         # value, condNum = QuadratureByInterpolationND(poly, scaling, mesh1, testing)
@@ -158,9 +160,9 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
             numBasis=numNodes
             initial_samples = np.asarray([[0,0]])
             
-            # allp, new = getLejaPoints(230, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
+            # allp, new = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
             
-            mesh12 = mapPointsBack(muX, muY, allp, sigmaX, sigmaY)
+            mesh12 = mapPointsBack(muX, muY, allp, sigmaX/2, sigmaY/2)
             
             
             # plt.figure()
@@ -173,7 +175,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
             integrand = newIntegrand(muX, muY, mesh12, h)
             testing = np.squeeze(pdfNew)*integrand
             
-            value, condNum = value, condNum = QuadratureByInterpolationND(poly, scaling, mesh12, testing)
+            value, condNum = QuadratureByInterpolationND(poly, scaling, mesh12, testing)
             # print(value)
             if value<0:
                 value= 10**(-10)
