@@ -58,14 +58,14 @@ def findNearestPoint(xCoord, yCoord, AllPoints, includeIndex=False, samePointRet
                 t=0
         else:
             if samePointRet0:
-               return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]]) 
+               return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]])
             else:
-                return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]])
+                return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]]), idx[0]
     else:
         if includeIndex:
             return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]]), idx[0]
         else:
-            return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]])
+            return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]]), idx[0]
     
 
 # point: Point to center grid around

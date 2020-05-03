@@ -52,7 +52,7 @@ poly.lambdas = lambdas
 # mesh = LP.mapPointsBack(0, 0, mesh, np.sqrt(h)*fun.g1()/2, np.sqrt(h)*fun.g2()/2)
 mesh = M.getICMesh()
 
-plt.scatter(mesh[:,0], mesh[:,1])
+# plt.scatter(mesh[:,0], mesh[:,1])
 
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], IC,IC)
 # phat = as.matrix(dnorm(x=xvec, mean=(init+driftfun(init)), sd=abs(difffun(init))*sqrt(h)))

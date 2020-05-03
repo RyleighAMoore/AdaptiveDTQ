@@ -160,6 +160,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     # print(scale1.mu)
     # print(scale1.cov)
     mesh2, pdfNew = LP.getLejaSetFromPoints(scale1, fullMesh, 12, poly, fullPDF, ii)
+    
     if np.isclose(scale1.cov[0,0],0.005) or np.isclose(scale1.cov[1,1],0.005):
         te=0
     else:
@@ -209,7 +210,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     
     
     value, condNum = QuadratureByInterpolationND(poly, scale1, mesh2, pdf2)
-    value = pdf2[-1]
+    # value = pdf2[-1]
     
     # if value > fullPDF[ii]:
     #     print(scale1.cov)

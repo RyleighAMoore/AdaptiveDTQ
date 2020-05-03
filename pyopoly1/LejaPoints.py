@@ -194,9 +194,9 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, indexIni
     assert numLejaPointsToReturn <= np.size(mesh,0), "Asked for subset is bigger than whole set"
     Px = mesh[indexInitPoint,0]; Py = mesh[indexInitPoint,1]
     
-    nearest = UM.findNearestPoint(scale.mu[0][0], scale.mu[1][0], mesh, includeIndex=False, samePointRet0 = False)[0]
+    nearest, idx = UM.findNearestPoint(scale.mu[0][0], scale.mu[1][0], mesh, includeIndex=False, samePointRet0 = False)
     
-    Px = nearest[0]; Py = nearest[1]
+    Px = nearest.T[0][0]; Py = nearest.T[1][0]
     
     sigmaX = np.sqrt(scale.cov[0,0]); sigmaY = np.sqrt(scale.cov[1,1])
     
@@ -214,7 +214,7 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, indexIni
     
     meshFull = np.vstack(([Px,Py], meshShortIC))
     
-    pdfFull = np.vstack((pdf[indexInitPoint], pdfShortIC))
+    pdfFull = np.vstack((pdf[idx], pdfShortIC))
     
     pdfNew = []
     Pxs = []
