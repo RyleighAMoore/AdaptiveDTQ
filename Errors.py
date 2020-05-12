@@ -53,9 +53,9 @@ for step in range(len(PdfTraj)):
     print(l2w)
     L2wErrors.append(l2w)
     
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # ax.scatter(Meshes[step][:,0], Meshes[step][:,1], np.abs((gridSolnOnLejas - PdfTraj[step])), c='k', marker='.')
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.scatter(Meshes[step][:,0], Meshes[step][:,1], np.abs((gridSolnOnLejas - PdfTraj[step])), c='k', marker='.')
     
     l2 = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step])*1)**2)/len(PdfTraj[step]))
     L2Errors.append(l2)
@@ -67,9 +67,9 @@ for step in range(len(PdfTraj)):
     LinfErrors.append(linf)
     
 
-fig = plt.figure()
-ax = Axes3D(fig)
-ax.scatter(Meshes[1][:,0], Meshes[1][:,1], np.abs((gridSolnOnLejas - PdfTraj[1])), c='k', marker='.')
+# fig = plt.figure()
+# ax = Axes3D(fig)
+# ax.scatter(Meshes[1][:,0], Meshes[1][:,1], np.abs((gridSolnOnLejas - PdfTraj[1])), c='k', marker='.')
 # ax.scatter(Meshes[1][:,0], Meshes[1][:,1], PdfTraj[0], c='r', marker='.')
 # ax.scatter(mesh2[:,0], mesh2[:,1], surfaces[0], c='k', marker='.')
 

@@ -158,7 +158,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     # scale1.setSigma(np.asarray([np.sqrt(0.005),np.sqrt(0.005)]))
     
     # print(scale1.mu)
-    # print(scale1.cov)
+    print(scale1.cov)
     mesh2, pdfNew = LP.getLejaSetFromPoints(scale1, fullMesh, 12, poly, fullPDF, ii)
     
     if np.isclose(scale1.cov[0,0],0.005) or np.isclose(scale1.cov[1,1],0.005):
@@ -170,8 +170,9 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     # meshL = LP.mapPointsBack(scaling.mu[0], scaling.mu[1], meshL, np.sqrt(scale1.cov[0,0]), np.sqrt(scale1.cov[1,1]))
     # meshScale1, pdfScale1 = LP.getLejaSetFromPoints(scale1, fullMesh, 6, poly, fullPDF, 0)
     # 
-    rect = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
-    gaussWeight = fun.Gaussian(scale1, rect)
+    
+    # rect = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
+    # gaussWeight = fun.Gaussian(scale1, rect)
    
    
     # plt.figure()
@@ -186,7 +187,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     # fig = plt.figure()
     # ax = Axes3D(fig)
     # ax.scatter(rect[:,0], rect[:,1],gaussWeight, c='r', marker='.')
-    # ax.scatter(mesh2[:,0], mesh2[:,1], pdfNew, c='k', marker='o')
+    # ax.scatter(mesh2[:,0], mesh2[:,1], pdf2, c='k', marker='o')
     # plt.show()
     
     # fig = plt.figure()
@@ -231,7 +232,6 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     #     fig = plt.figure()
     #     ax = Axes3D(fig)
     #     ax.scatter(mesh[:,0], mesh[:,1], pdfNew, c='r', marker='.')
-    assert np.isclose(pdf2[-2], pdf2[-1])
     return value[0], condNum
         
 

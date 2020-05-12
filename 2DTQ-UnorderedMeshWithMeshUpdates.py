@@ -94,7 +94,7 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = False
-for i in trange(1):
+for i in trange(4):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
@@ -121,7 +121,7 @@ for i in trange(1):
         # if i ==0:
         #     pdf = LQ.StepForwardFirstStep_ICofGaussian(mesh, pdf, poly, h,12, icSigma =IC)
         # if i < 2:
-        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,20)
+        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12)
         # elif i < 5:
         #     pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 12)
         # else:
@@ -142,7 +142,7 @@ for i in trange(1):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =1
+index =2
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 index = 50
 # ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')
@@ -159,7 +159,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[0]))
+ax.set_zlim(0, np.max(PdfTraj[-1]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                           interval=500, blit=False)
 
@@ -225,5 +225,5 @@ timestr = time.strftime("%Y%m%d-%H%M%S")
 # Generate data...
 
 
-plt.scatter(Meshes[1][:,0], Meshes[1][:,1],c=np.log(PdfTraj[1]))
-plt.show()
+# plt.scatter(Meshes[1][:,0], Meshes[1][:,1],c=np.log(PdfTraj[1]))
+# plt.show()

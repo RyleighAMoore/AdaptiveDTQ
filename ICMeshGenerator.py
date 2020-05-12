@@ -54,20 +54,20 @@ def getICMesh():
     mesh2 = LP.mapPointsBack(0, 0, mesh2, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2())
 
 
-    meshSpacing = DM.separationDistance(mesh)
+    meshSpacing = DM.separationDistance(mesh)*1
     grid = UM.generateOrderedGridCenteredAtZero(-1.6, 1.6, -1.6, 1.6, meshSpacing , includeOrigin=True)
     noise = np.random.normal(0,np.sqrt(h)*fun.g1(), size = (len(grid),2))
     
     noise = np.random.uniform(-meshSpacing, meshSpacing,size = (len(grid),2))
     
-    shake = 0.1
+    shake = 0
     noise = -meshSpacing*shake +(meshSpacing*shake - - meshSpacing*shake)/(np.max(noise)-np.min(noise))*(noise-np.min(noise))
     noiseGrid = grid+noise
     x,y = noiseGrid.T
     X = []
     Y = []
-    X.append(0)
-    Y.append(0)
+    # X.append(0)
+    # Y.append(0)
     for point in range(len(grid)):
         if np.sqrt(x[point]**2 + y[point]**2) < 0.5:
             X.append(x[point])

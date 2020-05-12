@@ -52,22 +52,26 @@ def fitQuad(Px,Py, mesh, pdf):
     x, y = mesh.T
     
     guess = [1, 1, 1, 1, 1, 1]
-    pred_params, uncert_cov = opt.curve_fit(quad, xy, zobs)
+    pred_params, uncert_cov = opt.curve_fit(quad, xy, zobs, p0 = [0,0,0,0,0,0])
     
     c = pred_params
     A= np.asarray([[c[0], c[2]],[c[2],c[1]]])
     B=np.expand_dims(np.asarray([c[3], c[4]]),1)
     
+    assert c[0]*c[1] - c[2]**2 >0
     try:
         sigma = np.linalg.inv(A)
     except:
         r=0
-    if np.linalg.det(sigma)<0:
+    if np.linalg.det(sigma)<=0:
         print(sigma)
         # sigma = np.asarray([[h*fun.g1()**2,0],[0,h*fun.g2()**2]])
         assert np.linalg.det(sigma)>0, 'Determinant is Negative'
+        assert c[0] >0
+        assert c[1]>0
     
     Lam, U = np.linalg.eigh(A)
+    assert all(Lam) > 0
     
     La = np.diag(Lam)
     mu = -U @ np.linalg.inv(La) @ (B.T @ U).T
@@ -172,9 +176,10 @@ def quad(xy, a, b, c, d, e, f):
     A= np.asarray([[a, c],[c,b]])
     
     # sigma = np.linalg.inv(A)
-    if a*b-c**2 < 0:
-        quad =quad - abs(a*b-c**2)*10000 
+    if a*b-c**2 <= 0:
+        quad = quad - abs(a*b-c**2)*10000 
     # quad = (-(x-c)**2/(2*a) + (y-d)**2/(2*b) + e*x*y +f)
+
     return quad
 
 

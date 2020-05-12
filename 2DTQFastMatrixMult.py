@@ -32,7 +32,7 @@ from Scaling import GaussScale
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.03
+kstep = 0.04
 xmin=-0.8
 xmax=0.8
 ymin=-0.8
