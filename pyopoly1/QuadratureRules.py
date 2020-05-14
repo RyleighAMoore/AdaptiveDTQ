@@ -100,7 +100,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     #     scale1.setMu(scale1.mu)
     #     scale1.setCov(np.asarray([[scale1.cov[0,0],0],[0, scale1.cov[1,1]]]))
     
-    mesh2, pdfNew = LP.getLejaSetFromPoints(scale1, fullMesh, 6, poly, fullPDF, ii)
+    mesh2, pdfNew = LP.getLejaSetFromPoints(scale1, fullMesh, 12, poly, fullPDF, ii)
     
 
     # meshL, two = LP.getLejaPoints(12, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
