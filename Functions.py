@@ -87,7 +87,7 @@ def g2(x=0,y=0):
 # def g2(x=0,y=0):
 #     return 1
 
-# Volcano
+# Volcano$\
 # def f1(x, y):
 #     r = np.sqrt(x ** 2 + y ** 2)
 #     # return 0
