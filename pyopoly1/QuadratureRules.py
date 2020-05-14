@@ -35,12 +35,13 @@ def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
     return c[0]
         
 def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
-    xCan=VT.map_to_canonical_space(mesh, scaling)
-    numSamples = len(xCan)                 
-    V = opolynd.opolynd_eval(xCan, poly.lambdas[:numSamples,:], poly.ab, poly)
+    u = VT.map_to_canonical_space(mesh, scaling)
+    numSamples = len(u)          
+    V = opolynd.opolynd_eval(u, poly.lambdas[:numSamples,:], poly.ab, poly)
     vinv = np.linalg.inv(V)
     c = np.matmul(vinv, pdf)
-    # print(c[0])
+    L = np.linalg.cholesky((scaling.cov))
+    JacFactor = np.prod(np.diag(L))
     plot = False
     if plot:
         if np.sum(np.abs(vinv[0,:])) > 0:
@@ -48,8 +49,14 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
             fig = plt.figure()
             ax = Axes3D(fig)
             ax.scatter(mesh[:,0], mesh[:,1], pdf, c='r', marker='o')
-            ax.scatter(mesh[:,0], mesh[:,1], interp, c='k', marker='.')
-    return c[0], np.sum(np.abs(vinv[0,:]))
+            ax.scatter(u[:,0], u[:,1], pdf, c='k', marker='.')
+    print(c[0]*JacFactor*np.pi)
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(mesh[:,0], mesh[:,1],pdf, c='r', marker='.')
+    # ax.scatter(u[:,0], u[:,1],pdf, c='k', marker='.')
+    
+    return c[0]*JacFactor*np.pi, np.sum(np.abs(vinv[0,:]))
 
 
 def QuadratureByInterpolationND_FirstStepWithICGaussian(Px,Py, poly, scale0, mesh, h):
@@ -74,73 +81,8 @@ from QuadraticFit import fitQuad
 from scipy.interpolate import griddata
 import Functions as fun
 
-# def QuadratureByInterpolationND_DivideOutGaussianExactish(scaling, mesh, pdf, h, poly, fullMesh, fullPDF):
-#     # scale1, pdfNew = GetGaussianPart(mesh, pdf, h)
-#     # fig = plt.figure()
-#     # ax = Axes3D(fig)
-#     # ax.scatter(mesh[:,0], mesh[:,1],pdf, c='r', marker='.')
-
-#     # scale1, A, gauss, covPart = fitGaussian(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
-#     sigmaX = np.sqrt(h)*fun.g1()
-#     sigmaY = np.sqrt(h)*fun.g2()
-    
-#     # constPart = 1/(2*np.pi*sigmaX*sigmaY)*(1/(sigmaX*sigmaY))*(sigmaX*sigmaY)*1/(2*np.pi*sigmaX*sigmaY)
-#     # pdfWOConst = pdf/constPart
-#     scale1, temp = fitQuad(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
-   
-    
-#     mesh2, two = LP.getLejaPoints(12, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
-#     mesh2 = LP.mapPointsBack(scaling.mu[0], scaling.mu[1], mesh2, np.sqrt(scale1.cov[0,0]), np.sqrt(scale1.cov[1,1]))
-#     # meshScale1, pdfScale1 = LP.getLejaSetFromPoints(scale1, fullMesh, 6, poly, fullPDF, 0)
-    
-#     rect = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
-#     gaussWeight = fun.Gaussian(scale1, rect)
-   
-   
-#     # plt.figure()
-#     # plt.scatter(mesh[:,0], mesh[:,1])
-#     # plt.scatter(mesh2[:,0], mesh2[:,1], c='red')
-#     gauss2 = fun.Gaussian(scale1, mesh2)
-#     # pdfOnNewGrid = np.asarray([griddata(fullMesh, fullPDF, mesh2, method='cubic', fill_value=np.min(pdf))])[0]
-#     pdfOnNewGrid = GVals(scaling.mu[0][0], scaling.mu[1][0], mesh2, h)*UM.generateICPDF(mesh2[:,0], mesh2[:,1], np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2())
-    
-#     pdf2 = np.expand_dims(pdfOnNewGrid,1) /np.expand_dims(gauss2, axis=1)
-    
-#     fig = plt.figure()
-#     ax = Axes3D(fig)
-#     ax.scatter(rect[:,0], rect[:,1],gaussWeight, c='r', marker='.')
-#     # ax.scatter(mesh2[:,0], mesh2[:,1],np.ones(len(mesh2)), c='k', marker='o')
-#     ax.scatter(mesh2[:,0], mesh2[:,1],pdf2, c='k', marker='o')
-#     plt.show()
-    
-#     # fig = plt.figure()
-#     # ax = Axes3D(fig)
-#     # ax.scatter(fullMesh[:,0], fullMesh[:,1], fullPDF, c='r', marker='.')
-#     # ax.scatter(mesh2[:,0], mesh2[:,1],pdfOnNewGrid, c='k', marker='o')
-#     # ax.scatter(mesh[:,0], mesh[:,1], pdf, c='g', marker='.')
-
-
-    
-#     # pdfNew = pdf/np.expand_dims(gauss,1)*np.expand_dims(covPart,1)
-#     # print(scaling.mu)
-#     # print(np.max(pdfNew), np.min(pdfNew))
-#     # fig = plt.figure()
-#     # ax = Axes3D(fig)
-#     # ax.scatter(mesh[:,0], mesh[:,1], pdfNew, c='r', marker='.')
-    
-#     # scaleNew, cfinal = productGaussians2D(scale, scaling)
-#     value, condNum = QuadratureByInterpolationND(poly, scale1, mesh2, pdf2)
-#     print(value, condNum)
-#     # v = value*A
-#     # if v > 20:
-#     #     fig = plt.figure()
-#     #     ax = Axes3D(fig)
-#     #     ax.scatter(mesh[:,0], mesh[:,1], pdfNew, c='r', marker='.')
-    
-#     return value[0], condNum
-
-
 def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, fullMesh, fullPDF, ii):
+    diagOnly = True
     # scale1, pdfNew = GetGaussianPart(mesh, pdf, h)
     # fig = plt.figure()
     # ax = Axes3D(fig)
@@ -152,19 +94,14 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     
     # constPart = 1/(2*np.pi*sigmaX*sigmaY)*(1/(sigmaX*sigmaY))*(sigmaX*sigmaY)*1/(2*np.pi*sigmaX*sigmaY)
     # pdfWOConst = pdf/constPart
-    scale1, temp = fitQuad(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
-    # scale1 = GaussScale(2)
-    # scale1.setMu(scaling.mu)
-    # scale1.setSigma(np.asarray([np.sqrt(0.005),np.sqrt(0.005)]))
+    scale1, temp, cc, Const = fitQuad(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
     
-    # print(scale1.mu)
-    print(scale1.cov)
-    mesh2, pdfNew = LP.getLejaSetFromPoints(scale1, fullMesh, 12, poly, fullPDF, ii)
+    # if diagOnly:
+    #     scale1.setMu(scale1.mu)
+    #     scale1.setCov(np.asarray([[scale1.cov[0,0],0],[0, scale1.cov[1,1]]]))
     
-    if np.isclose(scale1.cov[0,0],0.005) or np.isclose(scale1.cov[1,1],0.005):
-        te=0
-    else:
-        r=0
+    mesh2, pdfNew = LP.getLejaSetFromPoints(scale1, fullMesh, 6, poly, fullPDF, ii)
+    
 
     # meshL, two = LP.getLejaPoints(12, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
     # meshL = LP.mapPointsBack(scaling.mu[0], scaling.mu[1], meshL, np.sqrt(scale1.cov[0,0]), np.sqrt(scale1.cov[1,1]))
@@ -178,12 +115,27 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     # plt.figure()
     # plt.scatter(fullMesh[:,0], fullMesh[:,1])
     # plt.scatter(mesh2[:,0], mesh2[:,1], c='red')
+    # plt.scatter(scale1.mu[0][0], scale1.mu[1][0], c='green')
+
     
-    gauss2 = fun.Gaussian(scale1, mesh2)
-    pdf2 = pdfNew /np.expand_dims(gauss2, axis=1)
-    # print(gauss2)
-    if np.max(pdf2) > np.max(fullPDF):
-        print("")
+    # gauss2 = fun.Gaussian(scale1, mesh2)
+    x,y = mesh2.T   
+    vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
+    # if diagOnly:
+    #         cc[2]=0
+    #         A= np.asarray([[cc[0], cc[2]],[cc[2],cc[1]]])
+    #         B=np.expand_dims(np.asarray([cc[3], cc[4]]),1)
+    #         Lam, U = np.linalg.eigh(A)
+    #         La = np.diag(Lam)
+    #         mu = -1/2 *U @ np.linalg.inv(La) @ (B.T @ U).T
+    #         L = np.linalg.cholesky((scale1.cov))
+            
+    #         Const = np.exp(-cc[5]+1/4*B.T@U@np.linalg.inv(La)@U.T@B)
+    #         vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
+
+            
+    pdf2 = pdfNew/vals.T
+
     # fig = plt.figure()
     # ax = Axes3D(fig)
     # ax.scatter(rect[:,0], rect[:,1],gaussWeight, c='r', marker='.')

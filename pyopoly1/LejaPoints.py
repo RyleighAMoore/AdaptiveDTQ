@@ -191,8 +191,7 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, indexIni
     if pdf.shape == (len(pdf), ):
         pdf = np.expand_dims(pdf,1)
         
-    assert numLejaPointsToReturn <= np.size(mesh,0), "Asked for subset is bigger than whole set"
-    Px = mesh[indexInitPoint,0]; Py = mesh[indexInitPoint,1]
+    assert numLejaPointsToReturn <= np.size(mesh,0), "Asked for subset is bigger than whole set"    
     
     nearest, idx = UM.findNearestPoint(scale.mu[0][0], scale.mu[1][0], mesh, includeIndex=False, samePointRet0 = False)
     
@@ -201,8 +200,9 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, indexIni
     sigmaX = np.sqrt(scale.cov[0,0]); sigmaY = np.sqrt(scale.cov[1,1])
     
     #Since initial point is part of the mesh (when indexInitPoint >=0) we should remove it from the list so it isn't duplicated.
-    meshShortIC = np.delete(mesh, indexInitPoint, axis=0)
-    pdfShortIC = np.delete(pdf, indexInitPoint, axis=0)
+    
+    meshShortIC = np.delete(mesh, idx, axis=0)
+    pdfShortIC = np.delete(pdf, idx, axis=0)
         
     candidates = mapPointsTo(Px, Py, meshShortIC, 1/sigmaX, 1/sigmaY)
     

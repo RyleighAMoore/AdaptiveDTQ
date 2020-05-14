@@ -74,8 +74,13 @@ def fitQuad(Px,Py, mesh, pdf):
     assert all(Lam) > 0
     
     La = np.diag(Lam)
-    mu = -U @ np.linalg.inv(La) @ (B.T @ U).T
+    mu = -1/2 *U @ np.linalg.inv(La) @ (B.T @ U).T
+    
+    L = np.linalg.cholesky((sigma))
+    Const = np.exp(-c[5]+1/4*B.T@U@np.linalg.inv(La)@U.T@B)
 
+    # Const = 1/(np.pi*np.linalg.det(np.abs(L)))
+    
     zpred = quad(xy, *pred_params)
     # print('True parameters: ', true_params)
     # print('Predicted params:', pred_params)
@@ -96,15 +101,27 @@ def fitQuad(Px,Py, mesh, pdf):
         # scaling.setMu(np.asarray([[0,0]]).T)
     
         # scaling.setMu(np.asarray([[0,0]]).T)
-        scaling.setSigma(np.asarray([np.sqrt(sigma[0,0]),np.sqrt(sigma[1,1])]))
-        
+        # scaling.setSigma(np.asarray([np.sqrt(sigma[0,0]),np.sqrt(sigma[1,1])]))
+        scaling.setCov(sigma)
         gauss = fun.Gaussian(scaling, xy.T)
-        mesh = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
-        gauss2 = fun.Gaussian(scaling, mesh)
+        # mesh = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
+        # gauss2 = fun.Gaussian(scaling, mesh)
     
     else: 
         stop = 0
         
+    cc=pred_params
+    x,y = xy   
+    vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const[0][0]
+    
+    # vals2 = []
+    # con = []
+    # for i in range(len(xy.T)):
+    #     xx = np.expand_dims(xy.T[i],axis=1)
+    #     vals2.append(np.copy(np.exp(-(xx-scaling.mu).T@scaling.cov@(xx-scaling.mu))))
+    #     con.append(-c[3]*xx[0] - c[4]*xx[1]-c[5])
+        
+    # vals2 = np.asarray(vals2)
     # fig = plt.figure()
     # ax = Axes3D(fig)
     # ax.scatter(x, y,np.expand_dims(np.exp(zobs),1)/np.expand_dims(gauss,1), c='r', marker='.')
@@ -112,13 +129,13 @@ def fitQuad(Px,Py, mesh, pdf):
     # ax.scatter(mesh[:,0], mesh[:,1], gauss2)
     # plot(xy, zobs, pred_params)
     # plt.show()
-    return scaling, pdf/np.expand_dims(gauss,1)
+    return scaling, pdf/np.expand_dims(vals,1), pred_params, Const
     
 
 def main():
     a, b, c, d, e, f = 0.1,0.1,0,0,0,0
     true_params = [a, b, c, d, e, f]
-    xy, zobs = generate_example_data(20, true_params)
+    xy, zobs = generate_example_data(6, true_params)
     x, y = xy
 
     i = zobs.argmax()
@@ -150,9 +167,11 @@ def main():
     scaling.setSigma(np.asarray([np.sqrt(covar[0,0]),np.sqrt(covar[1,1])]))
     
     gauss = fun.Gaussian(scaling, xy.T)
-    mesh = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
-    gauss2 = fun.Gaussian(scaling, mesh)
-
+    # mesh = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
+    # gauss2 = fun.Gaussian(scaling, mesh)
+    cc=pred_params
+    x,y = xy
+    vals = -(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5])
 
     # fig = plt.figure()
     # ax = Axes3D(fig)
@@ -169,7 +188,7 @@ def quad(xy, a, b, c, d, e, f):
     A= np.asarray([[a,c],[c,b]])
     B=np.asarray([[d, e]]).T
     # quad = f + B.T@xy + xy.T@A@xy
-    quad = -(a*x**2/2+ b*y**2/2 + 2*c*x*y + d*x + e*y + f)
+    quad = -(a*x**2+ b*y**2 + 2*c*x*y + d*x + e*y + f)
     penalty =0
     penalty2 = 0
         
@@ -202,7 +221,6 @@ def generate_example_data(num, params):
     xy = xy.T
     x,y = xy
     
-
     
     # noise = np.log(np.abs(np.random.normal(0, 0.1, num)))
     # zobs2 = quad(xy, *params)
@@ -210,7 +228,7 @@ def generate_example_data(num, params):
     scaling = GaussScale(2)
     scaling.setMu(np.asarray([[0,0]]).T)
     scaling.setSigma(np.asarray([IC,IC]))
-    zobs = np.log((UM.generateICPDF(xy.T[:,0], xy.T[:,1], IC,IC))**1)
+    zobs = np.log((UM.generateICPDF(xy.T[:,0], xy.T[:,1], IC,IC))**2)
     # zobs = np.log(np.ones(len(xy.T)))
 
     # zobs = np.log(fun.Gaussian(scaling, xy.T)*(2*np.pi*IC*IC))
