@@ -74,7 +74,7 @@ def fitQuad(Px,Py, mesh, pdf):
     assert all(Lam) > 0
     
     La = np.diag(Lam)
-    mu = -1/2 *U @ np.linalg.inv(La) @ (B.T @ U).T
+    mu = -1/1*U @ np.linalg.inv(La) @ (B.T @ U).T
     
     L = np.linalg.cholesky((sigma))
     Const = np.exp(-c[5]+1/4*B.T@U@np.linalg.inv(La)@U.T@B)

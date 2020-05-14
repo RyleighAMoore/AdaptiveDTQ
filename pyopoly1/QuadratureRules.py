@@ -135,12 +135,12 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
 
             
     pdf2 = pdfNew/vals.T
-
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
+    
+    fig = plt.figure()
+    ax = Axes3D(fig)
     # ax.scatter(rect[:,0], rect[:,1],gaussWeight, c='r', marker='.')
-    # ax.scatter(mesh2[:,0], mesh2[:,1], pdf2, c='k', marker='o')
-    # plt.show()
+    ax.scatter(mesh2[:,0], mesh2[:,1], pdf2, c='k', marker='o')
+    plt.show()
     
     # fig = plt.figure()
     # ax = Axes3D(fig)
@@ -160,7 +160,6 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     # scaleNew, cfinal = productGaussians2D(scale, scaling)
     # mesh2 = mesh2[1:,:]
     # pdf2 = pdf2[1:]
-    
     
     value, condNum = QuadratureByInterpolationND(poly, scale1, mesh2, pdf2)
     # value = pdf2[-1]
@@ -184,7 +183,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     #     fig = plt.figure()
     #     ax = Axes3D(fig)
     #     ax.scatter(mesh[:,0], mesh[:,1], pdfNew, c='r', marker='.')
-    return value[0], condNum
+    return value[0], condNum, scale1
         
 
 if __name__ == "__main__":

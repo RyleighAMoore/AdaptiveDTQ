@@ -101,6 +101,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
     newPDF = []
     condNums = []
     interpErrors = []
+    plt.figure()
     # rv = multivariate_normal([0, 0], [[sigma**2, 0], [0, sigma**2]])
     # pdf = np.asarray([rv.pdf(mesh)]).T
     countUseMorePoints = 0
@@ -134,7 +135,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
         scaling.setSigma(np.asarray([sigmaX,sigmaY]))
       
         pdffull = np.expand_dims(GVals(muX, muY, mesh1, h),1)*pdfNew1
-        value, condNum = QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh1, pdffull, h, poly, mesh, np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf, ii)
+        value, condNum, theScale = QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh1, pdffull, h, poly, mesh, np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf, ii)
 
         fullVals = np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf
         if np.isnan(value) or value <0:
@@ -145,6 +146,8 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
         # print(condNum)
         # condNums.append(condNum)
         # interpErrors.append(maxinterpError)
+        plt.scatter(muX, muY, c='k', marker='o')
+        plt.scatter(theScale.mu[0][0], theScale.mu[1][0],c='r', marker='.')
     
         if condNum >2 or value < 0:
             countUseMorePoints = countUseMorePoints+1
