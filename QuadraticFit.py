@@ -74,7 +74,7 @@ def fitQuad(Px,Py, mesh, pdf):
     assert all(Lam) > 0
     
     La = np.diag(Lam)
-    mu = -1/1*U @ np.linalg.inv(La) @ (B.T @ U).T
+    mu = -1/2*U @ np.linalg.inv(La) @ (B.T @ U).T
     
     L = np.linalg.cholesky((sigma))
     Const = np.exp(-c[5]+1/4*B.T@U@np.linalg.inv(La)@U.T@B)
@@ -226,12 +226,12 @@ def generate_example_data(num, params):
     # zobs2 = quad(xy, *params)
     # zobs2 = np.log(UM.generateICPDF(x, y, .1,.1)) 
     scaling = GaussScale(2)
-    scaling.setMu(np.asarray([[0,0]]).T)
+    scaling.setMu(np.asarray([[1,-1]]).T)
     scaling.setSigma(np.asarray([IC,IC]))
     zobs = np.log((UM.generateICPDF(xy.T[:,0], xy.T[:,1], IC,IC))**2)
     # zobs = np.log(np.ones(len(xy.T)))
 
-    # zobs = np.log(fun.Gaussian(scaling, xy.T)*(2*np.pi*IC*IC))
+    zobs = np.log(fun.Gaussian(scaling, xy.T)*(2*np.pi*IC*IC))
     # zobs = np.log(np.exp(-((x-.1)**2/(2*IC**2)+ (y-.1)**2/(2*IC**2))))
     # 
     # sigma = 1

@@ -69,7 +69,7 @@ def getICMesh():
     # X.append(0)
     # Y.append(0)
     for point in range(len(grid)):
-        if np.sqrt(x[point]**2 + y[point]**2) < 0.5:
+        if np.sqrt(x[point]**2 + y[point]**2) < 0.4:
             X.append(x[point])
             Y.append(y[point])
     
