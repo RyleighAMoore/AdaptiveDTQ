@@ -50,16 +50,16 @@ L = np.linalg.cholesky((scale1.cov))
 Linv = np.linalg.inv(L)   
 
 #Get canonical mesh 
-stdMesh, two = LP.getLejaPoints(12, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
-stdMesh = LP.mapPointsBack(scale1.mu[0][0], scale1.mu[1][0], stdMesh, 1,1)
+stdMesh, two = LP.getLejaPoints(130, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
+stdMesh = LP.mapPointsBack(scale1.mu[0][0], scale1.mu[1][0], stdMesh, 1, 1)
+# stdMesh = LP.mapPointsBack(10, 10, stdMesh, 1,1)
 
 
 mesh = stdMesh
 pdf = polyFun(mesh[:,0], mesh[:,1])
 
-LuMu = (L@mesh.T).T + scale1.mu.T*np.ones(np.shape(mesh.T)).T
+# LuMu = (L@mesh.T).T + scale1.mu.T*np.ones(np.shape(mesh.T)).T
 u = (Linv@(mesh - scale1.mu.T*np.ones(np.shape(mesh.T)).T).T).T
-
 
 # pdfNew = polyFun(LuMu[:,0], LuMu[:,1])
 

@@ -29,6 +29,15 @@ def covPart(Px, Py, mesh, cov):
         vals.append(np.copy(val))
     return np.asarray(vals)
 
+# def Gaussian2(scaling, mesh):
+#     vals = []
+#     for i in range(len(mesh)):
+#         x = mesh[:,0]
+#         y = mesh[:,1]
+#         val = G(Px, Py, mesh[i,0], mesh[i,1], h)
+#         vals.append(np.copy(val))
+#     return np.asarray(vals)
+
 
 # Drift fuction
 def driftfun(x):

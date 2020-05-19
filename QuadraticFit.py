@@ -44,7 +44,7 @@ import opolynd
 from Scaling import GaussScale
 
 
-def fitQuad(Px,Py, mesh, pdf):
+def fitQuad(Px, Py, mesh, pdf):
     h=0.01
     zobs = np.log(pdf)
     zobs = np.squeeze(zobs)
@@ -55,29 +55,54 @@ def fitQuad(Px,Py, mesh, pdf):
     pred_params, uncert_cov = opt.curve_fit(quad, xy, zobs, p0 = [0,0,0,0,0,0])
     
     c = pred_params
-    A= np.asarray([[c[0], c[2]],[c[2],c[1]]])
-    B=np.expand_dims(np.asarray([c[3], c[4]]),1)
+    A = np.asarray([[c[0], c[2]],[c[2],c[1]]])
+    B = np.expand_dims(np.asarray([c[3], c[4]]),1)
     
-    assert c[0]*c[1] - c[2]**2 >0
-    try:
-        sigma = np.linalg.inv(A)
-    except:
-        r=0
-    if np.linalg.det(sigma)<=0:
-        print(sigma)
+    # if c[0]*c[1] - c[2]**2 <0:
+    #     print(Px,Py)
+    # assert c[0]*c[1] - c[2]**2 >0
+    ''' 
+    if np.linalg.det(A)<=0:
+        # print(Px,Py)
+        # print(pdf)
         # sigma = np.asarray([[h*fun.g1()**2,0],[0,h*fun.g2()**2]])
-        assert np.linalg.det(sigma)>0, 'Determinant is Negative'
-        assert c[0] >0
-        assert c[1]>0
+        evals, vects = np.linalg.eig(A)
+        projSum = np.zeros(np.shape(vects))
+        for i in range(len(vects)):
+            v = vects[:,i]
+            s = max(evals[i],0)*v@v.T
+            A = projSum +s
+        A[0,1] = A[0,1]/2
+        A[1,0] = A[1,0]/2
+   
+    if A[0,0] <= 0:
+        A[0,0] = 0.01
+    if A[1,1] <= 0:
+        A[1,1] = 0.01
     
+    if np.linalg.det(A) <=0:
+        A[0,1] = 0
+        A[1,0] = 0
+        print(A)
+    '''
+    assert np.linalg.det(A)> 0, 'Determinant is Negative'
+        
+        # assert c[0] >0
+        # assert c[1]>0
+        
+    sigma = np.linalg.inv(A)
+
     Lam, U = np.linalg.eigh(A)
-    assert all(Lam) > 0
+    # assert all(Lam) > 0
     
     La = np.diag(Lam)
     mu = -1/2*U @ np.linalg.inv(La) @ (B.T @ U).T
-    
+    # print(sigma)
+
     L = np.linalg.cholesky((sigma))
+    
     Const = np.exp(-c[5]+1/4*B.T@U@np.linalg.inv(La)@U.T@B)
+    
 
     # Const = 1/(np.pi*np.linalg.det(np.abs(L)))
     
@@ -90,8 +115,6 @@ def fitQuad(Px,Py, mesh, pdf):
     # print("sigmas = ", c[0], c[1])
     # print("mus = ", c[2], c[3])
     import math
-    if sigma[0,1] > 0.0001 or sigma[1,0] > 0.00001:
-        print(sigma)
     
     if math.isfinite(mu[0][0]) and math.isfinite(mu[1][0]) and math.isfinite(np.sqrt(sigma[0,0])) and math.isfinite(np.sqrt(sigma[1,1])):
 
@@ -124,6 +147,7 @@ def fitQuad(Px,Py, mesh, pdf):
     # vals2 = np.asarray(vals2)
     # fig = plt.figure()
     # ax = Axes3D(fig)
+    # ax.scatter(mesh[:,0], mesh[:,1], pdf)
     # ax.scatter(x, y,np.expand_dims(np.exp(zobs),1)/np.expand_dims(gauss,1), c='r', marker='.')
     # ax.scatter(x, y,np.exp(zobs), c='k', marker='.')
     # ax.scatter(mesh[:,0], mesh[:,1], gauss2)
@@ -139,7 +163,7 @@ def main():
     x, y = xy
 
     i = zobs.argmax()
-    guess = [1, 1, 1, 1, 1, 1]
+    guess = [1, 1, 0, 0, 0, 0]
     pred_params, uncert_cov = opt.curve_fit(quad, xy, zobs, p0=guess)
     c = pred_params
     A= np.asarray([[c[0], c[2]],[c[2],c[1]]])
@@ -166,7 +190,7 @@ def main():
 
     scaling.setSigma(np.asarray([np.sqrt(covar[0,0]),np.sqrt(covar[1,1])]))
     
-    gauss = fun.Gaussian(scaling, xy.T)
+    # gauss = fun.Gaussian(scaling, xy.T)
     # mesh = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
     # gauss2 = fun.Gaussian(scaling, mesh)
     cc=pred_params
@@ -177,7 +201,7 @@ def main():
     # ax = Axes3D(fig)
     # ax.scatter(x, y,np.exp(zobs)/gauss, c='r', marker='.')
     
-    print (np.exp(zobs)/gauss)
+    print (np.exp(zobs)/vals)
     # ax.scatter(mesh[:,0], mesh[:,1], gauss2)
     # plot(xy, zobs, pred_params)
     # plt.show()
@@ -189,14 +213,19 @@ def quad(xy, a, b, c, d, e, f):
     B=np.asarray([[d, e]]).T
     # quad = f + B.T@xy + xy.T@A@xy
     quad = -(a*x**2+ b*y**2 + 2*c*x*y + d*x + e*y + f)
-    penalty =0
-    penalty2 = 0
+    # penalty =0
+    # penalty2 = 0
         
-    A= np.asarray([[a, c],[c,b]])
+    # A= np.asarray([[a, c],[c,b]])
+    # try:
+    #     sigma = np.linalg.inv(A)
+    # except:
+    #     quad = quad -1000
     
     # sigma = np.linalg.inv(A)
-    if a*b-c**2 <= 0:
-        quad = quad - abs(a*b-c**2)*10000 
+    # if a*b-c**2 <= 0 or a<0 or b<0:
+    #     quad = quad - abs(a*b-c**2)*100000
+
     # quad = (-(x-c)**2/(2*a) + (y-d)**2/(2*b) + e*x*y +f)
 
     return quad
@@ -229,9 +258,10 @@ def generate_example_data(num, params):
     scaling.setMu(np.asarray([[1,-1]]).T)
     scaling.setSigma(np.asarray([IC,IC]))
     zobs = np.log((UM.generateICPDF(xy.T[:,0], xy.T[:,1], IC,IC))**2)
-    # zobs = np.log(np.ones(len(xy.T)))
-
-    zobs = np.log(fun.Gaussian(scaling, xy.T)*(2*np.pi*IC*IC))
+    
+    zobs = np.log(np.ones(len(xy.T)))
+    
+    # zobs = np.log(fun.Gaussian(scaling, xy.T)*(2*np.pi*IC*IC))
     # zobs = np.log(np.exp(-((x-.1)**2/(2*IC**2)+ (y-.1)**2/(2*IC**2))))
     # 
     # sigma = 1

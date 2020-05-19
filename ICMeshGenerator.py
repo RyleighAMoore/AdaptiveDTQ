@@ -29,7 +29,7 @@ import LejaPoints as LP
 import MeshUpdates2D as meshUp
 from Scaling import GaussScale
 
-def getICMesh():
+def getICMesh(radius):
     # define spatial grid
     kstep = 0.1
     xmin=-2
@@ -54,7 +54,7 @@ def getICMesh():
     mesh2 = LP.mapPointsBack(0, 0, mesh2, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2())
 
 
-    meshSpacing = DM.separationDistance(mesh)*1
+    meshSpacing = 0.15 #DM.separationDistance(mesh)*2
     grid = UM.generateOrderedGridCenteredAtZero(-1.6, 1.6, -1.6, 1.6, meshSpacing , includeOrigin=True)
     noise = np.random.normal(0,np.sqrt(h)*fun.g1(), size = (len(grid),2))
     
@@ -69,7 +69,7 @@ def getICMesh():
     # X.append(0)
     # Y.append(0)
     for point in range(len(grid)):
-        if np.sqrt(x[point]**2 + y[point]**2) < 0.4:
+        if np.sqrt(x[point]**2 + y[point]**2) < radius:
             X.append(x[point])
             Y.append(y[point])
     
@@ -90,4 +90,4 @@ def getICMesh():
 
 
 if __name__ == "__main__":
-    getICMesh()
+    getICMesh(0.5)

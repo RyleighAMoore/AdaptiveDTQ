@@ -25,10 +25,10 @@ global MaxSlope
 MaxSlope = 0 # Initialize to 0, the real value is set in the code
 addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
 removeZerosValuesIfLessThanTolerance = 10**(-3)
-minDistanceBetweenPoints = 0.07
-minDistanceBetweenPointsBoundary = 0.07
+minDistanceBetweenPoints = 0.2
+minDistanceBetweenPointsBoundary = 0.2
 skipCount = 5
-maxDistanceBetweenPoints = 0.1
+maxDistanceBetweenPoints = 0.4
 numStdDev = 5 #For grids around each point in the mesh
 
 adjustDensity = False
@@ -62,8 +62,8 @@ def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly):
     ChangedBool2 = 0
     ChangedBool1 = 0
     ChangedBool3 = 0
-    # if adjustBoundary:
-    #     Mesh, Pdf, ChangedBool2 = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool)
+    if adjustBoundary:
+        Mesh, Pdf, ChangedBool2 = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool)
     if adjustDensity:
         Mesh, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly)
     Mesh, Pdf, ChangedBool3 = checkForAndRemoveZeroPoints(Mesh,Pdf, tri)
@@ -233,11 +233,9 @@ def addPoint(Px,Py, Mesh, Pdf, triangulation, kstep, h):
     
     if interp < 0:
         interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='linear', fill_value=np.min(Pdf))])
-    if interp <0:
+    if interp <=0:
         interp = np.asarray([[10**(-10)]])
-    assert interp>=0
-    assert interp < 20
-
+    
         # interp = LQ.interpolateLeja(Mesh, Pdf, newPoint, h)
     # train_samples, train_values = u7.getMeshValsThatAreClose(Mesh, Pdf, 0.1, 0.1, Px, Py)
     # grid_z2 = griddata(train_samples, train_values, np.asarray([[Px,Py]]), method='cubic', fill_value=0)
@@ -277,10 +275,10 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h, poly):
         if max(boundaryPointsToAddAround == 1):
             for val in range(len(boundaryPointsToAddAround)-1,-1,-1):
                 if boundaryPointsToAddAround[val] == 1: # if we should extend boundary
-                    # newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, minDistanceBetweenPointsBoundary*2, minDistanceBetweenPointsBoundary)
+                    newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, minDistanceBetweenPointsBoundary, minDistanceBetweenPointsBoundary)
                     # #mesh12, pdfNew1 = LQ.getMeshValsThatAreClose(Mesh, Pdf, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g1(), Mesh[val,0], Mesh[val,1])
                     # allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 3, Mesh, 3, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(),4, 100)
-                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints([Mesh[val,0], Mesh[val,1],np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()], 12, 20, poly, neighbors=[1,Mesh])
+                    # allPoints, newPoints = LP.getLejaPointsWithStartingPoints([Mesh[val,0], Mesh[val,1],np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()], 12, 20, poly, neighbors=[1,Mesh])
                     # #allPoints, newPoints = LP.getLejaPoints(130, mesh12.T,20, num_candidate_samples = 230, dimensions=2, defCandidateSamples=False, candidateSampleMesh = [], returnIndices = False)
                     
                     # plt.figure()
@@ -288,7 +286,7 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h, poly):
                     # plt.scatter(allPoints[:,0], allPoints[:,1], c='r')
                     # plt.scatter(Mesh[val,0], Mesh[val,1], c='b')
                     
-                    newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, minDistanceBetweenPointsBoundary)
+                    newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, minDistanceBetweenPointsBoundary/2)
                     # newPoints = newPoints[:10]
                     if len(newPoints)==0:
                         keepAdding = False
@@ -367,9 +365,9 @@ def addPointsRadially(pointX, pointY, mesh, numPointsToAdd, kstep, minDist):
     for i in range(numPointsToAdd):
         newPointX = radius*np.cos(i*dTheta)+pointX
         newPointY = radius*np.sin(i*dTheta) + pointY
-        nearestPoint = UM.findNearestPoint(newPointX, newPointY, mesh)
-        distToNearestPoint = np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
-        if distToNearestPoint > minDist:
+        nearestPoint,idx = UM.findNearestPoint(newPointX, newPointY, mesh)
+        distToNearestPoint= np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
+        if distToNearestPoint >= minDist/2:
             #print("adding")
             points.append([newPointX, newPointY])
     return np.asarray(points)

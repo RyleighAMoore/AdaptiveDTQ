@@ -50,7 +50,7 @@ poly.lambdas = lambdas
 
 # mesh, two = LP.getLejaPoints(130, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
 # mesh = LP.mapPointsBack(0, 0, mesh, np.sqrt(h)*fun.g1()/2, np.sqrt(h)*fun.g2()/2)
-mesh = M.getICMesh()
+mesh = M.getICMesh(1)
 
 # plt.scatter(mesh[:,0], mesh[:,1])
 
@@ -62,7 +62,7 @@ scale.setMu(np.asarray([[0,0]]).T)
 scale.setSigma(np.asarray([np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()]))
 pdf = fun.Gaussian(scale, mesh)
 
-meshUp.setGlobalVarsForMesh(mesh)
+# meshUp.setGlobalVarsForMesh(mesh)
 # import pickle
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillLongFullSplit.p", "rb" ) 
 # pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillLongFullSplit1.p", "rb" ) 
@@ -93,8 +93,8 @@ SlopesMin = []
 SlopesMean = []  
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
-adjustGrid = False
-for i in trange(4):
+adjustGrid = True
+for i in trange(20):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
@@ -106,11 +106,12 @@ for i in trange(4):
             mesh, pdf, tri, addBool = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly)
             if (addBool == 1):
                 tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-            mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly)
-            if (remBool == 1):
-               tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+            # mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly)
+            # if (remBool == 1):
+            #    tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
         
     t=0 
+    # print(len(mesh))
     import LejaQuadrature as LQ
     if i >-1:
         pdfNew = []
@@ -142,7 +143,7 @@ for i in trange(4):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =2
+index =-1
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 index = 50
 # ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')
