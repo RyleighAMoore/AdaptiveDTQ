@@ -24,14 +24,14 @@ import LejaPoints as LP
 global MaxSlope
 MaxSlope = 0 # Initialize to 0, the real value is set in the code
 addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
-removeZerosValuesIfLessThanTolerance = 10**(-3)
-minDistanceBetweenPoints = 0.2
-minDistanceBetweenPointsBoundary = 0.2
+removeZerosValuesIfLessThanTolerance = 10**(-5)
+minDistanceBetweenPoints = 0.1
+minDistanceBetweenPointsBoundary = 0.1
 skipCount = 5
-maxDistanceBetweenPoints = 0.4
+maxDistanceBetweenPoints = 0.15
 numStdDev = 5 #For grids around each point in the mesh
 
-adjustDensity = False
+adjustDensity = True
 adjustBoundary = True
 
 def setGlobalVarsForMesh(mesh):
@@ -275,7 +275,7 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h, poly):
         if max(boundaryPointsToAddAround == 1):
             for val in range(len(boundaryPointsToAddAround)-1,-1,-1):
                 if boundaryPointsToAddAround[val] == 1: # if we should extend boundary
-                    newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, minDistanceBetweenPointsBoundary, minDistanceBetweenPointsBoundary)
+                    newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 8, minDistanceBetweenPointsBoundary, minDistanceBetweenPointsBoundary)
                     # #mesh12, pdfNew1 = LQ.getMeshValsThatAreClose(Mesh, Pdf, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g1(), Mesh[val,0], Mesh[val,1])
                     # allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 3, Mesh, 3, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2(),4, 100)
                     # allPoints, newPoints = LP.getLejaPointsWithStartingPoints([Mesh[val,0], Mesh[val,1],np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()], 12, 20, poly, neighbors=[1,Mesh])

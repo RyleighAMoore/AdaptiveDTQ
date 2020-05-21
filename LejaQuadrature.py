@@ -135,7 +135,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
         scaling.setSigma(np.asarray([sigmaX,sigmaY]))
       
         pdffull = np.expand_dims(GVals(muX, muY, mesh1, h),1)*pdfNew1
-        value, condNum = QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh1, pdffull, h, poly, mesh, np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf, ii)
+        value, condNum = QuadratureByInterpolationND_DivideOutGaussian(scaling, pdffull, pdfNew1, h, poly, mesh, np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf, ii)
 
         fullVals = np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf
         # if np.isnan(value) or value <0:
@@ -212,3 +212,6 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
 
 
 
+# fig = plt.figure()
+# ax = Axes3D(fig)
+# ax.scatter(Meshes[-1][:,0], Meshes[-1][:,1], np.expand_dims(pdffull, axis=1), c='r', marker='o')

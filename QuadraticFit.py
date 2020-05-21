@@ -46,13 +46,20 @@ from Scaling import GaussScale
 
 def fitQuad(Px, Py, mesh, pdf):
     h=0.01
+    if np.min(pdf) <= 0:
+        rrrr=0
     zobs = np.log(pdf)
     zobs = np.squeeze(zobs)
     xy = mesh.T
     x, y = mesh.T
     
     guess = [1, 1, 1, 1, 1, 1]
-    pred_params, uncert_cov = opt.curve_fit(quad, xy, zobs, p0 = [0,0,0,0,0,0])
+    try:
+        pred_params, uncert_cov = opt.curve_fit(quad, xy, zobs, p0 = [0,0,0,0,0,0])
+    except:
+        print(zobs)
+        print(mesh)
+        print(pdf)
     
     c = pred_params
     A = np.asarray([[c[0], c[2]],[c[2],c[1]]])

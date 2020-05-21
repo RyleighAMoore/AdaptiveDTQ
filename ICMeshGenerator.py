@@ -54,7 +54,7 @@ def getICMesh(radius):
     mesh2 = LP.mapPointsBack(0, 0, mesh2, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2())
 
 
-    meshSpacing = 0.15 #DM.separationDistance(mesh)*2
+    meshSpacing = 0.1 #DM.separationDistance(mesh)*2
     grid = UM.generateOrderedGridCenteredAtZero(-1.6, 1.6, -1.6, 1.6, meshSpacing , includeOrigin=True)
     noise = np.random.normal(0,np.sqrt(h)*fun.g1(), size = (len(grid),2))
     

@@ -90,34 +90,39 @@ import Functions as fun
 
 def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, fullMesh, fullPDF, ii):
     x,y = fullMesh.T
+
+    maxValIntegrand = np.argmax(fullPDF)
     
-    if np.max(pdf) < 10**(-15):
-        l=1
-        return 10**(-4), 1
-        # sigmaX=np.sqrt(h)*g1()
-        # sigmaY=np.sqrt(h)*g2()
-        # scale1 = GaussScale(2)
-        # scale1.setMu(np.asarray([[scaling.mu[0][0],scaling.mu[1][0]]]).T)
-        # scale1.setSigma(np.asarray([sigmaX,sigmaY]))
-        
-        # # vals = 
-        
-        # # vals = 
-    else: 
-        scale1, temp, cc, Const = fitQuad(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
-        
-        # mesh2, pdfNew = LP.getLejaSetFromPoints(scale1, fullMesh, 12, poly, fullPDF, ii)
-        
-        # x,y = mesh2.T
-       
-        vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
+    scale = GaussScale(2)
+    # scale.setMu(np.asarray([[scaling.mu[0][0]/2,scaling.mu[1][0]/2]]).T)
+    scale.setMu(np.asarray([fullMesh[maxValIntegrand]]).T)
+    scale.setSigma(np.asarray([.1,.1]))
+    
+    mesh, pdf = LP.getLejaSetFromPoints(scale, fullMesh, 12, poly, fullPDF, ii)
+    
+    scale1, temp, cc, Const = fitQuad(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
+    
+    # scale1, temp, cc, Const = fitQuad(scaling.mu[0][0],scaling.mu[1][0], fullMesh, fullPDF)
+    # assert(np.isclose(np.sum(cc-cc2),0))
+    
+    vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
             
     pdf2 = fullPDF/vals.T
     
     value, condNum = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2)
 
     # print(value, condNum)
-
+    if value[0] <=0 or value[0] ==float('nan'):
+        rrr=0
+        # scale.setMu(np.asarray([fullMesh[maxValIntegrand]/2]).T)
+        
+        # mesh, pdf = LP.getLejaSetFromPoints(scale, fullMesh, 12, poly, fullPDF, ii)
+        
+        scale1, temp, cc, Const = fitQuad(scaling.mu[0][0],scaling.mu[1][0], fullMesh, fullPDF)
+        vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
+        pdf2 = fullPDF/vals.T
+        value, condNum = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2)
+        
     return value[0], condNum
         
 
@@ -350,3 +355,7 @@ if __name__ == "__main__":
     # ax.scatter(mesh[:,0], mesh[:,1], np.asarray(pdfNew),  c='r', marker='o')
     # # ax.scatter(mesh[:,0], mesh[:,1], surfaces[1],  c='k', marker='.')
     
+    
+# fig = plt.figure()
+# ax = Axes3D(fig)
+# ax.scatter(fullMesh[:,0], fullMesh[:,1], np.asarray(fullPDF),  c='r', marker='o')

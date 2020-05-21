@@ -32,11 +32,11 @@ from Scaling import GaussScale
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.05
-xmin=-1
-xmax=1
-ymin=-1
-ymax=1
+kstep = 0.07
+xmin=-1.5
+xmax=1.5
+ymin=-1.5
+ymax=1.5
 
 
 def generateGRow(point, allPoints, kstep, h):
@@ -105,7 +105,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
 
 graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(surfaces[-1]))
+ax.set_zlim(0, np.max(surfaces[10]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
                                          interval=100, blit=False)
 
@@ -122,7 +122,7 @@ pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Mesh1.p", "wb" 
 
 
 
-fig = plt.figure()
-ax = Axes3D(fig)
-index =3
-ax.scatter(mesh[:,0], mesh[:,1], G, c='r', marker='.')
+# fig = plt.figure()
+# ax = Axes3D(fig)
+# index =3
+# ax.scatter(mesh[:,0], mesh[:,1], G, c='r', marker='.')

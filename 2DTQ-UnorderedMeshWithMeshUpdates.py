@@ -52,6 +52,8 @@ poly.lambdas = lambdas
 # mesh = LP.mapPointsBack(0, 0, mesh, np.sqrt(h)*fun.g1()/2, np.sqrt(h)*fun.g2()/2)
 mesh = M.getICMesh(1)
 
+
+
 # plt.scatter(mesh[:,0], mesh[:,1])
 
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], IC,IC)
@@ -94,7 +96,7 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(20):
+for i in trange(5):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
@@ -108,7 +110,7 @@ for i in trange(20):
                 tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
             # mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly)
             # if (remBool == 1):
-            #    tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+            #     tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
         
     t=0 
     # print(len(mesh))
