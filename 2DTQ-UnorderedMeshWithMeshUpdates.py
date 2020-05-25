@@ -54,7 +54,7 @@ poly.lambdas = lambdas
 pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/ICMesh1.p", "rb" ) 
 mesh = pickle.load(pkl_file)
 
-mesh = M.getICMesh(1)
+# mesh = M.getICMesh(1)
 
 
 
@@ -100,7 +100,7 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(20):
+for i in trange(5):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
@@ -147,11 +147,11 @@ for i in trange(20):
         print('Length of mesh = ', len(mesh))
 
 
-fig = plt.figure()
-ax = Axes3D(fig)
-index =14
-ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
-index = 50
+# fig = plt.figure()
+# ax = Axes3D(fig)
+# index =14
+# ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
+# index = 50
 # ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')
 
 def update_graph(num):
@@ -166,7 +166,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[10]))
+ax.set_zlim(0, np.max(PdfTraj[5]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                           interval=500, blit=False)
 

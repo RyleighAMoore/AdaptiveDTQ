@@ -134,23 +134,32 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     distances = []
     for index in maxVals:
         distances.append(np.sum((scaling.mu.T-fullMesh[index].T)**2))
-        
-    if len(maxVals)>1:
-        rrr=0
     
     maxValIntegrand = np.argmax(fullPDF)
     maxValIntegrand = np.argmin(distances)
+    Px = fullMesh[maxValIntegrand,0]
+    Py = fullMesh[maxValIntegrand,1]
   
+    mesh, distances, indices = UM.findNearestKPoints(Px,Py, fullMesh, 20, getIndices = True)
+    pdf = fullPDF[indices]
     
+    '''
     # if step >0 and len(PastScales)>0:
     #     scale = PastScales.pop(0)
     # else:
     scale = GaussScale(2)
     # scale.setMu(np.asarray([[scaling.mu[0][0]/2,scaling.mu[1][0]/2]]).T)
     scale.setMu(np.asarray([fullMesh[maxValIntegrand]]).T)
-    scale.setSigma(np.asarray([0.1,0.1]))
+    scale.setSigma(np.asarray([0.3,0.3]))
     
     mesh, pdf = LP.getLejaSetFromPoints(scale, fullMesh, 20, poly, fullPDF, ii)
+    '''
+    # plt.figure()
+    # plt.scatter(mesh[:,0], mesh[:,1], marker='o')
+    # plt.scatter(mesh2[:,0], mesh2[:,1],c='r', marker='.')
+    # plt.scatter(Px,Py, c='g')
+    # '''
+    
     if math.isnan(pdf[0]):
         Const = float('nan')
     else:

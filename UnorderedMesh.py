@@ -44,10 +44,15 @@ def findNearestKPoints(xCoord, yCoord, AllPoints, numNeighbors, getIndices = Fal
 
 def findNearestPoint(xCoord, yCoord, AllPoints, includeIndex=False, samePointRet0 = False):
     normList = []
-    for point in range(len(AllPoints)):
-        xVal = AllPoints[point,0]
-        yVal = AllPoints[point,1]
-        normList.append(np.sqrt((xCoord-xVal)**2+(yCoord-yVal)**2))
+    
+    point = np.asarray([xCoord,yCoord])
+    normList =np.sum((point*np.shape(AllPoints)-AllPoints)**2,axis=1)
+
+    
+    # for point in range(len(AllPoints)):
+    #     xVal = AllPoints[point,0]
+    #     yVal = AllPoints[point,1]
+    #     normList.append(np.sqrt((xCoord-xVal)**2+(yCoord-yVal)**2))
     idx = np.argsort(normList)
     #print(idx)
     if normList[idx[0]] == 0: # point is part of the set
