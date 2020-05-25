@@ -50,6 +50,10 @@ poly.lambdas = lambdas
 
 # mesh, two = LP.getLejaPoints(130, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
 # mesh = LP.mapPointsBack(0, 0, mesh, np.sqrt(h)*fun.g1()/2, np.sqrt(h)*fun.g2()/2)
+
+pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/ICMesh1.p", "rb" ) 
+mesh = pickle.load(pkl_file)
+
 mesh = M.getICMesh(1)
 
 
@@ -96,7 +100,7 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(5):
+for i in trange(20):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
@@ -124,7 +128,7 @@ for i in trange(5):
         # if i ==0:
         #     pdf = LQ.StepForwardFirstStep_ICofGaussian(mesh, pdf, poly, h,12, icSigma =IC)
         # if i < 2:
-        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12)
+        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i)
         # elif i < 5:
         #     pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 12)
         # else:
@@ -145,7 +149,7 @@ for i in trange(5):
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =-1
+index =14
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 index = 50
 # ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')
@@ -162,7 +166,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(PdfTraj[-1]))
+ax.set_zlim(0, np.max(PdfTraj[10]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                           interval=500, blit=False)
 

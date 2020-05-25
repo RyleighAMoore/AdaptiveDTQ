@@ -300,7 +300,7 @@ def continue_pivoted_lu_factorization(LU_factor,raw_pivots,current_iter,
         # udpate U_factor
         col_vector = LU_factor[it+1:,it]
         row_vector = LU_factor[it,it+1:]
-
+        
         update = np.outer(col_vector,row_vector)
         LU_factor[it+1:,it+1:]-= update
     return LU_factor, raw_pivots, it, successBoolean

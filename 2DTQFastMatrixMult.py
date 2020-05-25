@@ -32,7 +32,7 @@ from Scaling import GaussScale
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.07
+kstep = 0.05
 xmin=-1.5
 xmax=1.5
 ymin=-1.5
@@ -82,9 +82,9 @@ while t < 101:
 
 fig = plt.figure()
 ax = Axes3D(fig)
-index =10
+index =16
 ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
-index =1
+index =16
 ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
 # ax.scatter(meshVals[:,0], meshVals[:,1], newPDF, c='k', marker='.')
 

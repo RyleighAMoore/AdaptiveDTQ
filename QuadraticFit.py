@@ -57,6 +57,8 @@ def fitQuad(Px, Py, mesh, pdf):
     try:
         pred_params, uncert_cov = opt.curve_fit(quad, xy, zobs, p0 = [0,0,0,0,0,0])
     except:
+        return float('nan'),float('nan'),float('nan'),float('nan')
+    
         print(zobs)
         print(mesh)
         print(pdf)
@@ -92,7 +94,8 @@ def fitQuad(Px, Py, mesh, pdf):
         A[1,0] = 0
         print(A)
     '''
-    assert np.linalg.det(A)> 0, 'Determinant is Negative'
+    if np.linalg.det(A)<= 0:
+         return float('nan'),float('nan'),float('nan'),float('nan')
         
         # assert c[0] >0
         # assert c[1]>0
@@ -100,7 +103,8 @@ def fitQuad(Px, Py, mesh, pdf):
     sigma = np.linalg.inv(A)
 
     Lam, U = np.linalg.eigh(A)
-    # assert all(Lam) > 0
+    if np.min(Lam) <= 0:
+        return float('nan'),float('nan'),float('nan'),float('nan')
     
     La = np.diag(Lam)
     mu = -1/2*U @ np.linalg.inv(La) @ (B.T @ U).T

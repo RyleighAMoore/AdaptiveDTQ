@@ -23,15 +23,15 @@ import LejaPoints as LP
 
 global MaxSlope
 MaxSlope = 0 # Initialize to 0, the real value is set in the code
-addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-5)
 removeZerosValuesIfLessThanTolerance = 10**(-5)
-minDistanceBetweenPoints = 0.1
-minDistanceBetweenPointsBoundary = 0.1
+minDistanceBetweenPoints = 0.15
+minDistanceBetweenPointsBoundary = 0.15
 skipCount = 5
 maxDistanceBetweenPoints = 0.15
 numStdDev = 5 #For grids around each point in the mesh
 
-adjustDensity = True
+adjustDensity = False
 adjustBoundary = True
 
 def setGlobalVarsForMesh(mesh):

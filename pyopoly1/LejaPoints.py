@@ -51,6 +51,8 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
     
     
     if returnIndices:
+        if successBool == False:
+            return [float('nan')], [float('nan')]
         assert successBool == True, "Need to implement returning indices when successBool is False."
         
     if successBool ==True:
@@ -154,8 +156,8 @@ poly: standard normal PCE
 neighbors = [numNeighbors, mesh]
 '''
 def getLejaPointsWithStartingPoints(scaleParams, numLejaPoints, numCandidateSamples, poly, neighbors=[0,[]]):
-    Px = scaleParams[0]; Py = scaleParams[1]
-    sigmaX = scaleParams[2]; sigmaY = scaleParams[3]
+    Px = scaleParams.mu[0][0]; Py = scaleParams.mu[0][0]
+    sigmaX = np.sqrt(scaleParams.cov[0,0]); sigmaY = np.sqrt(scaleParams.cov[1,1])
     if neighbors[0] > 0: 
         numNeighbors = neighbors[0]; mesh = neighbors[1]
         neighbors, distances = UM.findNearestKPoints(Px, Py, mesh, numNeighbors) 

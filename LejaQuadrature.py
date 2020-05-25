@@ -44,7 +44,7 @@ def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
     return np.asarray(MeshToKeep), np.asarray(PdfToKeep)
 
 from LejaPoints import getLejaSetFromPoints, mapPointsBack, mapPointsTo, getLejaPoints
-from QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolationND_FirstStepWithICGaussian, QuadratureByInterpolationND_DivideOutGaussian
+from QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolationND_DivideOutGaussian
 from families import HermitePolynomials
 from Scaling import GaussScale
 import indexing
@@ -91,9 +91,9 @@ allp, new = getLejaPoints(60, np.asarray([[0,0]]).T, H, num_candidate_samples=50
 #     newPDFs = np.asarray(newPDF)
 #     condNums = np.asarray([condNums]).T
 #     return newPDFs
+import math
 
-
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step):
     sigmaX=np.sqrt(h)*g1()
     sigmaY=np.sqrt(h)*g2()
     sigma = np.sqrt(h)
@@ -102,6 +102,12 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
     condNums = []
     interpErrors = []
     # plt.figure()
+    Lvals00 = []
+    Lvals11 = []
+    Lvals01 = []
+    Lvals10 = []
+    muValsX = []
+    muValsY = []
     # rv = multivariate_normal([0, 0], [[sigma**2, 0], [0, sigma**2]])
     # pdf = np.asarray([rv.pdf(mesh)]).T
     countUseMorePoints = 0
@@ -116,7 +122,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
         
         # mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
 
-        mesh1, pdfNew1 = LP.getLejaSetFromPoints(scale, mesh, numNodes, poly, pdf, ii)
+        # mesh1, pdfNew1 = LP.getLejaSetFromPoints(scale, mesh, numNodes, poly, pdf, ii)
         # mesh1 = mesh
         # pdfNew1 = pdf
         
@@ -134,40 +140,35 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
         scaling.setMu(np.asarray([[muX,muY]]).T)
         scaling.setSigma(np.asarray([sigmaX,sigmaY]))
       
-        pdffull = np.expand_dims(GVals(muX, muY, mesh1, h),1)*pdfNew1
-        value, condNum = QuadratureByInterpolationND_DivideOutGaussian(scaling, pdffull, pdfNew1, h, poly, mesh, np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf, ii)
-
-        fullVals = np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf
-        # if np.isnan(value) or value <0:
-        #     condNum = 11
-        # value, condNum = QuadratureByInterpolationND(poly, scaling, mesh1, testing)
+        # pdffull = np.expand_dims(GVals(muX, muY, mesh1, h),1)*pdfNew1
+        value, condNum, scaleUsed = QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, mesh, np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf, ii,step)
+        # Lvals00.append(scaleUsed.cov[0,0])
+        # Lvals11.append(scaleUsed.cov[1,1])
+        # Lvals10.append(scaleUsed.cov[1,0])
+        # Lvals01.append(scaleUsed.cov[0,1])
+        # muValsX.append(scaleUsed.mu[0][0])
+        # muValsY.append(scaleUsed.mu[1][0])
         
-        # print(value)
-        # print(condNum)
-        # condNums.append(condNum)
-        # interpErrors.append(maxinterpError)
-        # plt.scatter(muX, muY, c='k', marker='o')
-        # plt.scatter(theScale.mu[0][0], theScale.mu[1][0],c='r', marker='.')
-    
-        if condNum <-1:
+        
+        if math.isnan(condNum) or value <0 or condNum >10:
             print(muX,muY)
-            countUseMorePoints = countUseMorePoints+1
-            mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
+            
+            # mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
             # plt.figure()
             # plt.scatter(mesh[:,0], mesh[:,1], c='k', marker='*')
             # plt.scatter(mesh12[:,0], mesh12[:,1], c='r', marker='.')
             # plt.scatter(muX, muY, c='g', marker='.')
             
-            mesh12 = mapPointsTo(muX, muY, mesh12, 1/sigmaX, 1/sigmaY)
-            num_leja_samples = numNodes
-            initial_samples = mesh12
-            numBasis=numNodes
-            initial_samples = np.asarray([[0,0]])
+            # mesh12 = mapPointsTo(muX, muY, mesh, 1/sigmaX, 1/sigmaY)
+            # num_leja_samples = numNodes
+            # initial_samples = mesh12
+            # numBasis=numNodes
+            # initial_samples = np.asarray([[0,0]])
             
-            # allp, new = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
-            
-            mesh12 = mapPointsBack(muX, muY, allp, sigmaX/2, sigmaY/2)
-            
+            lejaPointsFinal, new = LP.getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
+            # mesh12, newLeja = LP.getLejaPointsWithStartingPoints(scaling, 130, 1000, poly, neighbors=[0,[]])
+            mesh12 = mapPointsBack(muX, muY, lejaPointsFinal, sigmaX, sigmaY)
+
             
             # plt.figure()
             # plt.scatter(mesh[:,0], mesh[:,1], c='k', marker='*')
@@ -175,21 +176,47 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes):
             # plt.scatter(muX, muY, c='g', marker='.')
     
             pdfNew = np.asarray(griddata(mesh, pdf, mesh12, method='cubic', fill_value=0))
-            pdfNew[pdfNew < 0] = 0
+            pdfNew[pdfNew < 0] = 10**(-8)
+            
             integrand = newIntegrand(muX, muY, mesh12, h)
             testing = np.squeeze(pdfNew)*integrand
             
-            value, condNum = QuadratureByInterpolationND(poly, scaling, mesh12, testing)
-            value = value[0]
-           
-        # print(condNum)
+            value, condNum = QR.QuadratureByInterpolation_Simple(poly, scaling, mesh12, testing)
+            value = value*(1/np.sqrt(2))
+            countUseMorePoints = countUseMorePoints+1
+            print(value,condNum, "++++++++++++++++++++++++++++++++++")
+            if value <0:
+                value = 10**(-8)
+
+        
+        print(value,condNum)
         # assert value < 20
         newPDF.append(value)
         # interpErrors.append(maxinterpError)
         condNums.append(condNum)
+        
     # plt.figure()
-    # plt.scatter(np.reshape(mesh[:,0],-1), np.reshape(mesh[:,1],-1), c=np.reshape(np.log(np.asarray(condNums)),-1), s=300, cmap="seismic", edgecolor="k")
-    # plt.colorbar(label="log(Condition Number)")
+    # plt.scatter(muValsX, muValsY, c=Lvals00, s=200, cmap="seismic", edgecolor="k")
+    # plt.colorbar()
+    # plt.title('L[0,0]')
+    # plt.show()
+    
+    # plt.figure()
+    # plt.scatter(muValsX, muValsY, c=Lvals11, s=200, cmap="seismic", edgecolor="k")
+    # plt.colorbar()
+    # plt.title('L[1,1]')
+    # plt.show()
+    
+    # plt.figure()
+    # plt.scatter(muValsX,muValsY, c=Lvals10, s=200, cmap="seismic", edgecolor="k")
+    # plt.colorbar()
+    # plt.title('L[1,0]')
+    # plt.show()
+    
+    # plt.figure()
+    # plt.scatter(muValsX,muValsY, c=Lvals01, s=200, cmap="seismic", edgecolor="k")
+    # plt.colorbar()
+    # plt.title('L[0,1]')
     # plt.show()
     
     # plt.figure()
