@@ -147,11 +147,11 @@ for i in trange(5):
         print('Length of mesh = ', len(mesh))
 
 
-# fig = plt.figure()
-# ax = Axes3D(fig)
-# index =14
-# ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
-# index = 50
+fig = plt.figure()
+ax = Axes3D(fig)
+index =-1
+ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
+index = 50
 # ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='k', marker='.')
 
 def update_graph(num):

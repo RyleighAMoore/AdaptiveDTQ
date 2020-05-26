@@ -151,7 +151,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
         
         
         if math.isnan(condNum) or value <0 or condNum >10:
-            print(muX,muY)
+            print(value,condNum)
             
             # mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
             # plt.figure()

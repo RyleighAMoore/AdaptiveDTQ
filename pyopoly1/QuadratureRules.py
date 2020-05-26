@@ -67,10 +67,39 @@ def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
     
     return c[0], np.sum(np.abs(vinv[0,:]))
 
+sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+from families import HermitePolynomials
+import indexing
+import LejaPoints as LP
+import MeshUpdates2D as meshUp
+from Scaling import GaussScale
+import ICMeshGenerator as M
+poly = HermitePolynomials(rho=0)
+d=2
+k = 40    
+ab = poly.recurrence(k+1)
+lambdas = indexing.total_degree_indices(d, k)
+poly.lambdas = lambdas
+stdMesh, two = LP.getLejaPoints(20, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)     
 
         
 def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
     u = VT.map_to_canonical_space(mesh, scaling)
+
+    # newMesh = []
+    # pdfs = []
+    # indicesUsed = []
+    # for meshLoc in stdMesh:
+    #     meshVal, distances, indices = UM.findNearestKPoints(meshLoc[0],meshLoc[1], u, 1, getIndices = True)
+    #     if indices  not in indicesUsed:
+    #         indicesUsed.append(indices)
+    #         meshVal = meshVal[0]
+    #         indices = indices[0]
+    #         newMesh.append(meshVal)
+    #         pdfs.append(pdf[indices])
+    # mesh2 = np.asarray(newMesh)
+    # pdfNew = np.asarray(pdfs)
+    # # print(len(mesh2))
     
     normScale = GaussScale(2)
     normScale.setMu(np.asarray([[0,0]]).T)
@@ -159,58 +188,43 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, mesh, pdf, h, poly, f
     # plt.scatter(mesh2[:,0], mesh2[:,1],c='r', marker='.')
     # plt.scatter(Px,Py, c='g')
     # '''
-    
+    value = float('nan')
     if math.isnan(pdf[0]):
         Const = float('nan')
     else:
         scale1, temp, cc, Const = fitQuad(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
     # print(scale1)
-    if math.isnan(Const): #Fails so try again with max value as center
-        # value= [-1]
-        maxValIntegrand = np.argmax(fullPDF)
-        
-        scale = GaussScale(2)
-        # scale.setMu(np.asarray([[scaling.mu[0][0]/2,scaling.mu[1][0]/2]]).T)
-        scale.setMu(np.asarray([fullMesh[maxValIntegrand]]).T)
-        scale.setSigma(np.asarray([.1,.1]))
-        
-        mesh, pdf = LP.getLejaSetFromPoints(scale, fullMesh, 12, poly, fullPDF, ii)
-        if math.isnan(pdf[0]):
-            Const = float('nan')
-        else:
-            scale1, temp, cc, Const = fitQuad(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
-        
-    else:
-        # scale1, temp, cc, Const = fitQuad(scaling.mu[0][0],scaling.mu[1][0], fullMesh, fullPDF)
-        # assert(np.isclose(np.sum(cc-cc2),0))
-        vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
-        pdf2 = fullPDF/vals.T
-        value, condNum = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2)
-
-    if math.isnan(Const):
-         value = float('nan')
-         
-    else:
-        vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
-        pdf2 = fullPDF/vals.T
-        value, condNum = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2)
-
-             
-
-    # print(value, condNum)
+        if not math.isnan(Const): #Fails so try again with max value as center
+            scale = GaussScale(2)
+            # scale.setMu(np.asarray([[scaling.mu[0][0]/2,scaling.mu[1][0]/2]]).T)
+            scale.setMu(np.asarray([fullMesh[maxValIntegrand]]).T)
+            scale.setSigma(np.asarray([.1,.1]))
+            
+            mesh, pdf = LP.getLejaSetFromPoints(scale, fullMesh, 12, poly, fullPDF, ii)
+            if math.isnan(pdf[0]):
+                Const = float('nan')
+            else:
+                scale1, temp, cc, Const = fitQuad(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
+            if not math.isnan(Const):
+                x,y = fullMesh.T
+                vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
+                pdf2 = fullPDF/vals.T
+                value, condNum = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2)
+                
     if math.isnan(value) or value <0:
+        print("*************************************Whole Mesh")
         # scale.setMu(np.asarray([fullMesh[maxValIntegrand]/2]).T)
         # mesh, pdf = LP.getLejaSetFromPoints(scale, fullMesh, 12, poly, fullPDF, ii)
         scale1, temp, cc, Const = fitQuad(scaling.mu[0][0],scaling.mu[1][0], fullMesh, fullPDF)
         if math.isnan(value):
-            print(cc, scale1, Const)
+            x,y = fullMesh.T
             vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
             pdf2 = fullPDF/vals.T
             value, condNum = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2)
             return value[0], condNum, scale1
         else:
             return float('nan'),float('nan'), float('nan')
-    PastScales.append(scale1)
+    # print(value[0])
     return value[0], condNum, scale1
         
 
