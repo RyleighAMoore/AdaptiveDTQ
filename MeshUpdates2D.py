@@ -262,15 +262,15 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h, poly):
         # print("adding boundary points...")
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation, True)
         # print(np.count_nonzero(boundaryPointsToAddAround))
-        plt.figure()
-        pointsX = []
-        pointsY = []
-        for i in range(len(boundaryPointsToAddAround)):
-            if boundaryPointsToAddAround[i]==1:
-                pointsX.append(Mesh[i,0])
-                pointsY.append(Mesh[i,1])
-        plt.plot(np.asarray(pointsX), np.asarray(pointsY), '.')
-        plt.show()
+        # plt.figure()
+        # pointsX = []
+        # pointsY = []
+        # for i in range(len(boundaryPointsToAddAround)):
+        #     if boundaryPointsToAddAround[i]==1:
+        #         pointsX.append(Mesh[i,0])
+        #         pointsY.append(Mesh[i,1])
+        # plt.plot(np.asarray(pointsX), np.asarray(pointsY), '.')
+        # plt.show()
         
         if max(boundaryPointsToAddAround == 1):
             for val in range(len(boundaryPointsToAddAround)-1,-1,-1):
