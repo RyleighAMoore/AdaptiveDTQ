@@ -23,12 +23,12 @@ import LejaPoints as LP
 
 global MaxSlope
 MaxSlope = 0 # Initialize to 0, the real value is set in the code
-addPointsToBoundaryIfBiggerThanTolerance = 10**(-5)
-removeZerosValuesIfLessThanTolerance = 10**(-5)
-minDistanceBetweenPoints = 0.15
-minDistanceBetweenPointsBoundary = 0.15
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-4)
+removeZerosValuesIfLessThanTolerance = 10**(-4)
+minDistanceBetweenPoints = 0.1
+minDistanceBetweenPointsBoundary = 0.1
 skipCount = 5
-maxDistanceBetweenPoints = 0.15
+maxDistanceBetweenPoints = 0.1
 numStdDev = 5 #For grids around each point in the mesh
 
 adjustDensity = False
@@ -262,15 +262,15 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h, poly):
         # print("adding boundary points...")
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation, True)
         # print(np.count_nonzero(boundaryPointsToAddAround))
-        # plt.figure()
-        # pointsX = []
-        # pointsY = []
-        # for i in range(len(boundaryPointsToAddAround)):
-        #     if boundaryPointsToAddAround[i]==1:
-        #         pointsX.append(Mesh[i,0])
-        #         pointsY.append(Mesh[i,1])
-        # plt.plot(np.asarray(pointsX), np.asarray(pointsY), '.')
-        # plt.show()
+        plt.figure()
+        pointsX = []
+        pointsY = []
+        for i in range(len(boundaryPointsToAddAround)):
+            if boundaryPointsToAddAround[i]==1:
+                pointsX.append(Mesh[i,0])
+                pointsY.append(Mesh[i,1])
+        plt.plot(np.asarray(pointsX), np.asarray(pointsY), '.')
+        plt.show()
         
         if max(boundaryPointsToAddAround == 1):
             for val in range(len(boundaryPointsToAddAround)-1,-1,-1):
@@ -367,7 +367,7 @@ def addPointsRadially(pointX, pointY, mesh, numPointsToAdd, kstep, minDist):
         newPointY = radius*np.sin(i*dTheta) + pointY
         nearestPoint,idx = UM.findNearestPoint(newPointX, newPointY, mesh)
         distToNearestPoint= np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
-        if distToNearestPoint >= minDist/2:
+        if distToNearestPoint >= minDist*0.9:
             #print("adding")
             points.append([newPointX, newPointY])
     return np.asarray(points)
@@ -383,7 +383,7 @@ def checkIfDistToClosestPointIsOk(newPoints, Mesh, minDist):
         newPointY = newPoints[i,1]
         nearestPoint, dist = UM.findNearestPoint(newPointX, newPointY, Mesh, samePointRet0= True)
         distToNearestPoint = np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
-        if distToNearestPoint > minDist and distToNearestPoint < maxDistanceBetweenPoints:
+        if distToNearestPoint > minDist*0.9 and distToNearestPoint < maxDistanceBetweenPoints*1.1:
             points.append([newPointX, newPointY])
         # else:
         #     print("Nope")
