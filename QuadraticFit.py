@@ -31,7 +31,6 @@ import datetime
 import time
 import pickle
 import LejaQuadrature as LQ
-import getPCE as PCE
 import distanceMetrics as DM
 import sys
 from families import HermitePolynomials

@@ -18,7 +18,6 @@ import datetime
 import time
 import pickle
 import LejaQuadrature as LQ
-import getPCE as PCE
 import distanceMetrics as DM
 import sys
 sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')

@@ -4,7 +4,6 @@ Created on Tue Jan 21 11:21:05 2020
 
 @author: Ryleigh
 """
-import pyapprox
 import matplotlib.pyplot as plt
 import sys
 import numpy as np
@@ -189,7 +188,7 @@ def getLejaPointsWithStartingPoints(scaleParams, numLejaPoints, numCandidateSamp
 # mesh, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 12, 1000, poly, neighbors=[3,one])
 
 import UnorderedMesh as UM
-def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, indexInitPoint):
+def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf):
     if pdf.shape == (len(pdf), ):
         pdf = np.expand_dims(pdf,1)
         
@@ -200,9 +199,7 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, indexIni
     Px = nearest.T[0][0]; Py = nearest.T[1][0]
     
     sigmaX = np.sqrt(scale.cov[0,0]); sigmaY = np.sqrt(scale.cov[1,1])
-    
-    #Since initial point is part of the mesh (when indexInitPoint >=0) we should remove it from the list so it isn't duplicated.
-    
+        
     meshShortIC = np.delete(mesh, idx, axis=0)
     pdfShortIC = np.delete(pdf, idx, axis=0)
         

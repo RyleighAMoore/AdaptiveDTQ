@@ -2,33 +2,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import Functions as fun
-import Integrand
-import Operations2D
-import XGrid
 from mpl_toolkits.mplot3d import Axes3D
-import QuadRules
 from tqdm import tqdm, trange
-import random
 import UnorderedMesh as UM
 from scipy.spatial import Delaunay
-import MeshUpdates2D as MeshUp
-import pickle
-import os
-import datetime
 import time
 import sys
 sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
 import LejaPoints as LP
-import pickle
 import LejaQuadrature as LQ
-import getPCE as PCE
 import distanceMetrics as DM
-import sys
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
 from families import HermitePolynomials
 import indexing
 import LejaPoints as LP
-import MeshUpdates2D as meshUp
+import MeshUpdates2D as MeshUp
 from Scaling import GaussScale
 import ICMeshGenerator as M
 
@@ -49,42 +36,17 @@ ab = poly.recurrence(k+1)
 lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 
-# mesh, two = LP.getLejaPoints(130, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
-# mesh = LP.mapPointsBack(0, 0, mesh, np.sqrt(h)*fun.g1()/2, np.sqrt(h)*fun.g2()/2)
-
 # pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/ICMesh1.p", "rb" ) 
 # mesh = pickle.load(pkl_file)
 
 mesh = M.getICMesh(1)
-
-
-
-# plt.scatter(mesh[:,0], mesh[:,1])
-
 pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], IC,IC)
-# phat = as.matrix(dnorm(x=xvec, mean=(init+driftfun(init)), sd=abs(difffun(init))*sqrt(h)))
 
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
 scale.setSigma(np.asarray([np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()]))
 pdf = fun.Gaussian(scale, mesh)
 
-# meshUp.setGlobalVarsForMesh(mesh)
-# import pickle
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PdfTrajLQTwoHillLongFullSplit.p", "rb" ) 
-# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/MeshesLQTwoHillLongFullSplit1.p", "rb" ) 
-
-# PdfTraj = pickle.load(pkl_file)
-# Meshes = pickle.load(pkl_file2)
-
-
-# pkl_file.close()
-# pkl_file2.close()
-
-# mesh = Meshes[5]
-# pdf = PdfTraj[5]
-
-# pdf = np.ones(len(mesh))
 
 Meshes = []
 PdfTraj = []
@@ -95,18 +57,10 @@ tri = Delaunay(mesh, incremental=True)
 
 numSD = 4
 
-SlopesMax = []  
-SlopesMin = []
-SlopesMean = []  
-Slopes = [] 
+
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
 for i in trange(5):
-    Slope = MeshUp.getSlopes(mesh, pdf)
-    SlopesMean.append(np.mean(Slope))
-    SlopesMin.append(np.min(Slope))
-    SlopesMax.append(np.max(Slope))
-    Slopes.append(Slope)
     if (i >= 2) and adjustGrid:
         assert np.max(PdfTraj[-1] < 10), "PDF Blew up"
         if (i>=0):
@@ -126,23 +80,13 @@ for i in trange(5):
         Pxs = []
         Pys = []
         print("Stepping Forward....")
-        # if i ==0:
-        #     pdf = LQ.StepForwardFirstStep_ICofGaussian(mesh, pdf, poly, h,12, icSigma =IC)
-        # if i < 2:
+
         pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i)
-        # elif i < 5:
-        #     pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h, 12)
-        # else:
-        #     pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12)
 
         pdf = np.squeeze(pdf)
         PdfTraj.append(np.copy(pdf))
         Meshes.append(np.copy(mesh))
         print('Length of mesh = ', len(mesh))
-        # fig = plt.figure()
-        # ax = Axes3D(fig)
-        # index =-1
-        # ax.scatter(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], c='r', marker='.')
         
     else:
         print('Length of mesh = ', len(mesh))
