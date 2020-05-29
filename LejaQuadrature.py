@@ -41,6 +41,14 @@ def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
     return np.asarray(MeshToKeep), np.asarray(PdfToKeep)
 
 
+poly = HermitePolynomials(rho=0)
+d=2
+k = 40    
+ab = poly.recurrence(k+1)
+lambdas = indexing.total_degree_indices(d, k)
+poly.lambdas = lambdas
+
+lejaPointsFinal, new = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
 def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step):
     sigmaX=np.sqrt(h)*g1()
     sigmaY=np.sqrt(h)*g2()
@@ -49,6 +57,8 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
     condNums = []
     
     countUseMorePoints = 0
+    # plt.figure()
+    # plt.scatter(mesh[:,0], mesh[:,1])
     for ii in range(len(mesh)):
         # print('########################',ii/len(mesh)*100, '%')
         muX = mesh[ii,0]
@@ -61,9 +71,9 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
         value, condNum, scaleUsed = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf)
       
         if math.isnan(condNum) or value <0 or condNum >10:
-            lejaPointsFinal, new = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
+            # plt.scatter(muX,muY, c='r')
             mesh12 = mapPointsBack(muX, muY, lejaPointsFinal, sigmaX, sigmaY)
-        
+            
     
             pdfNew = np.asarray(griddata(mesh, pdf, mesh12, method='cubic', fill_value=0))
             pdfNew[pdfNew < 0] = 10**(-8)

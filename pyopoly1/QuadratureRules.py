@@ -20,6 +20,18 @@ from QuadraticFit import fitQuad
 from scipy.interpolate import griddata
 import math
 
+def getValsWithinRadius(Px,Py,canonicalMesh, pdf, numCandidiates):
+    point = np.asarray([Px,Py])
+    normList =np.sqrt(np.sum((point*np.shape(canonicalMesh)-canonicalMesh)**2,axis=1))
+    meshVals = []
+    pdfVals = []
+    for val in range(len(normList)):
+        if normList[val] < np.sqrt(2)*numCandidiates:
+           meshVals.append(canonicalMesh[val])
+           pdfVals.append(pdf[val])
+    return np.asarray(meshVals), np.asarray(pdfVals)
+
+
 def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
     xCan=VT.map_to_canonical_space(mesh, scaling) 
     V = poly.eval(xCan, range(len(xCan)))
@@ -36,7 +48,7 @@ def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
 
 def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
     u = VT.map_to_canonical_space(mesh, scaling)
-    
+    # mesh2, pdfNew = getValsWithinRadius(Px,Py,canonicalMesh, pdf, numCandidiates)
     normScale = GaussScale(2)
     normScale.setMu(np.asarray([[0,0]]).T)
     normScale.setCov(np.asarray([[1,0],[0,1]]))
@@ -44,7 +56,6 @@ def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
     mesh2 = u
     pdfNew = pdf
     
-
     numSamples = len(mesh2)          
     V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
     vinv = np.linalg.inv(V)
@@ -65,6 +76,7 @@ def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
   
 def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
     u = VT.map_to_canonical_space(mesh, scaling)
+    # u, pdf = getValsWithinRadius(scaling.mu[0][0],scaling.mu[1][0],u, pdf, 12)
 
     # newMesh = []
     # pdfs = []
@@ -117,6 +129,12 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
 
     mesh, distances, indices = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh, 20, getIndices = True)
     pdf = fullPDF[indices]
+    
+    # normScale = GaussScale(2)
+    # normScale.setMu(np.asarray([[scaling.mu[0][0],scaling.mu[1][0]]]).T)
+    # normScale.setCov(np.asarray([[0.3,0],[0,0.3]]))
+    # mesh, pdf = LP.getLejaSetFromPoints(normScale, fullMesh, 12, poly, fullPDF)
+
     
     value = float('nan')
     if math.isnan(pdf[0]): # Failed getting leja points

@@ -20,22 +20,20 @@ for step in range(len(PdfTraj)):
     #compute errors
     l2w = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step]))**2*gridSolnOnLejas)/np.sum(gridSolnOnLejas))
     print(l2w)
-    L2wErrors.append(l2w)
+    L2wErrors.append(np.copy(l2w))
     
     fig = plt.figure()
     ax = Axes3D(fig)
-    ax.scatter(Meshes[step][:,0], Meshes[step][:,1], (PdfTraj[step]-gridSolnOnLejas), c='k', marker='.')
-    maxx = np.argmax(PdfTraj[step])
-    ax.scatter(Meshes[step][maxx,0], Meshes[step][maxx,1],0, c='r', marker='o')
+    ax.scatter(Meshes[step][:,0], Meshes[step][:,1], np.abs((PdfTraj[step]-gridSolnOnLejas)), c='k', marker='.')
     
     l2 = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step])*1)**2)/len(PdfTraj[step]))
-    L2Errors.append(l2)
+    L2Errors.append(np.copy(l2))
     
     l1 = np.sum(np.abs(gridSolnOnLejas - PdfTraj[step])*gridSolnOnLejas)/len(PdfTraj[step])
-    L1Errors.append(l1)
+    L1Errors.append(np.copy(l1))
     
     linf = np.max(np.abs(gridSolnOnLejas - PdfTraj[step]))
-    LinfErrors.append(linf)
+    LinfErrors.append(np.copy(linf))
     
 
 # fig = plt.figure()
@@ -67,12 +65,12 @@ plt.semilogy(range(len(PdfTraj)), diffs)
 plt.show()
     
 
-idx = 14
-m = max(np.round(PdfTraj[idx],5))
-maxVals = [i for i, j in enumerate(np.round(PdfTraj[idx],5)) if j == m]  
+# idx = 14
+# m = max(np.round(PdfTraj[idx],5))
+# maxVals = [i for i, j in enumerate(np.round(PdfTraj[idx],5)) if j == m]  
 
-plt.figure()
-x,y = Meshes[idx].T
-for val in maxVals:
-    plt.scatter(x.T[val],y.T[val])
+# plt.figure()
+# x,y = Meshes[idx].T
+# for val in maxVals:
+#     plt.scatter(x.T[val],y.T[val])
     

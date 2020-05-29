@@ -33,10 +33,10 @@ h=0.01
 s=0.75
 kstep = h ** s
 kstep = 0.1
-xmin=-2
-xmax=2
-ymin=-2
-ymax=2
+xmin=-2.5
+xmax=2.5
+ymin=-2.5
+ymax=2.5
 
 
 def generateGRow(point, allPoints, kstep, h):
@@ -111,8 +111,14 @@ ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
 
 plt.show()
 
-pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PDFTraj1.p", "wb" ) 
-pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Mesh1.p", "wb" ) 
+# import pickle  
+
+# pkl_file0 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Gpt02Erf.p", "wb" ) 
+# pickle.dump(GMat, pkl_file0)
+# pkl_file0.close()
+
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PDFTrajpt02Erf.p", "wb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Mesh1pt02Erf.p", "wb" ) 
 
 # import pickle  
 # pickle.dump(surfaces, pkl_file)

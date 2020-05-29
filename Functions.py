@@ -65,7 +65,7 @@ from scipy.special import erf
 
 
 def f1(x, y):
-    # return 0
+    # return 8
     return 5*erf(10*x)
 
 def f2(x, y):

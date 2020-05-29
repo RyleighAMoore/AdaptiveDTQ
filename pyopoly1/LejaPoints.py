@@ -62,6 +62,7 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
         return np.asarray(samples).T, np.asarray(samples[:,num_initial_samples:]).T
   
     if successBool == False:
+        print("Long Leja")
         numInitialAdded = 0
         pointsRemoved = []
         initial_samples_edited = np.copy(initial_samples)

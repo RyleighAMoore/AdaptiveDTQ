@@ -25,7 +25,7 @@ import LejaPoints as LP
 
 global MaxSlope
 MaxSlope = 0 # Initialize to 0, the real value is set in the code
-addPointsToBoundaryIfBiggerThanTolerance = 10**(-4)
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
 removeZerosValuesIfLessThanTolerance = 10**(-4)
 minDistanceBetweenPoints = 0.15
 minDistanceBetweenPointsBoundary = 0.15
@@ -330,9 +330,10 @@ def addInteriorPoints(Mesh, Pdf, triangulation, kstep, h,poly):
             print("adding interior points...")
             for val in range(len(Slopes)-1,-1,-1):
                 if (spacing > minDistanceBetweenPoints) and (interiorPointsToAddAround[val] == 1): # if we should extend boundary
-    #                newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4, kstep/2) 
+                    newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4,kstep, kstep/2) 
+                    
                     # allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 4, Mesh, 4, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(), 6,100)
-                    allPoints, newPoints = LP.getLejaPointsWithStartingPoints([0,0,np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()/2], 6, 40, poly, neighbors=[0,Mesh])
+                    # allPoints, newPoints = LP.getLejaPointsWithStartingPoints([0,0,np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()/2], 6, 40, poly, neighbors=[0,Mesh])
                     
                     newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, min(minDistanceBetweenPoints/Slopes[val], minDistanceBetweenPoints))
                     for point in range(len(newPoints)):
