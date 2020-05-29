@@ -29,7 +29,6 @@ import pickle
 import os
 import datetime
 import time
-import GenerateLejaPoints as LP
 import pickle
 import LejaQuadrature as LQ
 import getPCE as PCE

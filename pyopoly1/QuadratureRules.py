@@ -17,7 +17,6 @@ from Scaling import GaussScale
 from Plotting import productGaussians2D
 import UnorderedMesh as UM
 import LejaPoints as LP
-from QuadratureUtils import *
 
 
 def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
@@ -105,6 +104,8 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
     normScale.setMu(np.asarray([[0,0]]).T)
     normScale.setCov(np.asarray([[1,0],[0,1]]))
     
+    
+    
     mesh2, pdfNew = LP.getLejaSetFromPoints(normScale, u, 12, poly, pdf, 0)
 
     numSamples = len(mesh2)          
@@ -146,7 +147,6 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
 #     return soln*cfinal
 
 
-from QuadratureUtils import GetGaussianPart
 from GaussFit import fitGaussian
 from QuadraticFit import fitQuad
 from scipy.interpolate import griddata

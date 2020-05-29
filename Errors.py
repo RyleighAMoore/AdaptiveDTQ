@@ -3,41 +3,10 @@ from scipy.interpolate import griddata, interp2d
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.stats import multivariate_normal
-import GenerateLejaPoints as LP
 import UnorderedMesh as UM
 from pyopoly1 import opolynd as op
 from pyopoly1 import families as f
 from indexing import total_degree_indices
-
-
-# d = 2
-# k = 150
-# H = f.HermitePolynomials()
-# ab = H.recurrence(k+1)
-
-# lambdas = total_degree_indices(d, 100)
-# H.lambdas = lambdas
-
-# # V = op.opolynd_eval(Meshes[0], lambdas[:len(PdfTraj[0]),], ab, H)
-# V = op.opolynd_eval(mesh2, lambdas[:len(pdf),], ab, H)
-
-# # c = np.dot(np.linalg.inv(V), PdfTraj[0])
-# c = np.dot(np.linalg.inv(V),pdf)
-
-
-# interp_eval = np.dot(V, c)
-
-# fig = plt.figure()
-# ax = Axes3D(fig)
-# ax.scatter(mesh2[:,0], mesh2[:,1], interp_eval, c='k', marker='.')
-# ax.scatter(mesh2[:,0], mesh2[:,1], pdf, c='k', marker='.')
-
-# # fig = plt.figure()
-# # ax = Axes3D(fig)
-# # ax.scatter(Meshes[0][:,0], Meshes[0][:,1], interp_eval, c='k', marker='.')
-# # ax.scatter(Meshes[0][:,0], Meshes[0][:,1], PdfTraj[0], c='r', marker='.')
-
-
 
 
 L2Errors = []

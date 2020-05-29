@@ -1,4 +1,3 @@
-from pylab import *
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -17,7 +16,9 @@ import pickle
 import os
 import datetime
 import time
-import GenerateLejaPoints as LP
+import sys
+sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+import LejaPoints as LP
 import pickle
 import LejaQuadrature as LQ
 import getPCE as PCE
@@ -100,21 +101,21 @@ SlopesMean = []
 Slopes = [] 
 pdf = np.copy(PdfTraj[-1])
 adjustGrid = True
-for i in trange(20):
+for i in trange(5):
     Slope = MeshUp.getSlopes(mesh, pdf)
     SlopesMean.append(np.mean(Slope))
     SlopesMin.append(np.min(Slope))
     SlopesMax.append(np.max(Slope))
     Slopes.append(Slope)
-    if (i >= 0) and adjustGrid:
+    if (i >= 2) and adjustGrid:
         assert np.max(PdfTraj[-1] < 10), "PDF Blew up"
         if (i>=0):
             mesh, pdf, tri, addBool = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly)
             if (addBool == 1):
                 tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-            # mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly)
-            # if (remBool == 1):
-            #     tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+            mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly)
+            if (remBool == 1):
+                tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
         
     t=0 
     # print(len(mesh))

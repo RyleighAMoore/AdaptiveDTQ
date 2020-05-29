@@ -13,7 +13,9 @@ from itertools import chain
 from tqdm import tqdm, trange
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import GenerateLejaPoints as LP
+import sys
+sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+import LejaPoints as LP
 import distanceMetrics 
 import sys
 sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
@@ -25,10 +27,10 @@ global MaxSlope
 MaxSlope = 0 # Initialize to 0, the real value is set in the code
 addPointsToBoundaryIfBiggerThanTolerance = 10**(-4)
 removeZerosValuesIfLessThanTolerance = 10**(-4)
-minDistanceBetweenPoints = 0.1
-minDistanceBetweenPointsBoundary = 0.1
+minDistanceBetweenPoints = 0.15
+minDistanceBetweenPointsBoundary = 0.15
 skipCount = 5
-maxDistanceBetweenPoints = 0.1
+maxDistanceBetweenPoints = 0.15
 numStdDev = 5 #For grids around each point in the mesh
 
 adjustDensity = False

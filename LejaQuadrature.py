@@ -112,7 +112,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
     # pdf = np.asarray([rv.pdf(mesh)]).T
     countUseMorePoints = 0
     for ii in range(len(mesh)):
-        print('########################',ii/len(mesh)*100, '%')
+        # print('########################',ii/len(mesh)*100, '%')
         muX = mesh[ii,0]
         muY = mesh[ii,1]
         
@@ -151,7 +151,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
         
         
         if math.isnan(condNum) or value <0 or condNum >10:
-            print(value,condNum)
+            # print(value,condNum)
             
             # mesh12, pdfNew1 = getMeshValsThatAreClose(mesh, pdf, sigmaX, sigmaY, muX, muY)
             # plt.figure()
@@ -184,12 +184,12 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
             value, condNum = QR.QuadratureByInterpolation_Simple(poly, scaling, mesh12, testing)
             value = value*(1/np.sqrt(2))
             countUseMorePoints = countUseMorePoints+1
-            print(value,condNum, "++++++++++++++++++++++++++++++++++")
+            # print(value,condNum, "++++++++++++++++++++++++++++++++++")
             if value <0:
                 value = 10**(-8)
 
         
-        print(value,condNum)
+        # print(value,condNum)
         # assert value < 20
         newPDF.append(value)
         # interpErrors.append(maxinterpError)
@@ -221,7 +221,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
     
     # plt.figure()
     # plt.loglog((np.asarray(condNums)), np.asarray((interpErrors)), '.')
-    print(countUseMorePoints/len(mesh), "*********************************")
+    print('\n',(countUseMorePoints/len(mesh))*100, "% Used Interpolation*********************************")
     newPDFs = np.asarray(newPDF)
     condNums = np.asarray([condNums]).T
     # fig = plt.figure()

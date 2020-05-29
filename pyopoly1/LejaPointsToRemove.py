@@ -10,7 +10,9 @@ import UnorderedMesh as UM
 import numpy as np
 import Functions  as fun
 plt.rcParams['text.usetex'] = False
-import GenerateLejaPoints as LP
+import sys
+sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+import LejaPoints as LP
 import pickle      
 import scipy as sp
 import LejaPoints as LP
