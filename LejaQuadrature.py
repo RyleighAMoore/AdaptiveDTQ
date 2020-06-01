@@ -60,9 +60,10 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
     # plt.figure()
     # plt.scatter(mesh[:,0], mesh[:,1])
     for ii in range(len(mesh)):
-        # print('########################',ii/len(mesh)*100, '%')
-        muX = mesh[ii,0]
+        print('########################',ii/len(mesh)*100, '%')
+        muX = mesh[ii,0] 
         muY = mesh[ii,1]
+        
     
         scaling = GaussScale(2)
         scaling.setMu(np.asarray([[muX,muY]]).T)

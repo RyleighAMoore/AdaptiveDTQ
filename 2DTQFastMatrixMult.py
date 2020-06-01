@@ -32,11 +32,11 @@ from Scaling import GaussScale
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.1
-xmin=-2.5
-xmax=2.5
-ymin=-2.5
-ymax=2.5
+kstep = 0.05
+xmin=-2
+xmax=2
+ymin=-2
+ymax=2
 
 
 def generateGRow(point, allPoints, kstep, h):

@@ -22,9 +22,9 @@ for step in range(len(PdfTraj)):
     print(l2w)
     L2wErrors.append(np.copy(l2w))
     
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    ax.scatter(Meshes[step][:,0], Meshes[step][:,1], np.abs((PdfTraj[step]-gridSolnOnLejas)), c='k', marker='.')
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(Meshes[step][:,0], Meshes[step][:,1], np.abs((PdfTraj[step]-gridSolnOnLejas)), c='k', marker='.')
     
     l2 = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step])*1)**2)/len(PdfTraj[step]))
     L2Errors.append(np.copy(l2))

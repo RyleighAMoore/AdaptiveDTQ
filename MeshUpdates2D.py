@@ -33,8 +33,6 @@ skipCount = 5
 maxDistanceBetweenPoints = 0.15
 numStdDev = 5 #For grids around each point in the mesh
 
-adjustDensity = False
-adjustBoundary = True
 
 def setGlobalVarsForMesh(mesh):
     global minDistanceBetweenPoints
@@ -46,7 +44,7 @@ def setGlobalVarsForMesh(mesh):
     maxDistanceBetweenPoints = 1.5*minDistanceBetweenPoints
 
 
-def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly):
+def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, adjustBoundary =True, adjustDensity=False):
     changedBool2 = 0
     changedBool1 = 0
     if adjustDensity:
@@ -56,7 +54,7 @@ def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly):
     ChangedBool = max(changedBool1, changedBool2)
     return Mesh, Pdf, triangulation, ChangedBool
 
-def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly):
+def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly, adjustBoundary =True, adjustDensity=False):
     '''Removes the flagged values from the list of mesh values and in Gmat. 
     boolZerosArray is the list of zeros and ones denoting which grid points to remove.
     Gmat, Mesh, Grids, Vertices, and VerticesNum are all used in the 2DTQ-UnorderedMesh method 

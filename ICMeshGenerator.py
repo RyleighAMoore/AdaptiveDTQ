@@ -1,47 +1,21 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import Functions as fun
-import Integrand
-import Operations2D
-import XGrid
-from mpl_toolkits.mplot3d import Axes3D
-import QuadRules
-from tqdm import tqdm, trange
-import random
 import UnorderedMesh as UM
-from scipy.spatial import Delaunay
-import MeshUpdates2D as MeshUp
 import pickle
-import os
-import datetime
-import time
-import pickle
-import LejaQuadrature as LQ
 import distanceMetrics as DM
 import sys
 sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
 from families import HermitePolynomials
 import indexing
 import LejaPoints as LP
-import MeshUpdates2D as meshUp
-from Scaling import GaussScale
 
-def getICMesh(radius):
+def getICMesh(radius, stepSize, h):
     # define spatial grid
-    kstep = 0.1
-    xmin=-2
-    xmax=2
-    ymin=-2
-    ymax=2
     h=0.01
-    
-    IC= np.sqrt(h)*fun.g2()
-    
+        
     poly = HermitePolynomials(rho=0)
     d=2
     k = 40    
-    ab = poly.recurrence(k+1)
     lambdas = indexing.total_degree_indices(d, k)
     poly.lambdas = lambdas
     
@@ -52,7 +26,7 @@ def getICMesh(radius):
     mesh2 = LP.mapPointsBack(0, 0, mesh2, np.sqrt(h)*fun.g1(), np.sqrt(h)*fun.g2())
 
 
-    meshSpacing = 0.1 #DM.separationDistance(mesh)*2
+    meshSpacing = stepSize #DM.separationDistance(mesh)*2
     grid = UM.generateOrderedGridCenteredAtZero(-1.6, 1.6, -1.6, 1.6, meshSpacing , includeOrigin=True)
     noise = np.random.normal(0,np.sqrt(h)*fun.g1(), size = (len(grid),2))
     
@@ -82,10 +56,8 @@ def getICMesh(radius):
     # plt.scatter(x2,y2,c='green')
     # plt.show()
 
-    meshSpacing2 = DM.separationDistance(newGrid.T)
-    print(len(newGrid.T))
     return newGrid.T
 
 
 if __name__ == "__main__":
-    getICMesh(0.5)
+    getICMesh(0.5, 0.1, 0.01)
