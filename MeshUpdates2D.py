@@ -29,10 +29,7 @@ minDistanceBetweenPoints = 0.15
 minDistanceBetweenPointsBoundary = 0.15
 maxDistanceBetweenPoints = 0.15
 
-'''Used when using Leja like procedure to make mesh less dense'''
-skipCount = 5 
-global MaxSlope
-MaxSlope = 0 # Initialize to 0, the real value is set in the code
+
 
 
 def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, adjustBoundary =True, adjustDensity=False):
@@ -97,7 +94,6 @@ def checkIntegrandForAddingPointsAroundBoundaryPoints(PDF, addPointsToBoundaryIf
     pointsOnEdge = getBoundaryPoints(Mesh, tri, maxDistanceBetweenPoints*2)
     for i in pointsOnEdge:
         valueList[i]=PDF[i]
-
     addingAround = [np.asarray(valueList) >= addPointsToBoundaryIfBiggerThanTolerance]
     return np.asarray(addingAround).T
 
@@ -149,7 +145,6 @@ def houseKeepingAfterAdjustingMesh(Mesh, tri):
 def addPoint(Px,Py, Mesh, Pdf, triangulation):
     newPoint = np.asarray([[Px],[Py]]).T
     interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='cubic', fill_value=np.min(Pdf))])
-
     if interp < 0:
         interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='linear', fill_value=np.min(Pdf))])
     if interp <=0:
@@ -159,7 +154,6 @@ def addPoint(Px,Py, Mesh, Pdf, triangulation):
     Pdf = np.append(Pdf, interp[0], axis=0)                      
     triangulation.add_points(np.asarray([[Px],[Py]]).T, restart=False)
     return  Mesh, Pdf, triangulation
-    
 
     
 def addPointsToBoundary(Mesh, Pdf, triangulation):
@@ -273,6 +267,11 @@ def alpha_shape(points, triangulation, alpha, only_outer=True):
 
 '''Functions below here are still under construction
 ##################################################################'''
+
+'''Used when using Leja like procedure to make mesh less dense'''
+skipCount = 5 
+global MaxSlope
+MaxSlope = 0 # Initialize to 0, the real value is set in the code
 
 def getSlopes(mesh, PDF):
     Slopes = []
