@@ -1,3 +1,8 @@
+'''Run the code 2DTQUnorderedMeshWithMeshUpdates and then run 2DTQFastMatrixMultiply
+Select this code and run to compute the errors. Spyder IDE may be needed to use this.
+'''
+
+
 import numpy as np
 from scipy.interpolate import griddata, interp2d
 import matplotlib.pyplot as plt

@@ -31,7 +31,6 @@ maxDistanceBetweenPoints = 0.15
 
 
 
-
 def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, adjustBoundary =True, adjustDensity=False):
     '''If the mesh is changed, these become 1 so we know to recompute the triangulation'''
     changedBool2 = 0 
@@ -250,8 +249,12 @@ def alpha_shape(points, triangulation, alpha, only_outer=True):
         b = np.sqrt((pb[0] - pc[0]) ** 2 + (pb[1] - pc[1]) ** 2)
         c = np.sqrt((pc[0] - pa[0]) ** 2 + (pc[1] - pa[1]) ** 2)
         s = (a + b + c) / 2.0
-        area = np.sqrt(s * (s - a) * (s - b) * (s - c))
-        circum_r = a * b * c / (4.0 * area)
+        val = s * (s - a) * (s - b) * (s - c)
+        if val <=0:
+            circum_r = float('nan')
+        else:
+            area = np.sqrt(s * (s - a) * (s - b) * (s - c))
+            circum_r = a * b * c / (4.0 * area)
         if circum_r < alpha:
             add_edge(edges, ia, ib)
             add_edge(edges, ib, ic)

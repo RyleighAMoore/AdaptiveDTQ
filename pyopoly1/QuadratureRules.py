@@ -48,7 +48,6 @@ def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
 
 def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
     u = VT.map_to_canonical_space(mesh, scaling)
-    # mesh2, pdfNew = getValsWithinRadius(Px,Py,canonicalMesh, pdf, numCandidiates)
     normScale = GaussScale(2)
     normScale.setMu(np.asarray([[0,0]]).T)
     normScale.setCov(np.asarray([[1,0],[0,1]]))
@@ -61,38 +60,13 @@ def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
     vinv = np.linalg.inv(V)
     c = np.matmul(vinv, pdfNew)
     
-    plot = False
-    if plot:
-        if np.sum(np.abs(vinv[0,:])) > 0:
-            interp = np.matmul(V,c)
-            fig = plt.figure()
-            ax = Axes3D(fig)
-            # ax.scatter(mesh[:,0], mesh[:,1], pdf, c='r', marker='o')
-            ax.scatter(u[:,0], u[:,1], pdf, c='k', marker='.')
-    
     return c[0], np.sum(np.abs(vinv[0,:]))
 
 
   
 def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
     u = VT.map_to_canonical_space(mesh, scaling)
-    # u, pdf = getValsWithinRadius(scaling.mu[0][0],scaling.mu[1][0],u, pdf, 12)
-
-    # newMesh = []
-    # pdfs = []
-    # indicesUsed = []
-    # for meshLoc in stdMesh:
-    #     meshVal, distances, indices = UM.findNearestKPoints(meshLoc[0],meshLoc[1], u, 1, getIndices = True)
-    #     if indices  not in indicesUsed:
-    #         indicesUsed.append(indices)
-    #         meshVal = meshVal[0]
-    #         indices = indices[0]
-    #         newMesh.append(meshVal)
-    #         pdfs.append(pdf[indices])
-    # mesh2 = np.asarray(newMesh)
-    # pdfNew = np.asarray(pdfs)
-    # # print(len(mesh2))
-    
+  
     normScale = GaussScale(2)
     normScale.setMu(np.asarray([[0,0]]).T)
     normScale.setCov(np.asarray([[1,0],[0,1]]))
@@ -105,19 +79,6 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
     c = np.matmul(vinv, pdfNew)
     L = np.linalg.cholesky((scaling.cov))
     JacFactor = np.prod(np.diag(L))
-    plot = False
-    if plot:
-        if np.sum(np.abs(vinv[0,:])) > 0:
-            interp = np.matmul(V,c)
-            fig = plt.figure()
-            ax = Axes3D(fig)
-            # ax.scatter(mesh[:,0], mesh[:,1], pdf, c='r', marker='o')
-            ax.scatter(u[:,0], u[:,1], pdf, c='k', marker='.')
-    # print(c[0]*JacFactor*np.pi)
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # ax.scatter(mesh[:,0], mesh[:,1],pdf, c='r', marker='.')
-    # ax.scatter(u[:,0], u[:,1],pdf, c='k', marker='.')
     
     return c[0]*JacFactor*np.pi, np.sum(np.abs(vinv[0,:]))
 
@@ -130,11 +91,6 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
     mesh, distances, indices = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh, 20, getIndices = True)
     pdf = fullPDF[indices]
     
-    # normScale = GaussScale(2)
-    # normScale.setMu(np.asarray([[scaling.mu[0][0],scaling.mu[1][0]]]).T)
-    # normScale.setCov(np.asarray([[0.3,0],[0,0.3]]))
-    # mesh, pdf = LP.getLejaSetFromPoints(normScale, fullMesh, 12, poly, fullPDF)
-
     
     value = float('nan')
     if math.isnan(pdf[0]): # Failed getting leja points

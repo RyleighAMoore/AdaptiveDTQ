@@ -31,7 +31,6 @@ def newIntegrand(x1,x2,mesh,h):
 def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
     MeshToKeep = []
     PdfToKeep = []
-    distances = np.sqrt((Mesh[:,0]-muX)**2 + (Mesh[:,1]-muY)**2)
     
     for i in range(len(Mesh)):
         Px = Mesh[i,0]; Py = Mesh[i,1]
@@ -41,6 +40,7 @@ def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
     return np.asarray(MeshToKeep), np.asarray(PdfToKeep)
 
 
+'''Generate Leja Sample for use in alternative method if needed'''
 poly = HermitePolynomials(rho=0)
 d=2
 k = 40    
@@ -55,26 +55,23 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
     
     newPDF = []
     condNums = []
+    countUseMorePoints = 0 # Used to count if we have to revert to alternative procedure
     
-    countUseMorePoints = 0
-    # plt.figure()
-    # plt.scatter(mesh[:,0], mesh[:,1])
+    '''Try to Divide out Guassian using quadratic fit'''
     for ii in range(len(mesh)):
-        print('########################',ii/len(mesh)*100, '%')
+        # print('########################',ii/len(mesh)*100, '%')
         muX = mesh[ii,0] 
         muY = mesh[ii,1]
         
-    
         scaling = GaussScale(2)
         scaling.setMu(np.asarray([[muX,muY]]).T)
         scaling.setSigma(np.asarray([sigmaX,sigmaY]))
       
         value, condNum, scaleUsed = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf)
       
-        if math.isnan(condNum) or value <0 or condNum >10:
-            # plt.scatter(muX,muY, c='r')
+        '''Alternative Method'''
+        if math.isnan(condNum) or value <0 or condNum >10: 
             mesh12 = mapPointsBack(muX, muY, lejaPointsFinal, sigmaX, sigmaY)
-            
     
             pdfNew = np.asarray(griddata(mesh, pdf, mesh12, method='cubic', fill_value=0))
             pdfNew[pdfNew < 0] = 10**(-8)
