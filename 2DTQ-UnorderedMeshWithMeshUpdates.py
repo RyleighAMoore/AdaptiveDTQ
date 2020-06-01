@@ -26,7 +26,7 @@ PlotStepIndex = -1
 
 '''Initialization Parameters'''
 adjustBoundary =True
-adjustDensity=False
+adjustDensity = False # Density changes are not working well right now 
 
 '''Discretization Parameters'''
 kstep = 0.1
@@ -57,7 +57,7 @@ Meshes.append(np.copy(mesh))
 tri = Delaunay(mesh, incremental=True)
 
 '''Grid updates'''
-for i in trange(3):
+for i in trange(13):
     if (i >= 2) and (adjustBoundary or adjustDensity):
         '''Add points to mesh'''
         mesh, pdf, tri, addBool = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
