@@ -40,9 +40,9 @@ def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, adjustBou
     changedBool2 = 0 
     changedBool1 = 0
     if adjustDensity:
-        Mesh, Pdf, triangulation, changedBool2 = addInteriorPoints(Mesh, Pdf, triangulation, kstep)
+        Mesh, Pdf, triangulation, changedBool2 = addInteriorPoints(Mesh, Pdf, triangulation)
     if adjustBoundary:
-        Mesh, Pdf, triangulation, changedBool1 = addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h)
+        Mesh, Pdf, triangulation, changedBool1 = addPointsToBoundary(Mesh, Pdf, triangulation)
     ChangedBool = max(changedBool1, changedBool2)
     return Mesh, Pdf, triangulation, ChangedBool
 
@@ -84,18 +84,9 @@ def getBoundaryPoints(Mesh, tri, alpha):
     return pointsOnBoundary
 
 
-def checkIntegrandForZeroPoints(PDF, Mesh, tri, boundaryOnly):
-    '''Check if the points are tiny and can be removed
-    Uses alpha hull to get the boundary points if boundaryOnly is True.'''
-    valueList = 10*np.ones(len(PDF)) # Set to large values for placeholder
-    if boundaryOnly: # only check boundary points
-        pointsOnEdge = getBoundaryPoints(Mesh, tri, maxDistanceBetweenPoints*2)
-        for i in pointsOnEdge:
-            valueList[i]=PDF[i]
-    else: # Check all points
-        valueList = PDF 
-            
-    possibleZeros = [np.asarray(valueList) < removeZerosValuesIfLessThanTolerance] # want value to be small
+def checkIntegrandForRemovingSmallPoints(PDF, Mesh, tri):
+    '''Check if any points are tiny and can be removed'''
+    possibleZeros = [np.asarray(PDF) < removeZerosValuesIfLessThanTolerance] # want value to be small
     return np.asarray(possibleZeros).T
 
 
@@ -118,7 +109,7 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool):
 
     '''# Removing boundary points'''
     while stillRemoving: 
-        boundaryZeroPointsBoolArray = checkIntegrandForZeroPoints(Pdf,Mesh,tri, True)
+        boundaryZeroPointsBoolArray = checkIntegrandForRemovingSmallPoints(Pdf,Mesh,tri)
         if max(boundaryZeroPointsBoolArray == 1):
             for val in range(len(boundaryZeroPointsBoolArray)-1,-1,-1):
                 if boundaryZeroPointsBoolArray[val] == 1: # remove the point
@@ -171,7 +162,7 @@ def addPoint(Px,Py, Mesh, Pdf, triangulation):
     
 
     
-def addPointsToBoundary(Mesh, Pdf, triangulation, kstep, h):
+def addPointsToBoundary(Mesh, Pdf, triangulation):
     numBoundaryAdded = 0
     keepAdding = True
     changedBool = 0
@@ -336,7 +327,7 @@ def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly):
 
     return Mesh, Pdf, ChangedBool
 
-def addInteriorPoints(Mesh, Pdf, triangulation, kstep, h):
+def addInteriorPoints(Mesh, Pdf, triangulation):
     ChangedBool = 0
     numInteriorAdded = 0
     Slopes = getSlopes(Mesh, Pdf)
@@ -357,10 +348,7 @@ def addInteriorPoints(Mesh, Pdf, triangulation, kstep, h):
             print("adding interior points...")
             for val in range(len(Slopes)-1,-1,-1):
                 if (spacing > minDistanceBetweenPoints) and (interiorPointsToAddAround[val] == 1): # if we should extend boundary
-                    newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4,kstep, kstep/2) 
-                    
-                    # allPoints, newPoints = LP.getLejaPointsWithStartingPoints(Mesh[val,0], Mesh[val,1], 4, Mesh, 4, np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2(), 6,100)
-                    # allPoints, newPoints = LP.getLejaPointsWithStartingPoints([0,0,np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()/2], 6, 40, poly, neighbors=[0,Mesh])
+                    newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4,minDistanceBetweenPoints, minDistanceBetweenPoints/2) 
                     
                     newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, min(minDistanceBetweenPoints/Slopes[val], minDistanceBetweenPoints))
                     for point in range(len(newPoints)):
