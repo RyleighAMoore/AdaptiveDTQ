@@ -209,6 +209,7 @@ def checkIfDistToClosestPointIsOk(newPoints, Mesh):
 
     return np.asarray(points)
 
+# https://stackoverflow.com/questions/23073170/calculate-bounding-polygon-of-alpha-shape-from-the-delaunay-triangulation
 def alpha_shape(points, triangulation, alpha, only_outer=True):
     """
     Compute the alpha shape (concave hull) of a set of points.

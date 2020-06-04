@@ -1,5 +1,6 @@
-'''Run the code 2DTQUnorderedMeshWithMeshUpdates and then run 2DTQFastMatrixMultiply
-Select this code and run to compute the errors. Spyder IDE may be needed to use this.
+'''Run the code 2DTQUnorderedMeshWithMeshUpdates.py and then run 2DTQFastMatrixMultiply.py
+Select this code and run to compute the errors with the variables availble in the console. 
+Spyder IDE may be needed to use this.
 '''
 
 

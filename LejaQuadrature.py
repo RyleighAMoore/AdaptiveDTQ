@@ -1,15 +1,13 @@
+import sys
+sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
 import numpy as np
-from scipy.stats import uniform, beta, norm
+from scipy.stats import uniform, beta, norm, multivariate_normal
 from functools import partial
 import numpy as np
-from scipy.stats import multivariate_normal
 import UnorderedMesh as UM
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from Functions import f1, f2, g1, g2, GVals
-import sys
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
-import QuadratureRules as QR
 from scipy.interpolate import griddata, interp2d 
 from LejaPoints import getLejaSetFromPoints, mapPointsBack, mapPointsTo, getLejaPoints
 from QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolation_Simple, QuadratureByInterpolationND_DivideOutGaussian
@@ -19,7 +17,12 @@ import indexing
 import math
 
 
+
 def newIntegrand(x1,x2,mesh,h):
+    '''Calculates the linearization of the Guassian. This newIntegrand times pdf integrated against 
+    scaling = GaussScale(2)
+    scaling.setMu(np.asarray([[muX,muY]]).T)
+    scaling.setSigma(np.asarray([sigmaX,sigmaY])) is used when Quadratic fit fails.'''
     y1 = mesh[:,0]
     y2 = mesh[:,1]
     scale = h*g1(x1,x2)*g2(x1,x2)/(h*g1(y1,y2)*g2(y1,y2))
@@ -31,7 +34,6 @@ def newIntegrand(x1,x2,mesh,h):
 def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
     MeshToKeep = []
     PdfToKeep = []
-    
     for i in range(len(Mesh)):
         Px = Mesh[i,0]; Py = Mesh[i,1]
         if np.sqrt((Px-muX)**2 + (Py-muY)**2) < numStd*max(sigmaX,sigmaY):
@@ -47,8 +49,8 @@ k = 40
 ab = poly.recurrence(k+1)
 lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
-
 lejaPointsFinal, new = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
+
 def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step):
     sigmaX=np.sqrt(h)*g1()
     sigmaY=np.sqrt(h)*g2()

@@ -12,6 +12,8 @@ import UnorderedMesh as UM
 import opolynd
 from LejaUtilities import *
 from opolynd import opolynd_eval
+import UnorderedMesh as UM
+
 
 
 '''
@@ -26,7 +28,9 @@ returnIndices: Returns the indices of the leja sequence if True.
 def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples = 10000, candidateSampleMesh = [], returnIndices = False):
     num_vars = np.size(initial_samples,0)
     # generate_candidate_samples = lambda n: np.sqrt(2*np.sqrt(2*num_leja_samples))*np.random.normal(0, 1, (num_vars, n)) 
-    generate_candidate_samples = lambda n: 7*np.random.normal(0, 1, (num_vars, n)) 
+    # generate_candidate_samples = lambda n: 7*np.random.normal(0, 1, (num_vars, n)) 
+    generate_candidate_samples = lambda n: np.sqrt(2)*num_leja_samples*np.random.normal(0, 1, (num_vars, n)) 
+
 
     if num_candidate_samples == 0:
         candidate_samples = candidateSampleMesh
@@ -188,7 +192,6 @@ def getLejaPointsWithStartingPoints(scaleParams, numLejaPoints, numCandidateSamp
 # one, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 1000, poly)
 # mesh, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 12, 1000, poly, neighbors=[3,one])
 
-import UnorderedMesh as UM
 def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf):
     if pdf.shape == (len(pdf), ):
         pdf = np.expand_dims(pdf,1)

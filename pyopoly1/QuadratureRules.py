@@ -47,6 +47,8 @@ def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
 
 
 def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
+    '''Quadrature rule with no change of variables. Must pass in mesh you want to use.
+    Only works with Gaussian that has 0 covariance.'''
     u = VT.map_to_canonical_space(mesh, scaling)
     normScale = GaussScale(2)
     normScale.setMu(np.asarray([[0,0]]).T)
@@ -62,9 +64,11 @@ def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
     
     return c[0], np.sum(np.abs(vinv[0,:]))
 
-
   
 def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
+    '''Quadrature rule with change of variables for nonzero covariance. 
+    Used by QuadratureByInterpolationND_DivideOutGaussian
+    Selects a Leja points subset of the passed in mesh'''
     u = VT.map_to_canonical_space(mesh, scaling)
   
     normScale = GaussScale(2)
@@ -85,7 +89,7 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
 
 
 def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF):
-    Spread = 0.2
+    '''Divides out Gaussian using a quadratic fit. Then computes the update using a Leja Quadrature rule.'''
     x,y = fullMesh.T
 
     mesh, distances, indices = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh, 20, getIndices = True)

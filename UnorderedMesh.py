@@ -6,6 +6,7 @@ from scipy.spatial import Delaunay
 import Functions as fun
 import Operations2D
 from mpl_toolkits.mplot3d import Axes3D
+
 # xCoord, yCoord, is the point we are looking for the closests 
 # two points to. 
 # AllPoints is a Nx2  matrix of all the degrees of freedom.
