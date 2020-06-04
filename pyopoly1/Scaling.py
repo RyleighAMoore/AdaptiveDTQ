@@ -9,9 +9,6 @@ class GaussScale:
         
     def getSigma(self):
         return np.sqrt(np.diagonal(self.cov))
-    
-    # def getMu(self):
-    #     return self.mu
 
     def setMu(self, muVals):
         assert np.shape(muVals) == np.shape(self.mu), print(np.shape(muVals), 'Should be', np.shape(self.mu))

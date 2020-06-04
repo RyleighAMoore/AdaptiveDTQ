@@ -1,20 +1,15 @@
+import sys
+sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import Functions as fun
 from mpl_toolkits.mplot3d import Axes3D
-from tqdm import tqdm, trange
-import UnorderedMesh as UM
+from tqdm import trange
 from scipy.spatial import Delaunay
-import time
-import sys
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
-import LejaPoints as LP
 import LejaQuadrature as LQ
-import distanceMetrics as DM
 from families import HermitePolynomials
 import indexing
-import LejaPoints as LP
 import MeshUpdates2D as MeshUp
 from Scaling import GaussScale
 import ICMeshGenerator as M
@@ -25,6 +20,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
+NumSteps = 20
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -57,7 +53,7 @@ Meshes.append(np.copy(mesh))
 tri = Delaunay(mesh, incremental=True)
 
 '''Grid updates'''
-for i in trange(20):
+for i in trange(NumSteps):
     if (i >= 2) and (adjustBoundary or adjustDensity):
         '''Add points to mesh'''
         mesh, pdf, tri, addBool = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)

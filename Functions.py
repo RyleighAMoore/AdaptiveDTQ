@@ -1,5 +1,87 @@
 import numpy as np
 from scipy.stats import multivariate_normal
+from scipy.special import erf
+
+'''Simple'''
+def f1(x, y):
+    return 0
+
+def f2(x, y):
+    return 0
+
+def g1(x=0,y=0):
+    return 1
+
+def g2(x=0,y=0):
+    return 1
+
+'''Erf'''
+# def f1(x, y):
+#     return 5*erf(10*x)
+
+# def f2(x, y):
+#     return 0
+
+# def g1(x=0,y=0):
+#     return 1
+
+# def g2(x=0,y=0):
+#     return 1
+
+
+'''Volcano'''
+# def f1(x, y):
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     return 10*x*(1- r ** 2)
+
+
+# def f2(x, y):
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     return 10*y*(1- r ** 2) 
+
+# def g1(x=0,y=0):
+#     return 1
+
+# def g2(x=0,y=0):
+#     return 1
+
+'''Moving hill'''
+# def f1(x, y):
+#     return 5
+
+# def f2(x, y):
+#     return 0
+
+# def g1(x=0,y=0):
+#     return 1
+
+# def g2(x=0,y=0):
+#     return 1
+    
+    
+    
+# Drift fuction
+def driftfun(x):
+#     if isinstance(x, int) | isinstance(x, float):
+#         return 1
+#     else:
+#         return np.ones(np.shape(x)) * 1
+    return x * (4 - x ** 2)
+
+# Diffusion ction
+def difffun(x):
+    return np.repeat(1, np.size(x))
+
+
+# Density, distribution ction, quantile ction and random generation for the
+# normal distribution with mean equal to mu and standard deviation equal to sigma.
+def dnorm(x, mu, sigma):
+    return np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
+
+
+def dnorm_partialx(x, mu, sigma):
+    return np.divide(-x+mu,sigma**2)*np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
+
 
 def GVals(Px, Py, mesh, h):
     vals = []
@@ -28,201 +110,6 @@ def covPart(Px, Py, mesh, cov):
         val = np.exp(-2*cov*(mesh[i,0]-Px)*(mesh[i,1]-Py))
         vals.append(np.copy(val))
     return np.asarray(vals)
-
-# def Gaussian2(scaling, mesh):
-#     vals = []
-#     for i in range(len(mesh)):
-#         x = mesh[:,0]
-#         y = mesh[:,1]
-#         val = G(Px, Py, mesh[i,0], mesh[i,1], h)
-#         vals.append(np.copy(val))
-#     return np.asarray(vals)
-
-
-# Drift fuction
-def driftfun(x):
-#     if isinstance(x, int) | isinstance(x, float):
-#         return 1
-#     else:
-#         return np.ones(np.shape(x)) * 1
-    return x * (4 - x ** 2)
-
-# Diffusion ction
-def difffun(x):
-    return np.repeat(1, np.size(x))
-
-
-# Density, distribution ction, quantile ction and random generation for the
-# normal distribution with mean equal to mu and standard deviation equal to sigma.
-def dnorm(x, mu, sigma):
-    return np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
-
-
-def dnorm_partialx(x, mu, sigma):
-    return np.divide(-x+mu,sigma**2)*np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
-
-from scipy.special import erf
-
-
-def f1(x, y):
-    # return 0
-    return 5*erf(10*x)
-
-def f2(x, y):
-    return 0
-    return 5*erf(10*y) 
-
-def g1(x=0,y=0):
-    return 1
-
-def g2(x=0,y=0):
-    return 1
-
-
-# def f1(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     return 0
-#     return 1/(.15*np.sqrt(abs(x)+1))*np.sign(x)
-
-
-# def f2(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     return 0
-#     return 0 
-
-# def g1(x=0,y=0):
-#     return 1
-
-# def g2(x=0,y=0):
-#     return 1
-
-# Volcano
-# def f1(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     # return 0
-#     return 10*x*(1- r ** 2)
-
-
-# def f2(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     # return 0
-#     return 10*y*(1- r ** 2) 
-
-# def g1(x=0,y=0):
-#     return 1
-
-# def g2(x=0,y=0):
-#     return 1
-    
-    
-# def f1(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     return 4*np.sign(x)
-
-# def f2(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     return 0
-
-# def g1(x=0,y=0):
-#     return 0.6
-
-# def g2(x=0,y=0):
-#     return 0.6
-
-# def f1(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     #return 1
-#     return x * (4- r ** 2)
-
-
-# def f2(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     #return 1
-#     return y * (1- r ** 2)
-
-# def g1():
-#     return 1
-
-# def g2():
-#     return 1
-# 
-## Penguin
-# def f1(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     return np.sin(x*r)
-
-
-# def f2(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     return np.tan(y*r)**2
-
-# def g1():
-#     return 1
-
-# def g2():
-#     return 1
-    
-## Monster Truck
-#def f1(x, y):
-#    r = np.sqrt(x ** 2 + y ** 2)
-#    return np.sin(x*r)
-#
-#
-#def f2(x, y):
-#    r = np.sqrt(x ** 2 + y ** 2)
-#    return np.tan(y*r)
-#
-#def g1():
-#    return 1
-#
-#def g2():
-#    return 1
-    
-
-## YXXX
-#def f1(x, y):
-#    r = np.sqrt(x ** 2 + y ** 2)
-#    return np.sin(x**2)
-#
-#
-#def f2(x, y):
-#    r = np.sqrt(x ** 2 + y ** 2)
-#    return np.sin(x*r)
-#
-#def g1():
-#    return 1
-#
-#def g2():
-#    return 1
-    
-## Quad Hills
-# def f1(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     return x*(1-x**4)
-
-# def f2(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     return y*(1-y**4)
-
-# def g1():
-#     return 0.5
-
-# def g2():
-#     return 0.5
-    
-# def f1(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     return -x**2
-
-# def f2(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     return x**2
-
-# def g1():
-#     return 0.5
-
-# def g2():
-#     return 0.5
 
 
 def G(x1, x2, y1, y2, h):

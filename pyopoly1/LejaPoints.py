@@ -21,31 +21,25 @@ num_leja_samples: Total number of samples to be returned (including initial samp
 initial_samples: The samples that we must include in the leja sequence.
 poly: Polynomial chaos expansion, fully implemented with options, indices, etc.
 num_candidate_samples: Number of samples that are chosen from to complete the leja sequence after initial samples are used.
-dimensions: number of dimensions in the problem
 candidateSampleMesh: If num_candidate_samples is zero, this variable defines the candidate samples to use
 returnIndices: Returns the indices of the leja sequence if True.
 '''
 def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples = 10000, candidateSampleMesh = [], returnIndices = False):
     num_vars = np.size(initial_samples,0)
     # generate_candidate_samples = lambda n: np.sqrt(2*np.sqrt(2*num_leja_samples))*np.random.normal(0, 1, (num_vars, n)) 
-    # generate_candidate_samples = lambda n: 7*np.random.normal(0, 1, (num_vars, n)) 
-    generate_candidate_samples = lambda n: np.sqrt(2)*num_leja_samples*np.random.normal(0, 1, (num_vars, n)) 
+    generate_candidate_samples = lambda n: 7*np.random.normal(0, 1, (num_vars, n)) 
+    # generate_candidate_samples = lambda n: np.sqrt(2)*num_leja_samples*np.random.normal(0, 1, (num_vars, n)) 
 
 
     if num_candidate_samples == 0:
         candidate_samples = candidateSampleMesh
     else:
         candidate_samples = generate_candidate_samples(num_candidate_samples)
-        # plt.scatter(candidate_samples[0,:], candidate_samples[1,:], c='r', marker='.')
 
     num_initial_samples = len(initial_samples.T)
+    
     # precond_func = lambda matrix, samples: christoffel_weights(matrix)
     precond_func = lambda matrix, samples: sqrtNormal_weights(samples)
-#    initial_samples, data_structures = get_lu_leja_samples(
-#        poly.canonical_basis_matrix,generate_candidate_samples,
-#        num_candidate_samples,num_initial_samples,
-#        preconditioning_function=precond_func,
-#        initial_samples=initial_samples)
     
     samples, data_structures, successBool = get_lu_leja_samples(poly,
         opolynd_eval,candidate_samples,num_leja_samples,
@@ -62,7 +56,6 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
         if returnIndices:
             indicesLeja = data_structures[2]
             return np.asarray(samples).T, indicesLeja
-        # assert len(np.asarray(samples).T) <= len(poly.indices.T)
         return np.asarray(samples).T, np.asarray(samples[:,num_initial_samples:]).T
   
     if successBool == False:
@@ -115,7 +108,7 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
     return np.asarray(samples).T, np.asarray(newLejaSamples)
 
 
-
+'''Some code for testing - Should make a test file out of some of these'''
 # from families import HermitePolynomials
 # import indexing
 # H = HermitePolynomials(rho=0)
@@ -244,6 +237,7 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf):
 
 
 
+'''Some code for testing - Should make a test file out of some of these'''
 if __name__ == "__main__":
     from Scaling import GaussScale
     from families import HermitePolynomials
@@ -263,7 +257,7 @@ if __name__ == "__main__":
     IC = np.sqrt(0.005)
     mesh, two = getLejaPoints(230, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
     # mesh = mapPointsBack(0, 0, mesh, IC, IC)
-    mesh = M.getICMesh()
+    mesh = M.getICMesh(1,0.1,h)
     
     meshtest, two = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, returnIndices = False)
     meshtest = mapPointsBack(0, 0, meshtest, IC, IC)
@@ -281,7 +275,7 @@ if __name__ == "__main__":
     scale.setSigma(np.asarray([S, S]))
     numLejaPointsToReturn = 12
     
-    meshFull, pdfNew = getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, ii)
+    meshFull, pdfNew = getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf)
     
     grd = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
     gauss2 = fun.Gaussian(scale, grd)
