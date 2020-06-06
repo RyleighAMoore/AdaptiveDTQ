@@ -1,9 +1,3 @@
-'''Run the code 2DTQUnorderedMeshWithMeshUpdates.py and then run 2DTQFastMatrixMultiply.py
-Select this code and run to compute the errors with the variables availble in the console. 
-Spyder IDE may be needed to use this.
-'''
-
-
 import numpy as np
 from scipy.interpolate import griddata, interp2d
 import matplotlib.pyplot as plt
@@ -14,69 +8,52 @@ from pyopoly1 import opolynd as op
 from pyopoly1 import families as f
 from indexing import total_degree_indices
 
+def ErrorVals(Meshes, PdfTraj, mesh2, surfaces):
+    L2Errors = []
+    LinfErrors = []
+    L1Errors = []
+    L2wErrors = []
+    print('l2w errors:')
 
-L2Errors = []
-LinfErrors = []
-L1Errors = []
-L2wErrors = []
-for step in range(len(PdfTraj)):
-    # Interpolate the fine grid soln to the leja points
-    gridSolnOnLejas = griddata(mesh2, surfaces[1*step], Meshes[step], method='cubic', fill_value=np.min(surfaces[1*step]))
+    for step in range(len(PdfTraj)):
+        # Interpolate the fine grid soln to the leja points
+        gridSolnOnLejas = griddata(mesh2, surfaces[1*step], Meshes[step], method='cubic', fill_value=np.min(surfaces[1*step]))
+            
+        #compute errors
+        l2w = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step]))**2*gridSolnOnLejas)/np.sum(gridSolnOnLejas))
+        L2wErrors.append(np.copy(l2w))
+        print(l2w)
         
-    #compute errors
-    l2w = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step]))**2*gridSolnOnLejas)/np.sum(gridSolnOnLejas))
-    print(l2w)
-    L2wErrors.append(np.copy(l2w))
-    
+        # fig = plt.figure()
+        # ax = Axes3D(fig)
+        # ax.scatter(Meshes[step][:,0], Meshes[step][:,1], np.abs((PdfTraj[step]-gridSolnOnLejas)), c='k', marker='.')
+        
+        l2 = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step])*1)**2)/len(PdfTraj[step]))
+        L2Errors.append(np.copy(l2))
+        
+        l1 = np.sum(np.abs(gridSolnOnLejas - PdfTraj[step])*gridSolnOnLejas)/len(PdfTraj[step])
+        L1Errors.append(np.copy(l1))
+        
+        linf = np.max(np.abs(gridSolnOnLejas - PdfTraj[step]))
+        LinfErrors.append(np.copy(linf))
+        
     # fig = plt.figure()
     # ax = Axes3D(fig)
-    # ax.scatter(Meshes[step][:,0], Meshes[step][:,1], np.abs((PdfTraj[step]-gridSolnOnLejas)), c='k', marker='.')
+    # ax.scatter(Meshes[1][:,0], Meshes[1][:,1], np.abs((gridSolnOnLejas - PdfTraj[1])), c='k', marker='.')
+    # ax.scatter(Meshes[1][:,0], Meshes[1][:,1], PdfTraj[0], c='r', marker='.')
+    # ax.scatter(mesh2[:,0], mesh2[:,1], surfaces[0], c='k', marker='.')
     
-    l2 = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step])*1)**2)/len(PdfTraj[step]))
-    L2Errors.append(np.copy(l2))
     
-    l1 = np.sum(np.abs(gridSolnOnLejas - PdfTraj[step])*gridSolnOnLejas)/len(PdfTraj[step])
-    L1Errors.append(np.copy(l1))
+    x = range(len(L2Errors))
+    plt.figure()
+    plt.semilogy(x, np.asarray(LinfErrors), label = 'Linf Error')
+    plt.semilogy(x, np.asarray(L2Errors), label = 'L2 Error')
+    plt.semilogy(x, np.asarray(L1Errors), label = 'L1 Error')
+    plt.semilogy(x, np.asarray(L2wErrors), label = 'L2w Error')
+    plt.xlabel('Time Step')
+    plt.ylabel('Error')
+    plt.legend()
     
-    linf = np.max(np.abs(gridSolnOnLejas - PdfTraj[step]))
-    LinfErrors.append(np.copy(linf))
-    
+                
 
-# fig = plt.figure()
-# ax = Axes3D(fig)
-# ax.scatter(Meshes[1][:,0], Meshes[1][:,1], np.abs((gridSolnOnLejas - PdfTraj[1])), c='k', marker='.')
-# ax.scatter(Meshes[1][:,0], Meshes[1][:,1], PdfTraj[0], c='r', marker='.')
-# ax.scatter(mesh2[:,0], mesh2[:,1], surfaces[0], c='k', marker='.')
-
-
-x = range(len(L2Errors))
-plt.figure()
-plt.semilogy(x, np.asarray(LinfErrors), label = 'Linf Error')
-plt.semilogy(x, np.asarray(L2Errors), label = 'L2 Error')
-plt.semilogy(x, np.asarray(L1Errors), label = 'L1 Error')
-plt.semilogy(x, np.asarray(L2wErrors), label = 'L2w Error')
-plt.xlabel('Time Step')
-plt.ylabel('Error')
-plt.legend()
-
-diffs = []
-for step in range(len(PdfTraj)):
-    err = np.abs(surfaces[step][0] - PdfTraj[step][0])
-    diffs.append(err)
-    
-t = np.asarray(diffs)
-    
-plt.figure()
-plt.semilogy(range(len(PdfTraj)), diffs)
-plt.show()
-    
-
-# idx = 14
-# m = max(np.round(PdfTraj[idx],5))
-# maxVals = [i for i, j in enumerate(np.round(PdfTraj[idx],5)) if j == m]  
-
-# plt.figure()
-# x,y = Meshes[idx].T
-# for val in maxVals:
-#     plt.scatter(x.T[val],y.T[val])
     

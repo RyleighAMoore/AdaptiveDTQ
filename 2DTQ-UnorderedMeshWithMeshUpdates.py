@@ -13,6 +13,9 @@ import indexing
 import MeshUpdates2D as MeshUp
 from Scaling import GaussScale
 import ICMeshGenerator as M
+import pickle  
+from Errors import ErrorVals
+
 
 '''Plotting Parameters'''
 PlotAnimation = True
@@ -20,13 +23,19 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 20
+NumSteps = 3
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
 '''Discretization Parameters'''
 kstep = 0.1
 h=0.01
+
+'''Errors'''
+ComputeErrors = True
+# Make sure the file matches the Function.py functions used.
+SolutionPDFFile = 'C:/Users/Rylei/Documents/SimpleDTQ/PickledData/SolnPDF-Vol.p'
+SolutionMeshFile = 'C:/Users/Rylei/Documents/SimpleDTQ/PickledData/SolnMesh-Vol.p'
 
 ''' Initializd orthonormal Polynomial family'''
 poly = HermitePolynomials(rho=0)
@@ -107,4 +116,10 @@ if PlotAnimation:
     plt.show()
 
 
-
+if ComputeErrors:
+    pkl_file = open(SolutionPDFFile, "rb" ) 
+    pkl_file2 = open(SolutionMeshFile, "rb" ) 
+    mesh2 = pickle.load(pkl_file2)
+    surfaces = pickle.load(pkl_file)
+    
+    ErrorVals(Meshes, PdfTraj, mesh2, surfaces)

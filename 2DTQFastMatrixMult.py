@@ -33,10 +33,10 @@ h=0.01
 s=0.75
 kstep = h ** s
 kstep = 0.05
-xmin=-2
-xmax=2
-ymin=-2
-ymax=2
+xmin=-2.5
+xmax=2.5
+ymin=-2.5
+ymax=2.5
 
 
 def generateGRow(point, allPoints, kstep, h):
@@ -113,16 +113,16 @@ plt.show()
 
 # import pickle  
 
-# pkl_file0 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Gpt02Erf.p", "wb" ) 
-# pickle.dump(GMat, pkl_file0)
-# pkl_file0.close()
+# # pkl_file0 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Gpt02Erf.p", "wb" ) 
+# # pickle.dump(GMat, pkl_file0)
+# # pkl_file0.close()
 
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/PDFTrajpt02Erf.p", "wb" ) 
-# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Mesh1pt02Erf.p", "wb" ) 
+# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/SolnPDF-Vol.p", "wb" ) 
+# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/SolnMesh-Vol.p", "wb" ) 
 
 # import pickle  
 # pickle.dump(surfaces, pkl_file)
-# pickle.dump(mesh, pkl_file2)
+# pickle.dump(mesh2, pkl_file2)
 # pkl_file.close()
 # pkl_file2.close()
 

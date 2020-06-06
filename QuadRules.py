@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import GMatrix as GMatrix
 import pickle
 
-
+'''These are the trapadzoidal rules used in the 1D code,
+if you are looking for the leja quadrature rules see pyopoly1/QuadratureRules.py'''
 
 def TrapUnequal(G, phat, kvect):
     first = np.matmul(G[:, :-1], phat[:-1] * kvect)
