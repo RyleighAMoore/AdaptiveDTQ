@@ -116,7 +116,7 @@ if PlotAnimation:
                                               interval=500, blit=False)
     plt.show()
 
-
+'''Errors'''
 if ComputeErrors:
     pkl_file = open(SolutionPDFFile, "rb" ) 
     pkl_file2 = open(SolutionMeshFile, "rb" ) 
