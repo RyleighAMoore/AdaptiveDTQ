@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 15
+NumSteps = 5
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -95,6 +95,7 @@ if PlotFigure:
     ax = Axes3D(fig)
     index =PlotStepIndex
     ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
+    plt.show()
 
 '''Plot Animation'''
 if PlotAnimation:
