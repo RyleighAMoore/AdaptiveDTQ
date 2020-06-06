@@ -29,8 +29,15 @@ Other good files to know:
     
     pyopoly1/QuadratureRules.py - Contains the Leja quadrature rules
     
-    QuadraticFit.py - Contains the code for the Quadratic fit method.
+    QuadraticFit.py - Contains the code for the Quadratic fit method to divide out gaussian from integrand.
     
+    pyopoly1/LejaPoints.py - Methods to generate Leja Points. Uses code in pyopoly1/LejaUtilities.py
+    
+    
+
+WARNING:
+The files for the 1D method are mixed into this code as well. I should move them at some point to be separate.
+For example, setupMethods.py and QuadRules.py are for the 1D method.
     
     
     
