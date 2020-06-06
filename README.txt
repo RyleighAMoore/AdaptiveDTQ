@@ -3,7 +3,10 @@
 The main code for the 2D method is located at 2DTQ-UnorderedMeshWithMeshUpdates.py.
 The drift and diffustion for the code is set in the Function.py file. You can
 select from the options given or define your own. 
+
 The current code has mesh updates where we add and remove points at the boundary.
+You can change tolerances for mesh spacing, etc in MeshUpdates.py. The current values work well
+in general. 
 
 
 Untested/Needs to be implemented List:
@@ -25,7 +28,9 @@ Other good files to know:
     
     LejaQuadrature.py - Called from 2DTQ-UnorderedMeshWithMeshUpdates.py to step the solution forward in time.
     
-    MeshUpdates2D.py - Contains the mesh update procedures
+    MeshUpdates2D.py - Contains the mesh update procedures. 
+                        You can change tolerances for mesh spacing, etc in MeshUpdates.py. 
+                        The current values seem to work well in general. 
     
     pyopoly1/QuadratureRules.py - Contains the Leja quadrature rules
     
