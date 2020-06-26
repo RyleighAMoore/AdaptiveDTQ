@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+sys.path.insert(1, r'.\pyopoly1')
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -34,8 +34,8 @@ h=0.01
 '''Errors'''
 ComputeErrors = True
 # Make sure the file matches the Function.py functions used.
-SolutionPDFFile = 'C:/Users/Rylei/Documents/SimpleDTQ/PickledData/SolnPDF-Vol.p'
-SolutionMeshFile = 'C:/Users/Rylei/Documents/SimpleDTQ/PickledData/SolnMesh-Vol.p'
+SolutionPDFFile = './PickledData/SolnPDF-Vol.p'
+SolutionMeshFile = './PickledData/SolnMesh-Vol.p'
 
 ''' Initializd orthonormal Polynomial family'''
 poly = HermitePolynomials(rho=0)

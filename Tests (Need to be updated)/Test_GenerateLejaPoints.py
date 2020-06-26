@@ -1,5 +1,5 @@
 import sys
-sys.path.append('C:/Users/Rylei/Documents/SimpleDTQ')
+sys.path.append('..')
 
 from GenerateLejaPoints import getLejaSetFromPoints, generateLejaMesh, getLejaPoints, mapPointsBack, mapPointsTo
 import UnorderedMesh as UM

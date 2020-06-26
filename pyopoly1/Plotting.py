@@ -13,7 +13,7 @@ from families import HermitePolynomials
 import indexing
 import sys
 import QuadratureRules as QR
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ')
+sys.path.insert(1, r'..')
 from Functions import *
 import UnorderedMesh as UM
 from LejaPoints import getLejaPoints,mapPointsBack

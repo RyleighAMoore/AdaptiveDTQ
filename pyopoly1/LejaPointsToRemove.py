@@ -11,7 +11,7 @@ import numpy as np
 import Functions  as fun
 plt.rcParams['text.usetex'] = False
 import sys
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+sys.path.insert(1, r'.\pyopoly1')
 import LejaPoints as LP
 import pickle      
 import scipy as sp

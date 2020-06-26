@@ -11,7 +11,7 @@ import numpy as np
 from math import isclose
 from LejaPoints import *
 import sys
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ')
+sys.path.insert(1, r'..')
 from Functions import *
 
 from Scaling import GaussScale

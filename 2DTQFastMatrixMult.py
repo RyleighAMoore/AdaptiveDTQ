@@ -18,7 +18,7 @@ import QuadRules
 from tqdm import tqdm, trange
 import UnorderedMesh as UM
 import MeshUpdates2D as MeshUp
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+sys.path.insert(1, r'.\pyopoly1')
 from Scaling import GaussScale
 
 

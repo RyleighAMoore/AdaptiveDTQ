@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import opolynd
 from mpl_toolkits.mplot3d import Axes3D
 import sys
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ')
+sys.path.insert(1, r'..')
 from Functions import *
 from Scaling import GaussScale
 from Plotting import productGaussians2D

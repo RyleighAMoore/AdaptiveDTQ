@@ -1,5 +1,5 @@
 import sys
-sys.path.append('C:/Users/Rylei/Documents/SimpleDTQ')
+sys.path.append('..')
 
 from LejaQuadrature import getLejaQuadratureRule, getMeshValsThatAreClose, newIntegrand, getNewPDFVal, QuadratureByInterpolation
 import numpy as np

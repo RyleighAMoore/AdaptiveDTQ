@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ')
+sys.path.insert(1, r'..')
 import numpy as np
 import pandas as pd
 import seaborn as sns

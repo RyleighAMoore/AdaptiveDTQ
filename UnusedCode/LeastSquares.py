@@ -23,7 +23,7 @@ import LejaQuadrature as LQ
 import getPCE as PCE
 import distanceMetrics as DM
 import sys
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+sys.path.insert(1, r'.\pyopoly1')
 from families import HermitePolynomials
 import indexing
 import LejaPoints as LP

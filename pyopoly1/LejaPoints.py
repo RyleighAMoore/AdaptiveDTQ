@@ -7,7 +7,7 @@ Created on Tue Jan 21 11:21:05 2020
 import matplotlib.pyplot as plt
 import sys
 import numpy as np
-sys.path.append('C:/Users/Rylei/Documents/SimpleDTQ')
+sys.path.append('..')
 import UnorderedMesh as UM
 import opolynd
 from LejaUtilities import *

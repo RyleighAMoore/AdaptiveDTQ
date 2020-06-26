@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+sys.path.insert(1, r'.\pyopoly1')
 import numpy as np
 import scipy.optimize as opt
 import matplotlib.pyplot as plt

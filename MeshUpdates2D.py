@@ -5,7 +5,7 @@ Created on Wed Nov 20 10:38:41 2019
 @author: Ryleigh
 """
 import sys
-sys.path.insert(1, r'C:\Users\Rylei\Documents\SimpleDTQ\pyopoly1')
+sys.path.insert(1, r'.\pyopoly1')
 import numpy as np
 import Functions as fun
 import UnorderedMesh as UM
