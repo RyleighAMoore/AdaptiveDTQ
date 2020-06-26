@@ -104,15 +104,15 @@ def getMeshIndicesToRemoveFromMesh(mesh, skipCount, poly):
 
 
 
-# mesh = LP.generateLejaMesh(0, 0.1,0.1, 100)
-pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
-mesh = pickle.load(pickle_in)
-for val in range(len(mesh)-1,-1,-1):
-    xx = mesh[val,0]
-    yy = mesh[val,1]
-    rad = xx**2 +yy**2 
-    if rad < 0.1:
-        mesh = np.delete(mesh, val, 0)
+# # mesh = LP.generateLejaMesh(0, 0.1,0.1, 100)
+# pickle_in = open("C:/Users/Rylei/Documents/SimpleDTQ-LejaMesh.p","rb")
+# mesh = pickle.load(pickle_in)
+# for val in range(len(mesh)-1,-1,-1):
+#     xx = mesh[val,0]
+#     yy = mesh[val,1]
+#     rad = xx**2 +yy**2 
+#     if rad < 0.1:
+#         mesh = np.delete(mesh, val, 0)
         
         
         
