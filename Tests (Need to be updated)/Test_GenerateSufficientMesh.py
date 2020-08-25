@@ -1,5 +1,3 @@
-import sys
-sys.path.append('..')
 
 from LejaQuadrature import getLejaQuadratureRule, getMeshValsThatAreClose, newIntegrand, getNewPDFVal, QuadratureByInterpolation
 import numpy as np

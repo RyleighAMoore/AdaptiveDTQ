@@ -10,15 +10,13 @@ import UnorderedMesh as UM
 import numpy as np
 import Functions  as fun
 plt.rcParams['text.usetex'] = False
-import sys
-sys.path.insert(1, r'.\pyopoly1')
-import LejaPoints as LP
+from pyopoly1 import LejaPoints as LP
 import pickle      
 import scipy as sp
-import LejaPoints as LP
-import opolynd
-from LejaUtilities import *
-from opolynd import opolynd_eval
+from pyopoly1 import LejaPoints as LP
+from pyopoly1 import opolynd
+from pyopoly1 import LejaUtilities
+from pyopoly1.opolynd import opolynd_eval
 
 
 def getLejaPointsForRemoval(num_leja_samples, initial_samples, Mesh, numBasis, poly, dimensions=2):

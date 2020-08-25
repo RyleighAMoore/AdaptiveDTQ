@@ -1,11 +1,10 @@
-import sys
-sys.path.insert(1, r'.\pyopoly1')
+
 import numpy as np
 import scipy.optimize as opt
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import math
-from Scaling import GaussScale
+from pyopoly1.Scaling import GaussScale
 import Functions as fun
 
 

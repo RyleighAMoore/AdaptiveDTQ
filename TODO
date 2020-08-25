@@ -21,13 +21,13 @@
 
 From Akil:
 
-- Look into cProfile to see where the time is going
+- Look into cProfile to see where the time is going 
 
 - Don't checkin __pycache__ files (they're in your gitignore. why are they
-  checked in?)
+  checked in?) (Fixed)
 
 - Also don't check in desktop.ini, and unless there's a good reason you
-  probably shouldn't check in pickle files, either.
+  probably shouldn't check in pickle files, either. (Removed .ini, pickeled files are used for error checking)
 
 - LejaQuadrature.py/MeshUpdates.py
   - sys.path updating is not done in a cross-platform way. Use either os.path

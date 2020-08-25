@@ -1,5 +1,4 @@
-import sys
-sys.path.insert(1, r'..')
+
 import ICMeshGenerator as M
 import matplotlib.pyplot as plt
 from QuadratureUtils import GetGaussianPart

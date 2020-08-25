@@ -4,7 +4,6 @@ Created on Fri Jan 24 12:50:31 2020
 
 @author: Ryleigh
 """
-
 from pylab import *
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,7 +17,6 @@ import QuadRules
 from tqdm import tqdm, trange
 import UnorderedMesh as UM
 import MeshUpdates2D as MeshUp
-sys.path.insert(1, r'.\pyopoly1')
 from Scaling import GaussScale
 
 

@@ -6,7 +6,7 @@ from scipy.stats import multivariate_normal
 import UnorderedMesh as UM
 from pyopoly1 import opolynd as op
 from pyopoly1 import families as f
-from indexing import total_degree_indices
+from pyopoly1.indexing import total_degree_indices
 
 def ErrorVals(Meshes, PdfTraj, mesh2, surfaces):
     L2Errors = []

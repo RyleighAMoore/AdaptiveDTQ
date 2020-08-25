@@ -4,8 +4,7 @@ Created on Wed Nov 20 10:38:41 2019
 
 @author: Ryleigh
 """
-import sys
-sys.path.insert(1, r'.\pyopoly1')
+
 import numpy as np
 import Functions as fun
 import UnorderedMesh as UM
@@ -15,10 +14,10 @@ from itertools import chain
 from tqdm import tqdm, trange
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import LejaPoints as LP
+from pyopoly1 import LejaPoints as LP
 import distanceMetrics 
-import LejaPointsToRemove as LPR
-import LejaPoints as LP
+from pyopoly1 import LejaPointsToRemove as LPR
+from pyopoly1 import LejaPoints as LP
 from scipy.interpolate import griddata
 
 

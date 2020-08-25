@@ -1,3 +1,5 @@
+
+
 from pylab import *
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,8 +24,6 @@ import pickle
 import LejaQuadrature as LQ
 import getPCE as PCE
 import distanceMetrics as DM
-import sys
-sys.path.insert(1, r'.\pyopoly1')
 from families import HermitePolynomials
 import indexing
 import LejaPoints as LP

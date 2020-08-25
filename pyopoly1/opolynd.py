@@ -1,5 +1,5 @@
 import numpy as np
-import opoly1d
+from pyopoly1 import opoly1d
 
 
 def opolynd_eval(x, lambdas, ab, poly1d):

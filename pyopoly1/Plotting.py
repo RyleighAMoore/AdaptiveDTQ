@@ -4,22 +4,20 @@ Created on Mon Apr  6 15:14:41 2020
 
 @author: Rylei
 """
-import variableTransformations as VT
+from pyopoly1 import variableTransformations as VT
 import numpy as np
 import matplotlib.pyplot as plt
-import opolynd
+from pyopoly1 import opolynd
 from mpl_toolkits.mplot3d import Axes3D
-from families import HermitePolynomials
-import indexing
-import sys
-import QuadratureRules as QR
-sys.path.insert(1, r'..')
+from pyopoly1.families import HermitePolynomials
+import pyopoly1.indexing
+from pyopoly1 import QuadratureRules as QR
 from Functions import *
 import UnorderedMesh as UM
-from LejaPoints import getLejaPoints,mapPointsBack
+from pyopoly1.LejaPoints import getLejaPoints,mapPointsBack
 
 
-from Scaling import GaussScale
+from pyopoly1.Scaling import GaussScale
 
 def productGaussians2D(scaling,scaling2):
     

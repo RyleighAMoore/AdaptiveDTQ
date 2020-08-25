@@ -1,5 +1,3 @@
-import sys
-sys.path.append('..')
 
 from GenerateLejaPoints import getLejaSetFromPoints, generateLejaMesh, getLejaPoints, mapPointsBack, mapPointsTo
 import UnorderedMesh as UM

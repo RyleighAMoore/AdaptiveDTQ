@@ -1,5 +1,3 @@
-import sys
-sys.path.insert(1, r'.\pyopoly1')
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -8,10 +6,10 @@ from mpl_toolkits.mplot3d import Axes3D
 from tqdm import trange
 from scipy.spatial import Delaunay
 import LejaQuadrature as LQ
-from families import HermitePolynomials
-import indexing
+from pyopoly1.families import HermitePolynomials
+from pyopoly1 import indexing
 import MeshUpdates2D as MeshUp
-from Scaling import GaussScale
+from pyopoly1.Scaling import GaussScale
 import ICMeshGenerator as M
 import pickle  
 from Errors import ErrorVals

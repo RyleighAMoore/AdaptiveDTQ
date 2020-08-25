@@ -1,9 +1,6 @@
-import sys
-sys.path.insert(1, r'.\pyopoly1')
 import numpy as np
 import Functions as fun
 import UnorderedMesh as UM
-
 
 def getICMesh(radius, stepSize, h):
 

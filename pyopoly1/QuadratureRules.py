@@ -2,20 +2,18 @@
 Created on Fri Apr  3 12:44:33 2020
 @author: Rylei
 """
-import variableTransformations as VT
+from pyopoly1 import variableTransformations as VT
 import numpy as np
 import matplotlib.pyplot as plt
-import opolynd
+from pyopoly1 import opolynd
 from mpl_toolkits.mplot3d import Axes3D
-import sys
-sys.path.insert(1, r'..')
 from Functions import *
-from Scaling import GaussScale
-from Plotting import productGaussians2D
+from pyopoly1.Scaling import GaussScale
+from pyopoly1.Plotting import productGaussians2D
 import UnorderedMesh as UM
-from families import HermitePolynomials
-import indexing
-import LejaPoints as LP
+from pyopoly1.families import HermitePolynomials
+import pyopoly1.indexing
+import pyopoly1.LejaPoints as LP
 from QuadraticFit import fitQuad
 from scipy.interpolate import griddata
 import math

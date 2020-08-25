@@ -5,13 +5,11 @@ Created on Tue Jan 21 11:21:05 2020
 @author: Ryleigh
 """
 import matplotlib.pyplot as plt
-import sys
 import numpy as np
-sys.path.append('..')
 import UnorderedMesh as UM
-import opolynd
-from LejaUtilities import *
-from opolynd import opolynd_eval
+from pyopoly1 import opolynd
+from pyopoly1.LejaUtilities import get_lu_leja_samples, sqrtNormal_weights
+from pyopoly1.opolynd import opolynd_eval
 import UnorderedMesh as UM
 
 

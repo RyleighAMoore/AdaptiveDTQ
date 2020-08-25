@@ -1,5 +1,4 @@
-import sys
-sys.path.insert(1, r'.\pyopoly1')
+
 import numpy as np
 from scipy.stats import uniform, beta, norm, multivariate_normal
 from functools import partial
@@ -9,11 +8,11 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from Functions import f1, f2, g1, g2, GVals
 from scipy.interpolate import griddata, interp2d 
-from LejaPoints import getLejaSetFromPoints, mapPointsBack, mapPointsTo, getLejaPoints
-from QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolation_Simple, QuadratureByInterpolationND_DivideOutGaussian
-from families import HermitePolynomials
-from Scaling import GaussScale
-import indexing
+from pyopoly1.LejaPoints import getLejaSetFromPoints, mapPointsBack, mapPointsTo, getLejaPoints
+from pyopoly1.QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolation_Simple, QuadratureByInterpolationND_DivideOutGaussian
+from pyopoly1.families import HermitePolynomials
+from pyopoly1.Scaling import GaussScale
+from pyopoly1 import indexing
 import math
 
 

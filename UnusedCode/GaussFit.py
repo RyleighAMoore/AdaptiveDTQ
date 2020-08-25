@@ -1,3 +1,4 @@
+
 import numpy as np
 import scipy.optimize as opt
 import matplotlib.pyplot as plt
@@ -5,8 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from Functions import *
-import sys
-sys.path.insert(1, r'.\pyopoly1')
+
 from Scaling import GaussScale
 from variableTransformations import *
 from Functions import covPart
