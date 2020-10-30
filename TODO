@@ -18,7 +18,7 @@
 - Accodomdate cases with no diffusion in one direction but drift is still in both directions.
 
 --------------------------------------------------
-
+- Check IC, not quite a dirac right now, just using a Gaussian.
 From Akil:
 
 - Look into cProfile to see where the time is going 

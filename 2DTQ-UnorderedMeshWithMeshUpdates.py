@@ -13,7 +13,9 @@ from pyopoly1.Scaling import GaussScale
 import ICMeshGenerator as M
 import pickle  
 from Errors import ErrorVals
+from datetime import datetime
 
+start = datetime.now()
 
 '''Plotting Parameters'''
 PlotAnimation = True
@@ -34,6 +36,8 @@ ComputeErrors = True
 # Make sure the file matches the Function.py functions used.
 SolutionPDFFile = './PickledData/SolnPDF-Vol.p'
 SolutionMeshFile = './PickledData/SolnMesh-Vol.p'
+SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
+SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
 
 ''' Initializd orthonormal Polynomial family'''
 poly = HermitePolynomials(rho=0)
@@ -47,9 +51,8 @@ poly.lambdas = lambdas
 mesh = M.getICMesh(1, kstep, h)
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
-scale.setSigma(np.asarray([np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()]))
+scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
 pdf = fun.Gaussian(scale, mesh)
-
 
 Meshes = []
 PdfTraj = []
@@ -86,6 +89,10 @@ for i in trange(NumSteps):
          
     else:
         print('Length of mesh = ', len(mesh))
+
+end = now = datetime.now()
+print("Time: ", end-start)
+
 
 '''Plot figure'''
 if PlotFigure:

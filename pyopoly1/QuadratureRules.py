@@ -89,16 +89,15 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
 def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF):
     '''Divides out Gaussian using a quadratic fit. Then computes the update using a Leja Quadrature rule.'''
     x,y = fullMesh.T
-
+    
     mesh, distances, indices = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh, 20, getIndices = True)
     pdf = fullPDF[indices]
-    
     
     value = float('nan')
     if math.isnan(pdf[0]): # Failed getting leja points
         Const = float('nan')
     else: # succeeded getting leja points
-        scale1, temp, cc, Const = fitQuad(scaling.mu[0][0],scaling.mu[1][0], mesh, pdf)
+        scale1, temp, cc, Const = fitQuad(mesh, pdf)
         if not math.isnan(Const): # succeeded fitting Gaussian
             x,y = fullMesh.T
             vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const

@@ -6,7 +6,7 @@ import numpy as np
 import UnorderedMesh as UM
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from Functions import f1, f2, g1, g2, GVals
+from Functions import *
 from scipy.interpolate import griddata, interp2d 
 from pyopoly1.LejaPoints import getLejaSetFromPoints, mapPointsBack, mapPointsTo, getLejaPoints
 from pyopoly1.QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolation_Simple, QuadratureByInterpolationND_DivideOutGaussian
@@ -51,9 +51,7 @@ poly.lambdas = lambdas
 lejaPointsFinal, new = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
 
 def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step):
-    sigmaX=np.sqrt(h)*g1()
-    sigmaY=np.sqrt(h)*g2()
-    
+ 
     newPDF = []
     condNums = []
     countUseMorePoints = 0 # Used to count if we have to revert to alternative procedure
@@ -61,28 +59,38 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
     '''Try to Divide out Guassian using quadratic fit'''
     for ii in range(len(mesh)):
         # print('########################',ii/len(mesh)*100, '%')
+        sigmaX=np.sqrt(h)*diff(mesh[ii,:])[0,0]
+        sigmaY=np.sqrt(h)*diff(mesh[ii,:])[1,1]
         muX = mesh[ii,0] 
         muY = mesh[ii,1]
         
         scaling = GaussScale(2)
         scaling.setMu(np.asarray([[muX,muY]]).T)
         scaling.setSigma(np.asarray([sigmaX,sigmaY]))
-      
-        value, condNum, scaleUsed = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf)
+        
+        GPDF = GVals(ii, mesh, h)*pdf
+        value, condNum, scaleUsed = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF)
       
         '''Alternative Method'''
         if math.isnan(condNum) or value <0 or condNum >10: 
+            
             mesh12 = mapPointsBack(muX, muY, lejaPointsFinal, sigmaX, sigmaY)
     
-            pdfNew = np.asarray(griddata(mesh, pdf, mesh12, method='cubic', fill_value=0))
-            pdfNew[pdfNew < 0] = 10**(-8)
+            GPDFNew = np.asarray(griddata(mesh, GPDF, mesh12, method='cubic', fill_value=0))
+            GPDFNew[GPDFNew < 0] = 10**(-8)
             
-            integrand = newIntegrand(muX, muY, mesh12, h)
-            testing = np.squeeze(pdfNew)*integrand
             
-            value, condNum = QuadratureByInterpolation_Simple(poly, scaling, mesh12, testing)
-            value = value*(1/np.sqrt(2))
-            countUseMorePoints = countUseMorePoints+1
+            # value, condNum = QuadratureByInterpolationND(poly, scaling, mesh, GPDF)           
+            # value =value[0]
+            
+            value, condNum = QuadratureByInterpolation_Simple(poly, scaling, mesh12, GPDFNew)
+            value = value[0]
+            # integrand = newIntegrand(muX, muY, mesh12, h)
+            # testing = np.squeeze(pdfNew)*integrand
+            
+            # value, condNum = QuadratureByInterpolation_Simple(poly, scaling, mesh12, testing)
+            # value = value*(1/np.sqrt(2))
+            # countUseMorePoints = countUseMorePoints+1
             
             if value <0:
                 value = 10**(-8)
