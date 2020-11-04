@@ -17,7 +17,7 @@ import QuadRules
 from tqdm import tqdm, trange
 import UnorderedMesh as UM
 import MeshUpdates2D as MeshUp
-from Scaling import GaussScale
+from pyopoly1.Scaling import GaussScale
 
 
 # T = 0.01  # final time, code computes PDF of X_T

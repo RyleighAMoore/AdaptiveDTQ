@@ -19,6 +19,9 @@ from scipy.special import erf
 def drift(mesh):
     x = mesh[:,0]
     y = mesh[:,1]
+    r = np.sqrt(x ** 2 + y ** 2)
+    # return np.asarray([10*x*(1- r ** 2), 10*y*(1- r ** 2)]).T
+
     return np.asarray([5*erf(10*x), np.zeros((np.size(mesh,0)))]).T
 # def f1(x, y):
 #     return 5
@@ -101,15 +104,31 @@ def G(indexOfMesh,mesh, h):
         mu = mean[j,:]
         Gs = np.exp(-1/2*((x-mu).T@np.linalg.inv(cov)@(x.T-mu.T)))
         soln_vals.append(Gs*const)
-   
-    # cc = ((2 * np.pi * 1 ** 2 * h) ** (-1 / 2) * np.exp(-(x1 - y1 - h * drift(y1, y2)) ** 2 / (2 * g1() ** 2 * h))) * (
-    #                (2 * np.pi * g2() ** 2 * h) ** (-1 / 2) * np.exp(-(x2 - y2 - h * f2(y1, y2)) ** 2 / (2 * g2() ** 2 * h)))
-    # plt.scatter(mesh[:,0], mesh[:,1], soln_vals)
-    return np.expand_dims(np.asarray(soln_vals),axis=1)
 
+    return np.asarray(soln_vals)
 
-#G(np.asarray([[0,0], [1,1]]),0.1)
+# def AddPointToG(mesh, newPointindex, h, GMat):
+#     newRow = G(-1, mesh,h)
+#     GMat.append(newRow)
 
-#def G1D(x1, x2, y1, gamma1, h):
- #   return (1 / (np.sqrt(2 * np.pi * gamma1**2 * h))) * np.exp((-(x1 - y1 - h * f1(y1, x2 + f2(x1,x2))) ** 2) / (2 * gamma1 ** 2 * h))
-
+#     x = mesh[newPointindex,:]
+#     D = mesh.shape[1]
+#     mean = mesh[-1,:]+drift(mesh[-1,:])*h
+#     cov = diff(mesh) ** 2 * h
+#     newCol = []
+#     const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
+    
+#     for j in range(len(mesh)):
+#         mu = mean[j,:]
+#         Gs = np.exp(-1/2*((x[j,:]-mu).T@np.linalg.inv(cov)@(x[j,:].T-mu.T)))
+#         newCol.append(Gs*const)
+    
+#     GMat = np.asarray(GMat)
+    
+    
+    
+    
+    
+    
+    
+    

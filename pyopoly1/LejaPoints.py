@@ -209,6 +209,7 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf):
     meshFull = np.vstack(([Px,Py], meshShortIC))
     
     pdfFull = np.vstack((pdf[idx], pdfShortIC))
+    meshUnordered = np.copy(meshFull)
     
     pdfNew = []
     Pxs = []
@@ -222,6 +223,12 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf):
     meshFull = np.vstack((Pxs, Pys))
     meshFull = np.asarray(meshFull).T
     
+    '''Correct Indices'''
+    indicesNew = []
+    for ii in range(len(indices)):
+        indx = np.where((mesh == meshUnordered[indices[ii]]).all(axis=1))
+        indicesNew.append(indx[0][0])
+        
     plot= False
     if plot:
         plt.figure()
@@ -231,7 +238,7 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf):
         plt.legend()
         plt.show()
     lejaPointsFinal
-    return meshFull, pdfNew
+    return meshFull, pdfNew, indicesNew
 
 
 

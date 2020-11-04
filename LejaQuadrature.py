@@ -9,12 +9,12 @@ from mpl_toolkits.mplot3d import Axes3D
 from Functions import *
 from scipy.interpolate import griddata, interp2d 
 from pyopoly1.LejaPoints import getLejaSetFromPoints, mapPointsBack, mapPointsTo, getLejaPoints
-from pyopoly1.QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolation_Simple, QuadratureByInterpolationND_DivideOutGaussian
+from pyopoly1.QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolationND_DivideOutGaussian
 from pyopoly1.families import HermitePolynomials
 from pyopoly1.Scaling import GaussScale
 from pyopoly1 import indexing
 import math
-
+import Functions as fun
 
 
 def newIntegrand(x1,x2,mesh,h):
@@ -42,56 +42,60 @@ def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
 
 
 '''Generate Leja Sample for use in alternative method if needed'''
-poly = HermitePolynomials(rho=0)
-d=2
-k = 40    
-ab = poly.recurrence(k+1)
-lambdas = indexing.total_degree_indices(d, k)
-poly.lambdas = lambdas
-lejaPointsFinal, new = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
-
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step):
- 
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step, GMat, LejaPointsCanonical, LejaPointIndices, time=False):
+    LPMatCanonical = []
+    LPMatIndices = np.empty([2000, 20])
+    
     newPDF = []
     condNums = []
     countUseMorePoints = 0 # Used to count if we have to revert to alternative procedure
     
+    Sigma = np.sqrt(h)*diff(mesh) # sigma of gaussian for weight
     '''Try to Divide out Guassian using quadratic fit'''
     for ii in range(len(mesh)):
-        # print('########################',ii/len(mesh)*100, '%')
-        sigmaX=np.sqrt(h)*diff(mesh[ii,:])[0,0]
-        sigmaY=np.sqrt(h)*diff(mesh[ii,:])[1,1]
-        muX = mesh[ii,0] 
+        muX = mesh[ii,0] # mean of gaussian for weight
         muY = mesh[ii,1]
+        Gvalues = GMat[ii,:len(mesh)]
         
         scaling = GaussScale(2)
         scaling.setMu(np.asarray([[muX,muY]]).T)
-        scaling.setSigma(np.asarray([sigmaX,sigmaY]))
+        scaling.setSigma(np.diag(Sigma))
         
-        GPDF = GVals(ii, mesh, h)*pdf
-        value, condNum, scaleUsed = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF)
-      
+        GPDF = (Gvalues*pdf.T).T
+        
+        if time: 
+            value, condNum, scaleUsed, indices = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, [],[], time=True)
+        else:
+            LejaMeshCanonical = LejaPointsCanonical[ii]
+            value, condNum, scaleUsed, indices= QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LejaMeshCanonical, LejaPointIndices[ii,:],time=False)
+
+        if time and not math.isnan(condNum) or value < 0 or condNum > 10:
+            LPs = []
+            for i in range(len(indices)):
+                LPs.append(mesh[indices[i],:])
+                LejaPointIndices = indices
+            aa = np.asarray(LPs)
+            # mesh2 = VT.map_from_canonical_space(mesh2, scaling)
+            
+            LPMatCanonical.append(aa)
+            LPMatIndices[ii,:len(indices)] = indices
+        
+        
         '''Alternative Method'''
-        if math.isnan(condNum) or value <0 or condNum >10: 
-            
-            mesh12 = mapPointsBack(muX, muY, lejaPointsFinal, sigmaX, sigmaY)
-    
-            GPDFNew = np.asarray(griddata(mesh, GPDF, mesh12, method='cubic', fill_value=0))
-            GPDFNew[GPDFNew < 0] = 10**(-8)
-            
-            
-            # value, condNum = QuadratureByInterpolationND(poly, scaling, mesh, GPDF)           
-            # value =value[0]
-            
-            value, condNum = QuadratureByInterpolation_Simple(poly, scaling, mesh12, GPDFNew)
-            value = value[0]
-            # integrand = newIntegrand(muX, muY, mesh12, h)
-            # testing = np.squeeze(pdfNew)*integrand
-            
-            # value, condNum = QuadratureByInterpolation_Simple(poly, scaling, mesh12, testing)
-            # value = value*(1/np.sqrt(2))
-            # countUseMorePoints = countUseMorePoints+1
-            
+        if math.isnan(condNum) or value < 0 or condNum > 10:
+            if time:
+                LejaMeshCanonical=[]
+                LejaPointPDFVals = []
+            #Divide out by gaussian, pass into QuadratureByInterpolationND
+            # value = 0.003
+            scale = GaussScale(2)
+            scale.setMu(np.asarray([[0,0]]).T)
+            scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
+            weight = fun.Gaussian(scale, mesh)
+            GPDF2 = GPDF/np.expand_dims(weight, axis=1)
+            value, condNum, indices = QuadratureByInterpolationND(poly, scale, mesh, GPDF2, LejaMeshCanonical, LejaPointPDFVals, time=True)           
+            value =value[0]
+            countUseMorePoints = countUseMorePoints+1
             if value <0:
                 value = 10**(-8)
 
@@ -101,7 +105,8 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
     print('\n',(countUseMorePoints/len(mesh))*100, "% Used Interpolation*********************************")
     newPDFs = np.asarray(newPDF)
     condNums = np.asarray([condNums]).T
-    
-    return newPDFs,condNums, mesh
+    if time:
+        LPMatIndices = LPMatIndices.astype(int)
+    return newPDFs,condNums, mesh, LPMatCanonical, LPMatIndices
 
 

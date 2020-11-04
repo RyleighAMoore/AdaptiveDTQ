@@ -32,7 +32,7 @@ adjustDensity = False # Density changes are not working well right now
 maxDegFreedom = 2000
 
 '''Discretization Parameters'''
-kstep = 0.08
+kstep = 0.1
 h=0.01
 
 '''Errors'''
@@ -52,12 +52,11 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 
 '''pdf after one time step with Dirac initial condition centered at the origin'''
-mesh = M.getICMesh(0.8, kstep, h)
+mesh = M.getICMesh(1, kstep, h)
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
 scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
 pdf = fun.Gaussian(scale, mesh)
-
 
 '''Initialize Transition probabilities'''
 GMat = np.empty([maxDegFreedom, maxDegFreedom])
@@ -175,7 +174,7 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-    ax.set_zlim(0, np.max(PdfTraj[2]))
+    ax.set_zlim(0, np.max(PdfTraj[-1]))
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                               interval=500, blit=False)
     plt.show()
