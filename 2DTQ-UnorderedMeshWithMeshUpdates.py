@@ -32,7 +32,7 @@ adjustDensity = False # Density changes are not working well right now
 maxDegFreedom = 2000
 
 '''Discretization Parameters'''
-kstep = 0.08
+kstep = 0.1
 h=0.01
 
 '''Errors'''
@@ -52,7 +52,7 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 
 '''pdf after one time step with Dirac initial condition centered at the origin'''
-mesh = M.getICMesh(0.8, kstep, h)
+mesh = M.getICMesh(1, kstep, h)
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
 scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
@@ -136,11 +136,9 @@ for i in trange(NumSteps):
         print("Stepping Forward....")
         pdf = np.expand_dims(pdf,axis=1)
         if i==0:
-            LPMatCanonical =[]
-            LPMatIndices=[]
-            pdf, condnums, meshTemp, LPMatCanonical, LPMatIndices = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i, GMat, LPMatCanonical, LPMatIndices, time=True)
+            pdf, condnums, meshTemp, LPMatIndices = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i, GMat, [], time=True)
         else:
-            pdf, condnums, meshTemp, aa, aa = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i, GMat, LPMatCanonical, LPMatIndices, time=False)
+            pdf, condnums, meshTemp, LPMatIndices = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i, GMat, LPMatIndices, time=False)
         pdf = np.squeeze(pdf)
         '''Add new values to lists for graphing'''
         PdfTraj.append(np.copy(pdf))
@@ -188,3 +186,16 @@ if ComputeErrors:
     surfaces = pickle.load(pkl_file)
     
     ErrorVals(Meshes, PdfTraj, mesh2, surfaces)
+
+
+# indx = 1218
+# indices = LPMatIndices[indx,:] 
+# plt.figure()
+# plt.plot(mesh[indices,0], mesh[indices,1], 'o')
+# plt.plot(mesh[indx,0], mesh[indx,1], '.')
+# plt.show()
+
+
+
+
+

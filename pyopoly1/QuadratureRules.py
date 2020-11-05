@@ -64,7 +64,7 @@ def getValsWithinRadius(Px,Py,canonicalMesh, pdf, numCandidiates):
 #     return c[0], np.sum(np.abs(vinv[0,:]))
 
   
-def QuadratureByInterpolationND(poly, scaling, mesh, pdf, LejaMeshCanonical, LejaPointPDFVals, time=False):
+def QuadratureByInterpolationND(poly, scaling, mesh, pdf, LejaIndices, time=False):
     '''Quadrature rule with change of variables for nonzero covariance. 
     Used by QuadratureByInterpolationND_DivideOutGaussian
     Selects a Leja points subset of the passed in mesh'''
@@ -73,66 +73,64 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, LejaMeshCanonical, Lej
         normScale = GaussScale(2)
         normScale.setMu(np.asarray([[0,0]]).T)
         normScale.setCov(np.asarray([[1,0],[0,1]]))
-        mesh2, pdfNew, indices = LP.getLejaSetFromPoints(normScale, u, 20, poly, pdf)
-        # weight = fun.Gaussian(scaling, u)
+        mesh2, pdfNew, LejaIndices = LP.getLejaSetFromPoints(normScale, u, 12, poly, pdf)
+        # weight = fun.Gaussian(scaling, mesh)
+        
         # fig = plt.figure()
         # ax = Axes3D(fig)
         # ax.scatter(u[:,0], u[:,1], weight, c='k', marker='o')
-        # # ax.scatter(mesh21[:,0], mesh21[:,1], np.max(weight)+1, c='b', marker='o')
-
+        # ax.scatter(mesh2[:,0], mesh2[:,1], np.max(weight)+1, c='b', marker='o')
         # # ax.scatter(mesh2[:,0], mesh2[:,1], np.max(weight)+1, c='r', marker='.')
-        
         # plt.show()
         
     else:
-        mesh2 = VT.map_to_canonical_space(LejaMeshCanonical, scaling)
+        LejaMesh = mesh[LejaIndices]
+        mesh2 = VT.map_to_canonical_space(LejaMesh, scaling)
         # mesh2 = LejaMeshCanonical
-        pdfNew = LejaPointPDFVals
-        indices = []
-    
+        pdfNew = pdf[LejaIndices]
+        
         # mesh11 = VT.map_to_canonical_space(mesh, scaling)
         
-        u = VT.map_to_canonical_space(mesh, scaling)
-        normScale = GaussScale(2)
-        normScale.setMu(np.asarray([[0,0]]).T)
-        normScale.setCov(np.asarray([[1,0],[0,1]]))
-        mesh21, pdf21, indices21 = LP.getLejaSetFromPoints(normScale, u, 20, poly, pdf)
+        # u = VT.map_to_canonical_space(mesh, scaling)
+        # normScale = GaussScale(2)
+        # normScale.setMu(np.asarray([[0,0]]).T)
+        # normScale.setCov(np.asarray([[1,0],[0,1]]))
+        # mesh21, pdf21, indices21 = LP.getLejaSetFromPoints(normScale, u, 20, poly, pdf)
         
-        weight = fun.Gaussian(scaling, mesh)
+        # weight = fun.Gaussian(scaling, mesh)
         # fig = plt.figure()
         # ax = Axes3D(fig)
         # ax.scatter(u[:,0], u[:,1], weight, c='k', marker='o')
         # ax.scatter(mesh21[:,0], mesh21[:,1], np.max(weight)+1, c='b', marker='o')
-
         # ax.scatter(mesh2[:,0], mesh2[:,1], np.max(weight)+2, c='r', marker='o')
         
         # plt.show()
         
-        numSamples = len(mesh2)          
-        V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
-        vinv = np.linalg.inv(V)
-        c = np.matmul(vinv, pdfNew)
-        L = np.linalg.cholesky((scaling.cov))
-        JacFactor = np.prod(np.diag(L))
-        sol1 = c[0]*JacFactor*np.pi
+        # numSamples = len(mesh2)          
+        # V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
+        # vinv = np.linalg.inv(V)
+        # c = np.matmul(vinv, pdfNew)
+        # L = np.linalg.cholesky((scaling.cov))
+        # JacFactor = np.prod(np.diag(L))
+        # sol1 = c[0]*JacFactor*np.pi
         
-        ###
-        u = VT.map_to_canonical_space(mesh, scaling)
-        normScale = GaussScale(2)
-        normScale.setMu(np.asarray([[0,0]]).T)
-        normScale.setCov(np.asarray([[1,0],[0,1]]))
-        mesh2, pdfNew, indices = LP.getLejaSetFromPoints(normScale, u, 20, poly, pdf)
-        numSamples = len(mesh2)          
-        V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
-        vinv = np.linalg.inv(V)
-        c = np.matmul(vinv, pdfNew)
-        L = np.linalg.cholesky((scaling.cov))
-        JacFactor = np.prod(np.diag(L))
-        sol2 = c[0]*JacFactor*np.pi
-        ###
-        # print(abs(sol1-sol2))
-        if abs(sol1-sol2) > 0.08:
-            p=0
+        # ###
+        # u = VT.map_to_canonical_space(mesh, scaling)
+        # normScale = GaussScale(2)
+        # normScale.setMu(np.asarray([[0,0]]).T)
+        # normScale.setCov(np.asarray([[1,0],[0,1]]))
+        # mesh2, pdfNew, indices = LP.getLejaSetFromPoints(normScale, u, 20, poly, pdf)
+        # numSamples = len(mesh2)          
+        # V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
+        # vinv = np.linalg.inv(V)
+        # c = np.matmul(vinv, pdfNew)
+        # L = np.linalg.cholesky((scaling.cov))
+        # JacFactor = np.prod(np.diag(L))
+        # sol2 = c[0]*JacFactor*np.pi
+        # ###
+        # # print(abs(sol1-sol2))
+        # if abs(sol1-sol2) > 0.08:
+        #     p=0
 
     numSamples = len(mesh2)          
     V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
@@ -140,14 +138,25 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, LejaMeshCanonical, Lej
     c = np.matmul(vinv, pdfNew)
     L = np.linalg.cholesky((scaling.cov))
     JacFactor = np.prod(np.diag(L))
-    if  np.sum(np.abs(vinv[0,:])) > 5:
-        ttt=0
+    if  not time and np.sum(np.abs(vinv[0,:])) > 3:
+        # print('once')
+        u = VT.map_to_canonical_space(mesh, scaling)
+        normScale = GaussScale(2)
+        normScale.setMu(np.asarray([[0,0]]).T)
+        normScale.setCov(np.asarray([[1,0],[0,1]]))
+        mesh2, pdfNew, LejaIndices = LP.getLejaSetFromPoints(normScale, u, 12, poly, pdf)
+        numSamples = len(mesh2)          
+        V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
+        vinv = np.linalg.inv(V)
+        c = np.matmul(vinv, pdfNew)
+        L = np.linalg.cholesky((scaling.cov))
+        JacFactor = np.prod(np.diag(L))
     
-    return c[0]*JacFactor*np.pi, np.sum(np.abs(vinv[0,:])), indices
+    return c[0]*JacFactor*np.pi, np.sum(np.abs(vinv[0,:])), LejaIndices
 
 
 
-def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LejaMeshCanonical, LejaIndices, time=False):
+def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LejaIndices, time=False):
     '''Divides out Gaussian using a quadratic fit. Then computes the update using a Leja Quadrature rule.'''
     x,y = fullMesh.T
     
@@ -169,13 +178,13 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         pdf2 = fullPDF/vals.T
         
         if time:
-            value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2, [], [], time=True)
+            value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,LejaIndices, time=True)
 
         else:
             # LejaMeshCanonical=mesh
             # LejaPointPDFVals = pdf2[indices21]
             LejaPointPDFVals = pdf2[np.ndarray.tolist(LejaIndices)]
-            value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2, LejaMeshCanonical, LejaPointPDFVals)
+            value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2, LejaIndices)
 
         
         return value[0], condNum, scale1, indices       

@@ -42,9 +42,9 @@ def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
 
 
 '''Generate Leja Sample for use in alternative method if needed'''
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step, GMat, LejaPointsCanonical, LejaPointIndices, time=False):
-    LPMatCanonical = []
-    LPMatIndices = np.empty([2000, 20])
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step, GMat, LPMatIndices, time=False):
+    if time:
+        LPMatIndices = np.empty([2000, 12])
     
     newPDF = []
     condNums = []
@@ -53,8 +53,11 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
     Sigma = np.sqrt(h)*diff(mesh) # sigma of gaussian for weight
     '''Try to Divide out Guassian using quadratic fit'''
     for ii in range(len(mesh)):
+    
         muX = mesh[ii,0] # mean of gaussian for weight
         muY = mesh[ii,1]
+        # print(muX,muY)
+
         Gvalues = GMat[ii,:len(mesh)]
         
         scaling = GaussScale(2)
@@ -64,10 +67,9 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
         GPDF = (Gvalues*pdf.T).T
         
         if time: 
-            value, condNum, scaleUsed, indices = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, [],[], time=True)
+            value, condNum, scaleUsed, indices = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF,[], time=True)
         else:
-            LejaMeshCanonical = LejaPointsCanonical[ii]
-            value, condNum, scaleUsed, indices= QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LejaMeshCanonical, LejaPointIndices[ii,:],time=False)
+            value, condNum, scaleUsed, indices= QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMatIndices[ii,:],time=False)
 
         if time and not math.isnan(condNum) or value < 0 or condNum > 10:
             LPs = []
@@ -76,16 +78,12 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
                 LejaPointIndices = indices
             aa = np.asarray(LPs)
             # mesh2 = VT.map_from_canonical_space(mesh2, scaling)
-            
-            LPMatCanonical.append(aa)
-            LPMatIndices[ii,:len(indices)] = indices
-        
+            LPMatIndices[ii,:len(indices)] = np.copy(indices)
         
         '''Alternative Method'''
         if math.isnan(condNum) or value < 0 or condNum > 10:
-            if time:
-                LejaMeshCanonical=[]
-                LejaPointPDFVals = []
+            LejaMeshCanonical=[]
+            LejaPointPDFVals = []
             #Divide out by gaussian, pass into QuadratureByInterpolationND
             # value = 0.003
             scale = GaussScale(2)
@@ -106,7 +104,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
     newPDFs = np.asarray(newPDF)
     condNums = np.asarray([condNums]).T
     if time:
-        LPMatIndices = LPMatIndices.astype(int)
-    return newPDFs,condNums, mesh, LPMatCanonical, LPMatIndices
+        LPMatIndices = np.copy(LPMatIndices.astype(int))
+    return newPDFs,condNums, mesh, LPMatIndices
 
 
