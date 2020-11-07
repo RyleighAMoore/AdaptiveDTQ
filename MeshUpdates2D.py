@@ -24,24 +24,29 @@ from scipy.interpolate import griddata
 ''''Tolerance Parameters'''
 addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
 removeZerosValuesIfLessThanTolerance = 10**(-4)
-minDistanceBetweenPoints = 0.15
-minDistanceBetweenPointsBoundary = 0.15
-maxDistanceBetweenPoints = 0.15
+minDistanceBetweenPoints = 0.1
+minDistanceBetweenPointsBoundary = 0.1
+maxDistanceBetweenPoints = 0.1
 
 
 
-def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, adjustBoundary =True, adjustDensity=False):
+def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, LPMatIndices, adjustBoundary =True, adjustDensity=False):
     '''If the mesh is changed, these become 1 so we know to recompute the triangulation'''
     changedBool2 = 0 
     changedBool1 = 0
+    meshSize = len(Mesh)
     if adjustDensity:
         Mesh, Pdf, triangulation, changedBool2 = addInteriorPoints(Mesh, Pdf, triangulation)
     if adjustBoundary:
         Mesh, Pdf, triangulation, changedBool1 = addPointsToBoundary(Mesh, Pdf, triangulation)
     ChangedBool = max(changedBool1, changedBool2)
+    # if ChangedBool>0:
+    #     newMeshSize = len(Mesh)
+    #     numPointsAdded = len(Mesh)- meshSize
+    #     LPMatIndices[meshSize:newMeshSize,:] = -1*np.ones((numPointsAdded, np.size(LPMatIndices,1)))
     return Mesh, Pdf, triangulation, ChangedBool
 
-def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly, adjustBoundary =True, adjustDensity=False):
+def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly,LPMatIndices, adjustBoundary =True, adjustDensity=False):
     '''If the mesh is changed, these become 1 so we know to recompute the triangulation'''
     ChangedBool2 = 0
     ChangedBool1 = 0
@@ -157,7 +162,7 @@ def addPoint(Px,Py, Mesh, Pdf, triangulation):
 def addPointsToBoundary(Mesh, Pdf, triangulation):
     numBoundaryAdded = 0
     keepAdding = True
-    changedBool = 0
+    ChangedBool = 0
     print("adding boundary points...")
     while keepAdding:
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation)
@@ -175,10 +180,10 @@ def addPointsToBoundary(Mesh, Pdf, triangulation):
                         numBoundaryAdded = numBoundaryAdded + 1
         else:
             keepAdding =False
-        if changedBool == 1:
+        if ChangedBool == 1:
             tri = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
     print("# boundary points Added = ", numBoundaryAdded)    
-    return Mesh, Pdf, triangulation, changedBool
+    return Mesh, Pdf, triangulation, ChangedBool
 
 
 def addPointsRadially(pointX, pointY, mesh, numPointsToAdd):

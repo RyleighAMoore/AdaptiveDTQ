@@ -27,8 +27,7 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
     # generate_candidate_samples = lambda n: np.sqrt(2*np.sqrt(2*num_leja_samples))*np.random.normal(0, 1, (num_vars, n)) 
     generate_candidate_samples = lambda n: 7*np.random.normal(0, 1, (num_vars, n)) 
     # generate_candidate_samples = lambda n: np.sqrt(2)*num_leja_samples*np.random.normal(0, 1, (num_vars, n)) 
-
-
+    
     if num_candidate_samples == 0:
         candidate_samples = candidateSampleMesh
     else:

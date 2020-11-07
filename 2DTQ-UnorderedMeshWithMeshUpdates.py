@@ -116,29 +116,32 @@ Meshes.append(np.copy(mesh))
 '''Delaunay triangulation for finding the boundary '''
 tri = Delaunay(mesh, incremental=True)
 
+
+LPMatIndices = -1*np.ones([2000, 12]) # Variable will be initialized during the first update step.
+LPMatIndices = LPMatIndices.astype(int)
 '''Grid updates'''
 for i in trange(NumSteps):
-    # if (i >= 2) and (adjustBoundary or adjustDensity):
+    # if (i >= 1) and (adjustBoundary or adjustDensity):
     #     '''Add points to mesh'''
-    #     mesh, pdf, tri, addBool = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
+    #     mesh, pdf, tri, addBool = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, LPMatIndices, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
     #     if (addBool == 1): 
     #         '''Recalculate triangulation if mesh was changed'''
     #         tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-    #     '''Remove points from mesh'''
-    #     mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly)
-    #     if (remBool == 1): 
-    #         '''Recalculate triangulation if mesh was changed'''
-    #         tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+        # '''Remove points from mesh'''
+        # mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, LPMatIndices)
+        # if (remBool == 1): 
+        #     '''Recalculate triangulation if mesh was changed'''
+        #     tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
 
     print('Length of mesh = ', len(mesh))
     if i >-1: 
         '''Step forward in time'''
         print("Stepping Forward....")
         pdf = np.expand_dims(pdf,axis=1)
-        if i==0:
-            pdf, condnums, meshTemp, LPMatIndices = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i, GMat, [], time=True)
-        else:
-            pdf, condnums, meshTemp, LPMatIndices = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i, GMat, LPMatIndices, time=False)
+        if i>-1:
+            pdf, condnums, meshTemp, LPMatIndices = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i, GMat, LPMatIndices)
+        # else:
+        #     pdf, condnums, meshTemp, LPMatIndices = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i, GMat, LPMatIndices, time=False)
         pdf = np.squeeze(pdf)
         '''Add new values to lists for graphing'''
         PdfTraj.append(np.copy(pdf))
@@ -173,7 +176,7 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-    ax.set_zlim(0, np.max(PdfTraj[2]))
+    ax.set_zlim(0, np.max(PdfTraj[-1]))
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                               interval=500, blit=False)
     plt.show()
