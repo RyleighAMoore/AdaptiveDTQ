@@ -19,18 +19,19 @@ import distanceMetrics
 from pyopoly1 import LejaPointsToRemove as LPR
 from pyopoly1 import LejaPoints as LP
 from scipy.interpolate import griddata
+import Functions as fun
 
 
 ''''Tolerance Parameters'''
 addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
 removeZerosValuesIfLessThanTolerance = 10**(-4)
-minDistanceBetweenPoints = 0.1
-minDistanceBetweenPointsBoundary = 0.1
-maxDistanceBetweenPoints = 0.1
+minDistanceBetweenPoints = 0.15
+minDistanceBetweenPointsBoundary = 0.15
+maxDistanceBetweenPoints = 0.15
 
 
 
-def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, LPMatIndices, adjustBoundary =True, adjustDensity=False):
+def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, LPMatIndices,GMat, adjustBoundary =True, adjustDensity=False):
     '''If the mesh is changed, these become 1 so we know to recompute the triangulation'''
     changedBool2 = 0 
     changedBool1 = 0
@@ -40,11 +41,18 @@ def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, LPMatIndi
     if adjustBoundary:
         Mesh, Pdf, triangulation, changedBool1 = addPointsToBoundary(Mesh, Pdf, triangulation)
     ChangedBool = max(changedBool1, changedBool2)
-    # if ChangedBool>0:
-    #     newMeshSize = len(Mesh)
-    #     numPointsAdded = len(Mesh)- meshSize
-    #     LPMatIndices[meshSize:newMeshSize,:] = -1*np.ones((numPointsAdded, np.size(LPMatIndices,1)))
-    return Mesh, Pdf, triangulation, ChangedBool
+    if ChangedBool>0:
+        newMeshSize = len(Mesh)
+        GMat2 = np.empty([2000, 2000])
+        for i in range(len(Mesh)):
+            v = fun.G(i,Mesh, h)
+            GMat2[i,:len(v)] = v
+        for i in range(meshSize+1, newMeshSize+1):
+            GMat = fun.AddPointToG(Mesh[:i,:], i-1, h, GMat)
+    
+            
+
+    return Mesh, Pdf, triangulation, ChangedBool, LPMatIndices, GMat
 
 def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly,LPMatIndices, adjustBoundary =True, adjustDensity=False):
     '''If the mesh is changed, these become 1 so we know to recompute the triangulation'''
@@ -375,3 +383,6 @@ def setGlobalVarsForMesh(mesh):
     minDistanceBetweenPointsBoundary = distanceMetrics.separationDistance(mesh)*1.5
     maxDistanceBetweenPoints = 1.5*minDistanceBetweenPoints
 
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm

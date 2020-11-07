@@ -121,12 +121,12 @@ LPMatIndices = -1*np.ones([2000, 12]) # Variable will be initialized during the 
 LPMatIndices = LPMatIndices.astype(int)
 '''Grid updates'''
 for i in trange(NumSteps):
-    # if (i >= 1) and (adjustBoundary or adjustDensity):
-    #     '''Add points to mesh'''
-    #     mesh, pdf, tri, addBool = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, LPMatIndices, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
-    #     if (addBool == 1): 
-    #         '''Recalculate triangulation if mesh was changed'''
-    #         tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+    if (i >= 1) and (adjustBoundary or adjustDensity):
+        '''Add points to mesh'''
+        mesh, pdf, tri, addBool,LPMatIndices, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, LPMatIndices,GMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
+        if (addBool == 1): 
+            '''Recalculate triangulation if mesh was changed'''
+            tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
         # '''Remove points from mesh'''
         # mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, LPMatIndices)
         # if (remBool == 1): 

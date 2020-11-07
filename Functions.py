@@ -107,23 +107,25 @@ def G(indexOfMesh,mesh, h):
 
     return np.asarray(soln_vals)
 
-# def AddPointToG(mesh, newPointindex, h, GMat):
-#     newRow = G(-1, mesh,h)
-#     GMat.append(newRow)
+def AddPointToG(mesh, newPointindex, h, GMat):
+    newRow = G(newPointindex, mesh,h)
+    GMat[newPointindex,:len(newRow)] = newRow
 
-#     x = mesh[newPointindex,:]
-#     D = mesh.shape[1]
-#     mean = mesh[-1,:]+drift(mesh[-1,:])*h
-#     cov = diff(mesh) ** 2 * h
-#     newCol = []
-#     const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
+    D = mesh.shape[1]
+    mean = mesh[-1,:]+drift(np.expand_dims(mesh[-1,:],axis=0))*h
+    mean = mean[0]
+    cov = diff(mesh) ** 2 * h
+    newCol = []
+    const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
     
-#     for j in range(len(mesh)):
-#         mu = mean[j,:]
-#         Gs = np.exp(-1/2*((x[j,:]-mu).T@np.linalg.inv(cov)@(x[j,:].T-mu.T)))
-#         newCol.append(Gs*const)
+    for j in range(len(mesh)):
+        mu = mean
+        x = mesh[j,:]
+        Gs = np.exp(-1/2*((x-mu).T@np.linalg.inv(cov)@(x.T-mu.T)))
+        newCol.append(Gs*const)
     
-#     GMat = np.asarray(GMat)
+    GMat[:len(newCol),newPointindex] = newCol
+    return GMat
     
     
     
