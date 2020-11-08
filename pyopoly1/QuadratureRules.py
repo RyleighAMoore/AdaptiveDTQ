@@ -68,7 +68,7 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, LejaIndices):
     '''Quadrature rule with change of variables for nonzero covariance. 
     Used by QuadratureByInterpolationND_DivideOutGaussian
     Selects a Leja points subset of the passed in mesh'''
-    if np.isnan(LejaIndices).any(): # Need to compute Leja points
+    if np.min(LejaIndices)<0: # Need to compute Leja points
         u = VT.map_to_canonical_space(mesh, scaling)
         normScale = GaussScale(2)
         normScale.setMu(np.asarray([[0,0]]).T)
@@ -150,7 +150,7 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, LejaIndices):
         c = np.matmul(vinv, pdfNew)
         L = np.linalg.cholesky((scaling.cov))
         JacFactor = np.prod(np.diag(L))
-    if not np.isnan(LejaIndices).any() and np.sum(np.abs(vinv[0,:])) > 3: # Try to compute new LejaPoints
+    if not np.min(LejaIndices)<0 and np.sum(np.abs(vinv[0,:])) > 3: # Try to compute new LejaPoints
         # print('once')
         u = VT.map_to_canonical_space(mesh, scaling)
         normScale = GaussScale(2)
@@ -175,31 +175,37 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
     mesh, distances, indices1 = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh, 12, getIndices = True)
     pdf = fullPDF[indices1]
     
-    scale1, temp, cc, Const = fitQuad(mesh, pdf)
-    # weight = fun.Gaussian(scale1, fullMesh)
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # ax.scatter(fullMesh[:,0], fullMesh[:,1], weight, c='k', marker='o')
-    # # ax.scatter(fullMesh[:,0], fullMesh[:,1], fullPDF, c='b', marker='o')
-    # plt.show()
-    
-    
-    if not math.isnan(Const): # succeeded fitting Gaussian
-        x,y = fullMesh.T
-        vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
-        pdf2 = fullPDF/vals.T
-        
-        if np.isnan(LejaIndices).any():
-            value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,LejaIndices)
-        else:
-            # LejaMeshCanonical=mesh
-            # LejaPointPDFVals = pdf2[indices21]
-            LejaIndices = LejaIndices.astype(int)
-            LejaPointPDFVals = pdf2[np.ndarray.tolist(LejaIndices)]
-            value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2, LejaIndices)
+    if math.isnan(pdf[0]): # Failed getting leja points
+        Const = float('nan')
+        return float('nan'),float('nan'), float('nan'), 0
 
+    else:
+        scale1, temp, cc, Const = fitQuad(mesh, pdf)
+        # weight = fun.Gaussian(scale1, fullMesh)
+        # fig = plt.figure()
+        # ax = Axes3D(fig)
+        # ax.scatter(fullMesh[:,0], fullMesh[:,1], weight, c='k', marker='o')
+        # # ax.scatter(fullMesh[:,0], fullMesh[:,1], fullPDF, c='b', marker='o')
+        # plt.show()
         
-        return value[0], condNum, scale1, indices       
+        
+        if not math.isnan(Const): # succeeded fitting Gaussian
+            x,y = fullMesh.T
+            vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
+            pdf2 = fullPDF/vals.T
+            
+            
+            if np.min(LejaIndices)<0:
+                value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,LejaIndices)
+            else:
+                # LejaMeshCanonical=mesh
+                # LejaPointPDFVals = pdf2[indices21]
+                LejaIndices = LejaIndices.astype(int)
+                LejaPointPDFVals = pdf2[np.ndarray.tolist(LejaIndices)]
+                value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2, LejaIndices)
+    
+            
+            return value[0], condNum, scale1, indices       
     return float('nan'),float('nan'), float('nan'), 0
 
 

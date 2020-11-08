@@ -26,10 +26,10 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 15
+NumSteps = 50
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
-maxDegFreedom = 2000
+maxDegFreedom = 6000
 
 '''Discretization Parameters'''
 kstep = 0.1
@@ -40,8 +40,8 @@ ComputeErrors = True
 # Make sure the file matches the Function.py functions used.
 SolutionPDFFile = './PickledData/SolnPDF-Vol.p'
 SolutionMeshFile = './PickledData/SolnMesh-Vol.p'
-SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
-SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
+# SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
+# SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
 
 ''' Initializd orthonormal Polynomial family'''
 poly = HermitePolynomials(rho=0)
@@ -60,7 +60,7 @@ pdf = fun.Gaussian(scale, mesh)
 
 
 '''Initialize Transition probabilities'''
-GMat = np.empty([maxDegFreedom, maxDegFreedom])
+GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
 for i in range(len(mesh)):
     v = fun.G(i,mesh, h)
     GMat[i,:len(v)] = v
@@ -76,7 +76,7 @@ Meshes.append(np.copy(mesh))
 tri = Delaunay(mesh, incremental=True)
 
 
-LPMatIndices = np.ones([2000, 12])*np.NaN # Variable will be initialized during the first update step.
+LPMatIndices = np.ones([maxDegFreedom, 12])*-10# Variable will be initialized during the first update step.
 '''Grid updates'''
 for i in trange(NumSteps):
     if (i >= 1) and (adjustBoundary or adjustDensity):
@@ -85,14 +85,17 @@ for i in trange(NumSteps):
         if (addBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-        # '''Remove points from mesh'''
-        # # m = np.copy(mesh)
-        # # LP = np.copy(LPMatIndices)
-        # mesh, pdf, remBool,LPMatIndices, GMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, LPMatIndices, GMat)
-        # assert np.nanmax(LPMatIndices) <= len(pdf)
-        # if (remBool == 1): 
-        #     '''Recalculate triangulation if mesh was changed'''
-        #     tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+        '''Remove points from mesh'''
+        # m = np.copy(mesh)
+        # LP = np.copy(LPMatIndices)
+        mesh, pdf, remBool,LPMatIndices, GMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, LPMatIndices, GMat)
+        if np.nanmax(LPMatIndices) > len(pdf)-1:
+            aaa=0
+        
+        assert np.nanmax(LPMatIndices) < len(pdf)
+        if (remBool == 1): 
+            '''Recalculate triangulation if mesh was changed'''
+            tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
             
         # indx = 10
         # l1 =LP[indx,:].astype(int)
@@ -118,6 +121,18 @@ for i in trange(NumSteps):
         '''Add new values to lists for graphing'''
         PdfTraj.append(np.copy(pdf))
         Meshes.append(np.copy(mesh))
+        if np.shape(GMat)[0] - len(mesh) < 200:
+            GMat2 = np.empty([len(mesh)+1000, len(mesh)+1000])*np.NaN
+            GMat2[:len(mesh), :len(mesh)]= GMat[:len(mesh), :len(mesh)]
+            GMat = GMat2
+            
+        if np.shape(LPMatIndices)[0] - len(mesh) < 200:
+            LPMat2 = np.empty([len(mesh)+1000, 12])*-8
+            LPMat2[:len(mesh), :len(mesh)]= LPMatIndices[:len(mesh), :len(mesh)]
+            LPMatIndices = LPMat2
+            
+            
+        
      
     # else:
     #     print('Length of mesh = ', len(mesh))
@@ -148,7 +163,7 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-    ax.set_zlim(0, np.max(PdfTraj[-1]))
+    ax.set_zlim(0, np.max(PdfTraj[-2]))
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                               interval=500, blit=False)
     plt.show()

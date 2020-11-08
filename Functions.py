@@ -20,7 +20,7 @@ def drift(mesh):
     x = mesh[:,0]
     y = mesh[:,1]
     r = np.sqrt(x ** 2 + y ** 2)
-    # return np.asarray([10*x*(1- r ** 2), 10*y*(1- r ** 2)]).T
+    return np.asarray([10*x*(1- r ** 2), 10*y*(1- r ** 2)]).T
 
     return np.asarray([5*erf(10*x), np.zeros((np.size(mesh,0)))]).T
 # def f1(x, y):

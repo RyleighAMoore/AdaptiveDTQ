@@ -23,10 +23,10 @@ import Functions as fun
 
 
 ''''Tolerance Parameters'''
-addPointsToBoundaryIfBiggerThanTolerance = 10**(-2)
-removeZerosValuesIfLessThanTolerance = 10**(-3)
-minDistanceBetweenPoints = 0.15
-minDistanceBetweenPointsBoundary = 0.15
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
+removeZerosValuesIfLessThanTolerance = 10**(-7)
+minDistanceBetweenPoints = 0.12
+minDistanceBetweenPointsBoundary = 0.12
 maxDistanceBetweenPoints = 0.15
 
 
@@ -183,7 +183,7 @@ def removePoint(index, Mesh, Pdf, LPMatIndices, GMat):
     LPUpdateList = np.where(LPMatIndices == index)[0]
     # print(LPUpdateList)
     for i in LPUpdateList:
-        LPMatIndices[i,:] = LPMatIndices[i,:]*np.NaN
+        LPMatIndices[i,:] = -8*np.ones(np.size(LPMatIndices[i,:]))
  
     return Mesh, Pdf, LPMatIndices, GMat
 
