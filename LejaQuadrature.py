@@ -52,14 +52,12 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
     for ii in range(len(mesh)):
         muX = mesh[ii,0] # mean of gaussian for weight
         muY = mesh[ii,1]
-
-        Gvalues = GMat[ii,:len(mesh)]
         
         scaling = GaussScale(2)
         scaling.setMu(np.asarray([[muX,muY]]).T)
         scaling.setSigma(np.diag(Sigma))
         
-        GPDF = (Gvalues*pdf.T).T
+        GPDF = (GMat[ii,:len(mesh)]*pdf.T).T
         
         if np.isnan(LPMatIndices[ii,:]).any():  # Need to find the indices
             value, condNum, scaleUsed, indices = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMatIndices[ii,:])
@@ -86,9 +84,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
             countUseMorePoints = countUseMorePoints+1
             if value <0:
                 value = 10**(-8)
-            if value > 20:
-                aaa=0
-
+        
         newPDF.append(value)
         condNums.append(condNum)
         

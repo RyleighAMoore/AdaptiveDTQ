@@ -133,11 +133,24 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, LejaIndices):
 
     numSamples = len(mesh2)          
     V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
-    vinv = np.linalg.inv(V)
-    c = np.matmul(vinv, pdfNew)
-    L = np.linalg.cholesky((scaling.cov))
-    JacFactor = np.prod(np.diag(L))
-    if not np.isnan(LejaIndices).any() and np.sum(np.abs(vinv[0,:])) > 5: # Try to compute new LejaPoints
+    try:
+        vinv = np.linalg.inv(V)
+        c = np.matmul(vinv, pdfNew)
+        L = np.linalg.cholesky((scaling.cov))
+        JacFactor = np.prod(np.diag(L))
+    except:
+        u = VT.map_to_canonical_space(mesh, scaling)
+        normScale = GaussScale(2)
+        normScale.setMu(np.asarray([[0,0]]).T)
+        normScale.setCov(np.asarray([[1,0],[0,1]]))
+        mesh2, pdfNew, LejaIndices = LP.getLejaSetFromPoints(normScale, u, 12, poly, pdf)
+        numSamples = len(mesh2)          
+        V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
+        vinv = np.linalg.inv(V)
+        c = np.matmul(vinv, pdfNew)
+        L = np.linalg.cholesky((scaling.cov))
+        JacFactor = np.prod(np.diag(L))
+    if not np.isnan(LejaIndices).any() and np.sum(np.abs(vinv[0,:])) > 3: # Try to compute new LejaPoints
         # print('once')
         u = VT.map_to_canonical_space(mesh, scaling)
         normScale = GaussScale(2)

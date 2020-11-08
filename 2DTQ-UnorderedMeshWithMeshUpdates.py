@@ -65,47 +65,6 @@ for i in range(len(mesh)):
     v = fun.G(i,mesh, h)
     GMat[i,:len(v)] = v
     
-'''Iniitialize Leja Point Matrix'''
-# LPMatCanonical = []
-# LPMatIndices = np.empty([maxDegFreedom, 12])
-
-# Sigma = np.sqrt(h)*fun.diff(mesh) # sigma of gaussian for weight
-# mu = h*fun.drift(mesh)
-# for ii in range(len(mesh)):
-#     muX = mesh[ii,0]  # mean of gaussian for weight
-#     muY = mesh[ii,1]   
-    
-#     scaling = GaussScale(2)
-#     scaling.setMu(np.asarray([[muX,muY]]).T)
-#     scaling.setSigma(np.diag(Sigma))
-    
-#     u = VT.map_to_canonical_space(mesh, scaling)
-    
-#     normScale = GaussScale(2)
-#     normScale.setMu(np.asarray([[0,0]]).T)
-#     normScale.setCov(np.asarray([[1,0],[0,1]]))
-    
-#     meshtemp, pdfNew, indices = LP.getLejaSetFromPoints(normScale, u, 12, poly, pdf)
-    
-#     LPs = []
-#     for i in range(len(indices)):
-#         LPs.append(mesh[indices[i],:])
-        
-#     mesh2 = np.asarray(LPs)
-#     # mesh2 = VT.map_from_canonical_space(mesh2, scaling)
-    
-#     LPMatCanonical.append(mesh2)
-#     LPMatIndices[ii,:len(indices)] = indices
-#     pdf2 = pdf[indices]
-    
-#     # fig = plt.figure()
-#     # ax = Axes3D(fig)
-#     # ax.scatter(mesh[:,0], mesh[:,1],pdf , c='k', marker='o')
-#     # ax.scatter(mesh2[:,0], mesh2[:,1],pdf2 , c='r', marker='.')
-#     # plt.show()
-    
-    
-    
 
 # LPMatIndices = LPMatIndices.astype(int)
 Meshes = []
@@ -120,17 +79,31 @@ tri = Delaunay(mesh, incremental=True)
 LPMatIndices = np.ones([2000, 12])*np.NaN # Variable will be initialized during the first update step.
 '''Grid updates'''
 for i in trange(NumSteps):
-    if (i >= 3) and (adjustBoundary or adjustDensity):
+    if (i >= 1) and (adjustBoundary or adjustDensity):
         '''Add points to mesh'''
         mesh, pdf, tri, addBool,LPMatIndices, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, LPMatIndices,GMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
         if (addBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
         # '''Remove points from mesh'''
-        # mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, LPMatIndices)
+        # # m = np.copy(mesh)
+        # # LP = np.copy(LPMatIndices)
+        # mesh, pdf, remBool,LPMatIndices, GMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, LPMatIndices, GMat)
+        # assert np.nanmax(LPMatIndices) <= len(pdf)
         # if (remBool == 1): 
         #     '''Recalculate triangulation if mesh was changed'''
         #     tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+            
+        # indx = 10
+        # l1 =LP[indx,:].astype(int)
+        # l2 = LPMatIndices[indx,:].astype(int)
+
+        # plt.figure()
+        # plt.plot(m[l1,0], m[l1,1], 'o')
+        # plt.plot(mesh[l2,0], mesh[l2,1], '.r')
+        # plt.show()
+
+            
 
     print('Length of mesh = ', len(mesh))
     if i >-1: 
