@@ -68,7 +68,7 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, LejaIndices):
     '''Quadrature rule with change of variables for nonzero covariance. 
     Used by QuadratureByInterpolationND_DivideOutGaussian
     Selects a Leja points subset of the passed in mesh'''
-    if np.min(LejaIndices)==-1: # Need to compute Leja points
+    if np.isnan(LejaIndices).any(): # Need to compute Leja points
         u = VT.map_to_canonical_space(mesh, scaling)
         normScale = GaussScale(2)
         normScale.setMu(np.asarray([[0,0]]).T)
@@ -137,7 +137,7 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, LejaIndices):
     c = np.matmul(vinv, pdfNew)
     L = np.linalg.cholesky((scaling.cov))
     JacFactor = np.prod(np.diag(L))
-    if not (np.min(LejaIndices)==-1) and np.sum(np.abs(vinv[0,:])) > 3: # Try to compute new LejaPoints
+    if not np.isnan(LejaIndices).any() and np.sum(np.abs(vinv[0,:])) > 5: # Try to compute new LejaPoints
         # print('once')
         u = VT.map_to_canonical_space(mesh, scaling)
         normScale = GaussScale(2)
@@ -176,7 +176,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
         pdf2 = fullPDF/vals.T
         
-        if np.min(LejaIndices)==-1:
+        if np.isnan(LejaIndices).any():
             value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,LejaIndices)
         else:
             # LejaMeshCanonical=mesh

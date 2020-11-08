@@ -26,7 +26,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 5
+NumSteps = 15
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 maxDegFreedom = 2000
@@ -117,11 +117,10 @@ Meshes.append(np.copy(mesh))
 tri = Delaunay(mesh, incremental=True)
 
 
-LPMatIndices = -1*np.ones([2000, 12]) # Variable will be initialized during the first update step.
-LPMatIndices = LPMatIndices.astype(int)
+LPMatIndices = np.ones([2000, 12])*np.NaN # Variable will be initialized during the first update step.
 '''Grid updates'''
 for i in trange(NumSteps):
-    if (i >= 1) and (adjustBoundary or adjustDensity):
+    if (i >= 3) and (adjustBoundary or adjustDensity):
         '''Add points to mesh'''
         mesh, pdf, tri, addBool,LPMatIndices, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, LPMatIndices,GMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
         if (addBool == 1): 

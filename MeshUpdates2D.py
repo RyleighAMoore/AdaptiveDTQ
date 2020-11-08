@@ -43,15 +43,13 @@ def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, LPMatIndi
     ChangedBool = max(changedBool1, changedBool2)
     if ChangedBool>0:
         newMeshSize = len(Mesh)
-        GMat2 = np.empty([2000, 2000])
-        for i in range(len(Mesh)):
-            v = fun.G(i,Mesh, h)
-            GMat2[i,:len(v)] = v
+        # GMat2 = np.empty([2000, 2000])
+        # for i in range(len(Mesh)):
+        #     v = fun.G(i,Mesh, h)
+        #     GMat2[i,:len(v)] = v
         for i in range(meshSize+1, newMeshSize+1):
             GMat = fun.AddPointToG(Mesh[:i,:], i-1, h, GMat)
     
-            
-
     return Mesh, Pdf, triangulation, ChangedBool, LPMatIndices, GMat
 
 def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly,LPMatIndices, adjustBoundary =True, adjustDensity=False):

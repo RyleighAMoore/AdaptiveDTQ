@@ -61,7 +61,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
         
         GPDF = (Gvalues*pdf.T).T
         
-        if np.min(LPMatIndices[ii,:])==-1:  # Need to find the indices
+        if np.isnan(LPMatIndices[ii,:]).any():  # Need to find the indices
             value, condNum, scaleUsed, indices = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMatIndices[ii,:])
             LPMatIndices[ii,:] = indices
         else: # Try with current indices, recompute if needed
@@ -78,7 +78,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
             
             weight = fun.Gaussian(scale, mesh)
             GPDF2 = GPDF/np.expand_dims(weight, axis=1)
-            indices = -1*np.ones(((1,np.size(LPMatIndices,1))))
+            indices = np.NaN*np.ones(((1,np.size(LPMatIndices,1))))
             value, condNum, temp = QuadratureByInterpolationND(poly, scale, mesh, GPDF2, indices)           
             LPMatIndices[ii,:] = indices
             
