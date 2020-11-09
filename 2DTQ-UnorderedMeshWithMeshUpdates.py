@@ -21,12 +21,12 @@ import pyopoly1.LejaPoints as LP
 start = datetime.now()
 
 '''Plotting Parameters'''
-PlotAnimation = True
+PlotAnimation = False
 PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 50
+NumSteps = 10
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 maxDegFreedom = 6000
@@ -40,8 +40,8 @@ ComputeErrors = True
 # Make sure the file matches the Function.py functions used.
 SolutionPDFFile = './PickledData/SolnPDF-Vol.p'
 SolutionMeshFile = './PickledData/SolnMesh-Vol.p'
-# SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
-# SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
+SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
+SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
 
 ''' Initializd orthonormal Polynomial family'''
 poly = HermitePolynomials(rho=0)
@@ -52,7 +52,7 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 
 '''pdf after one time step with Dirac initial condition centered at the origin'''
-mesh = M.getICMesh(1, kstep, h)
+mesh = M.getICMesh(1.1, kstep, h)
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
 scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
@@ -89,10 +89,7 @@ for i in trange(NumSteps):
         # m = np.copy(mesh)
         # LP = np.copy(LPMatIndices)
         mesh, pdf, remBool,LPMatIndices, GMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, LPMatIndices, GMat)
-        if np.nanmax(LPMatIndices) > len(pdf)-1:
-            aaa=0
         
-        assert np.nanmax(LPMatIndices) < len(pdf)
         if (remBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
@@ -121,6 +118,8 @@ for i in trange(NumSteps):
         '''Add new values to lists for graphing'''
         PdfTraj.append(np.copy(pdf))
         Meshes.append(np.copy(mesh))
+        assert np.max(pdf)<50
+        
         if np.shape(GMat)[0] - len(mesh) < 200:
             GMat2 = np.empty([len(mesh)+1000, len(mesh)+1000])*np.NaN
             GMat2[:len(mesh), :len(mesh)]= GMat[:len(mesh), :len(mesh)]
@@ -163,7 +162,7 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-    ax.set_zlim(0, np.max(PdfTraj[-2]))
+    ax.set_zlim(0, np.max(PdfTraj[6]))
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                               interval=500, blit=False)
     plt.show()

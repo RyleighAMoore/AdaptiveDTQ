@@ -30,28 +30,26 @@ from pyopoly1.Scaling import GaussScale
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.05
-xmin=-2.5
-xmax=2.5
-ymin=-2.5
-ymax=2.5
+kstep = 0.1
+xmin=-2
+xmax=2
+ymin=-2
+ymax=2
 
 
-def generateGRow(point, allPoints, kstep, h):
-    row = []
-    OrderA = []
-    for i in range(len(allPoints)):
-        val = kstep**2*fun.G(point[0], point[1], allPoints[i,0], allPoints[i,1], h)
-        row.append(val)
-        OrderA.append([point[0], point[1], allPoints[i,0], allPoints[i,1]])
-    return row
+# def generateGRow(point, allPoints, kstep, h):
+#     row = []
+#     OrderA = []
+#     for i in range(len(allPoints)):
+#         val = kstep**2*fun.G(point[0], point[1], allPoints[i,0], allPoints[i,1], h)
+#         row.append(val)
+#         OrderA.append([point[0], point[1], allPoints[i,0], allPoints[i,1]])
+#     return row
 
 mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)
-mesh2 = np.copy(mesh)
-# pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
-scale.setSigma(np.asarray([np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()]))
+scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
 pdf = fun.Gaussian(scale, mesh)
 # 
 # for i in range(len(pdf)):
@@ -61,11 +59,15 @@ pdf = fun.Gaussian(scale, mesh)
 # index =-1
 # ax.scatter(mesh[:,0], mesh[:,1], pdf, c='r', marker='.')
 
-GMat = []
-for point in trange(len(mesh)):
-    gRow = generateGRow([mesh[point,0], mesh[point,1]], mesh, kstep, h)
-    GMat.append(np.copy(gRow))
-
+# GMat = []
+# for point in trange(len(mesh)):
+#     gRow = generateGRow([mesh[point,0], mesh[point,1]], mesh, kstep, h)
+#     GMat.append(np.copy(gRow))
+'''Initialize Transition probabilities'''
+GMat = np.empty([len(mesh), len(mesh)])*np.NaN
+for i in range(len(mesh)):
+    v = fun.G(i,mesh, h)
+    GMat[i,:len(v)] = v
 
       
 surfaces = [] 

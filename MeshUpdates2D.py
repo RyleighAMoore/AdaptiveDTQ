@@ -23,10 +23,10 @@ import Functions as fun
 
 
 ''''Tolerance Parameters'''
-addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
-removeZerosValuesIfLessThanTolerance = 10**(-7)
-minDistanceBetweenPoints = 0.12
-minDistanceBetweenPointsBoundary = 0.12
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-5)
+removeZerosValuesIfLessThanTolerance = 10**(-9)
+minDistanceBetweenPoints = 0.15
+minDistanceBetweenPointsBoundary = 0.15
 maxDistanceBetweenPoints = 0.15
 
 
@@ -147,23 +147,24 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, LPMatIndices, GMat):
     LPMatIndices = np.copy(LPMatIndices) - Mat
         
         
-    '''Remove straggling points'''
-    IndexRemoved = []
-    for i in range(len(Mesh)-1,-1,-1): 
-        nearestPoint, distToNearestPoints = UM.findNearestKPoints(Mesh[i,0],Mesh[i,1], Mesh, 6)
-        dist = np.mean(distToNearestPoints)
-        if dist > 2*maxDistanceBetweenPoints: # Remove outlier
-            Mesh, Pdf,LPMatIndices, GMat = removePoint(i, Mesh, Pdf,LPMatIndices, GMat)
-            ChangedBool = 1
-            print("outlier")
+    # '''Remove straggling points'''
+    # IndexRemoved = []
+    # for i in range(len(Mesh)-1,-1,-1): 
+    #     nearestPoint, distToNearestPoints = UM.findNearestKPoints(Mesh[i,0],Mesh[i,1], Mesh, 6)
+    #     dist = np.mean(distToNearestPoints)
+    #     if dist > 2*maxDistanceBetweenPoints: # Remove outlier
+    #         Mesh, Pdf,LPMatIndices, GMat = removePoint(i, Mesh, Pdf,LPMatIndices, GMat)
+    #         ChangedBool = 1
+    #         IndexRemoved.append(i)
+    #         print("outlier")
             
-    Mat = np.zeros(np.shape(LPMatIndices))
-    for v in IndexRemoved:
-        larger = LPMatIndices > v
-        assert np.max(LPMatIndices ==v) == 0, print(v)
-        Mat = np.copy(Mat) + larger
+    # Mat = np.zeros(np.shape(LPMatIndices))
+    # for v in IndexRemoved:
+    #     larger = LPMatIndices > v
+    #     assert np.max(LPMatIndices ==v) == 0, print(v)
+    #     Mat = np.copy(Mat) + larger
         
-    LPMatIndices = np.copy(LPMatIndices) - Mat
+    # LPMatIndices = np.copy(LPMatIndices) - Mat
     
     if ChangedBool == 1:
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)

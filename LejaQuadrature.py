@@ -85,8 +85,6 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
             if value <0:
                 value = 10**(-8)
             
-        # if value > 100:
-        #     value = np.min(pdf)
         newPDF.append(value)
         condNums.append(condNum)
         

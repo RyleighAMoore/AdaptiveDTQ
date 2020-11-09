@@ -171,9 +171,13 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, LejaIndices):
 def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LejaIndices):
     '''Divides out Gaussian using a quadratic fit. Then computes the update using a Leja Quadrature rule.'''
     x,y = fullMesh.T
+    if not np.min(LejaIndices)<0:
+        mesh = fullMesh[LejaIndices.astype(int)]
+        pdf = fullPDF[LejaIndices.astype(int)]
+    else:
+        mesh, distances, indices1 = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh, 20, getIndices = True)
+        pdf = fullPDF[indices1]
     
-    mesh, distances, indices1 = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh, 12, getIndices = True)
-    pdf = fullPDF[indices1]
     
     if math.isnan(pdf[0]): # Failed getting leja points
         Const = float('nan')
@@ -192,9 +196,12 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         if not math.isnan(Const): # succeeded fitting Gaussian
             x,y = fullMesh.T
             vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
+            if np.min(vals)==0:
+                return float('nan'),float('nan'), float('nan'), 0
             pdf2 = fullPDF/vals.T
+            # print(np.min(vals))
             
-            
+        
             if np.min(LejaIndices)<0:
                 value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,LejaIndices)
             else:
@@ -203,7 +210,10 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
                 LejaIndices = LejaIndices.astype(int)
                 LejaPointPDFVals = pdf2[np.ndarray.tolist(LejaIndices)]
                 value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2, LejaIndices)
-    
+                
+            if value > 50:
+                return float('nan'),float('nan'), float('nan'), 0
+            
             
             return value[0], condNum, scale1, indices       
     return float('nan'),float('nan'), float('nan'), 0
