@@ -24,7 +24,7 @@ import Functions as fun
 
 ''''Tolerance Parameters'''
 addPointsToBoundaryIfBiggerThanTolerance = 10**(-5)
-removeZerosValuesIfLessThanTolerance = 10**(-9)
+removeZerosValuesIfLessThanTolerance = 10**(-10)
 minDistanceBetweenPoints = 0.15
 minDistanceBetweenPointsBoundary = 0.15
 maxDistanceBetweenPoints = 0.15
@@ -59,9 +59,9 @@ def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly,LPMatIn
     ChangedBool3 = 0
     if adjustBoundary:
         Mesh, Pdf, ChangedBool2, LPMatIndices, GMat = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, LPMatIndices, GMat)
-    if adjustDensity:
-        Mesh, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly)
-    Mesh, Pdf, ChangedBool3, LPMatIndices, GMat = checkForAndRemoveZeroPoints(Mesh,Pdf, tri, LPMatIndices, GMat)
+    # if adjustDensity:
+    #     Mesh, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly)
+    # Mesh, Pdf, ChangedBool3, LPMatIndices, GMat = checkForAndRemoveZeroPoints(Mesh,Pdf, tri, LPMatIndices, GMat)
     ChangedBool = max(ChangedBool1, ChangedBool2, ChangedBool3)
     return Mesh, Pdf, ChangedBool, LPMatIndices, GMat
 
@@ -213,7 +213,8 @@ def addPointsToBoundary(Mesh, Pdf, triangulation):
     keepAdding = True
     ChangedBool = 0
     print("adding boundary points...")
-    while keepAdding:
+    times = 0
+    while keepAdding and times <3:
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation)
     
         if max(boundaryPointsToAddAround == 1):
@@ -231,6 +232,7 @@ def addPointsToBoundary(Mesh, Pdf, triangulation):
             keepAdding =False
         if ChangedBool == 1:
             tri = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
+        times = times +1
     print("# boundary points Added = ", numBoundaryAdded)    
     return Mesh, Pdf, triangulation, ChangedBool
 

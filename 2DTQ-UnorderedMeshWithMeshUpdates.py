@@ -21,15 +21,15 @@ import pyopoly1.LejaPoints as LP
 start = datetime.now()
 
 '''Plotting Parameters'''
-PlotAnimation = False
+PlotAnimation = True
 PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 10
+NumSteps = 15
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
-maxDegFreedom = 6000
+maxDegFreedom = 2000
 
 '''Discretization Parameters'''
 kstep = 0.1
@@ -127,7 +127,7 @@ for i in trange(NumSteps):
             
         if np.shape(LPMatIndices)[0] - len(mesh) < 200:
             LPMat2 = np.empty([len(mesh)+1000, 12])*-8
-            LPMat2[:len(mesh), :len(mesh)]= LPMatIndices[:len(mesh), :len(mesh)]
+            LPMat2[:len(mesh),:]= LPMatIndices[:len(mesh), :]
             LPMatIndices = LPMat2
             
             
