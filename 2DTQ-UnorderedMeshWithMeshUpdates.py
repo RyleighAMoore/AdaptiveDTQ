@@ -16,6 +16,7 @@ from Errors import ErrorVals
 from datetime import datetime
 from pyopoly1 import variableTransformations as VT
 import pyopoly1.LejaPoints as LP
+import UnorderedMesh as UM
 
 
 start = datetime.now()
@@ -26,7 +27,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 15
+NumSteps = 25
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 maxDegFreedom = 2000
@@ -52,7 +53,9 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 
 '''pdf after one time step with Dirac initial condition centered at the origin'''
-mesh = M.getICMesh(1.1, kstep, h)
+mesh = M.getICMesh(1, kstep, h)
+# mesh = UM.generateOrderedGridCenteredAtZero(-2, 2, -2, 2, 0.1, includeOrigin=True)
+
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
 scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
@@ -85,14 +88,19 @@ for i in trange(NumSteps):
         if (addBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+            # GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
+            # for i in range(len(mesh)):
+            #     v = fun.G(i,mesh, h)
+            #     GMat[i,:len(v)] = v
+    
         '''Remove points from mesh'''
-        # m = np.copy(mesh)
-        # LP = np.copy(LPMatIndices)
         mesh, pdf, remBool,LPMatIndices, GMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, LPMatIndices, GMat)
-        
         if (remBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+        m = np.copy(mesh)
+        LP = np.copy(LPMatIndices)
+        
             
         # indx = 10
         # l1 =LP[indx,:].astype(int)
@@ -118,7 +126,7 @@ for i in trange(NumSteps):
         '''Add new values to lists for graphing'''
         PdfTraj.append(np.copy(pdf))
         Meshes.append(np.copy(mesh))
-        assert np.max(pdf)<50
+        assert np.max(pdf)<20
         
         if np.shape(GMat)[0] - len(mesh) < 200:
             GMat2 = np.empty([len(mesh)+1000, len(mesh)+1000])*np.NaN
@@ -146,6 +154,7 @@ if PlotFigure:
     ax = Axes3D(fig)
     index =PlotStepIndex
     ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
+    # ax.set_zlim(0, 0.1)
     plt.show()
 
 '''Plot Animation'''
@@ -162,7 +171,7 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-    ax.set_zlim(0, np.max(PdfTraj[6]))
+    ax.set_zlim(0, np.max(PdfTraj[10]))
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                               interval=500, blit=False)
     plt.show()

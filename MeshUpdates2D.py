@@ -23,8 +23,8 @@ import Functions as fun
 
 
 ''''Tolerance Parameters'''
-addPointsToBoundaryIfBiggerThanTolerance = 10**(-5)
-removeZerosValuesIfLessThanTolerance = 10**(-10)
+addPointsToBoundaryIfBiggerThanTolerance =10**(-4)
+removeZerosValuesIfLessThanTolerance = 10**(-8)-0.001
 minDistanceBetweenPoints = 0.15
 minDistanceBetweenPointsBoundary = 0.15
 maxDistanceBetweenPoints = 0.15
@@ -199,8 +199,9 @@ def addPoint(Px,Py, Mesh, Pdf, triangulation):
     interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='cubic', fill_value=np.min(Pdf))])
     if interp < 0:
         interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='linear', fill_value=np.min(Pdf))])
-    if interp <=0:
-        interp = np.asarray([[10**(-10)]])
+    if interp <10**(-8):
+        interp = np.asarray([[10**(-8)]])
+        
 
     Mesh = np.append(Mesh, np.asarray([[Px],[Py]]).T, axis=0)
     Pdf = np.append(Pdf, interp[0], axis=0)                      

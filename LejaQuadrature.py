@@ -9,7 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from Functions import *
 from scipy.interpolate import griddata, interp2d 
 from pyopoly1.LejaPoints import getLejaSetFromPoints, mapPointsBack, mapPointsTo, getLejaPoints
-from pyopoly1.QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolationND_DivideOutGaussian
+from pyopoly1.QuadratureRules import QuadratureByInterpolation_Simple, QuadratureByInterpolationND, QuadratureByInterpolationND_DivideOutGaussian
 from pyopoly1.families import HermitePolynomials
 from pyopoly1.Scaling import GaussScale
 from pyopoly1 import indexing
@@ -41,6 +41,15 @@ def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
     return np.asarray(MeshToKeep), np.asarray(PdfToKeep)
 
 
+poly = HermitePolynomials(rho=0)
+d=2
+k = 40    
+ab = poly.recurrence(k+1)
+lambdas = indexing.total_degree_indices(d, k)
+poly.lambdas = lambdas
+lejaPointsFinal, new = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
+
+
 '''Generate Leja Sample for use in alternative method if needed'''
 def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step, GMat, LPMatIndices):
     newPDF = []
@@ -68,20 +77,38 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
         
         '''Alternative Method'''
         if math.isnan(condNum) or value < 0 or condNum > 10:
-            #Divide out by gaussian, pass into QuadratureByInterpolationND
-            # value = 0.003
-            scale = GaussScale(2)
-            scale.setMu(np.asarray([[0,0]]).T)
-            scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
+        #     scale = GaussScale(2)
+        #     scale.setMu(np.asarray([[0,0]]).T)
+        #     scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
             
-            weight = fun.Gaussian(scale, mesh)
-            GPDF2 = GPDF/np.expand_dims(weight, axis=1)
-            indices = -8*np.ones(((1,np.size(LPMatIndices,1))))
-            value, condNum, temp = QuadratureByInterpolationND(poly, scale, mesh, GPDF2, indices)           
-            LPMatIndices[ii,:] = indices
+        #     weight = fun.Gaussian(scale, mesh)
+        #     GPDF2 = GPDF/np.expand_dims(weight, axis=1)
+        #     indices = -8*np.ones(((1,np.size(LPMatIndices,1))))
+        #     value, condNum, temp = QuadratureByInterpolationND(poly, scale, mesh, GPDF2, indices)           
+        #     LPMatIndices[ii,:] = indices
             
-            value =value[0]
+        #     value =value[0]
+        #     countUseMorePoints = countUseMorePoints+1
+        # if value <10**(-8):
+        #     value = 10**(-8)
+            sigmaX = np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0]
+            sigmaY = np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]
+            scaling = GaussScale(2)
+            scaling.setMu(np.asarray([[muX,muY]]).T)
+            scaling.setSigma(np.asarray([sigmaX,sigmaY]))
+                
+            mesh12 = mapPointsBack(muX, muY, lejaPointsFinal, sigmaX, sigmaY)
+    
+            pdfNew = np.asarray(griddata(mesh, pdf, mesh12, method='cubic', fill_value=0))
+            pdfNew[pdfNew < 0] = 10**(-8)
+            
+            integrand = newIntegrand(muX, muY, mesh12, h)
+            testing = np.squeeze(pdfNew)*integrand
+            
+            value, condNum = QuadratureByInterpolation_Simple(poly, scaling, mesh12, testing)
+            value = value*(1/np.sqrt(2))
             countUseMorePoints = countUseMorePoints+1
+            
             if value <0:
                 value = 10**(-8)
             

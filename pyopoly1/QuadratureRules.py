@@ -45,23 +45,23 @@ def getValsWithinRadius(Px,Py,canonicalMesh, pdf, numCandidiates):
 #     return c[0]
 
 
-# def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
-#     '''Quadrature rule with no change of variables. Must pass in mesh you want to use.
-#     Only works with Gaussian that has 0 covariance.'''
-#     u = VT.map_to_canonical_space(mesh, scaling)
-#     normScale = GaussScale(2)
-#     normScale.setMu(np.asarray([[0,0]]).T)
-#     normScale.setCov(np.asarray([[1,0],[0,1]]))
+def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
+    '''Quadrature rule with no change of variables. Must pass in mesh you want to use.
+    Only works with Gaussian that has 0 covariance.'''
+    u = VT.map_to_canonical_space(mesh, scaling)
+    normScale = GaussScale(2)
+    normScale.setMu(np.asarray([[0,0]]).T)
+    normScale.setCov(np.asarray([[1,0],[0,1]]))
     
-#     mesh2 = u
-#     pdfNew = pdf
+    mesh2 = u
+    pdfNew = pdf
     
-#     numSamples = len(mesh2)          
-#     V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
-#     vinv = np.linalg.inv(V)
-#     c = np.matmul(vinv, pdfNew)
+    numSamples = len(mesh2)          
+    V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
+    vinv = np.linalg.inv(V)
+    c = np.matmul(vinv, pdfNew)
     
-#     return c[0], np.sum(np.abs(vinv[0,:]))
+    return c[0], np.sum(np.abs(vinv[0,:]))
 
   
 def QuadratureByInterpolationND(poly, scaling, mesh, pdf, LejaIndices):
@@ -150,7 +150,7 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, LejaIndices):
         c = np.matmul(vinv, pdfNew)
         L = np.linalg.cholesky((scaling.cov))
         JacFactor = np.prod(np.diag(L))
-    if not np.min(LejaIndices)<0 and np.sum(np.abs(vinv[0,:])) > 3: # Try to compute new LejaPoints
+    if not np.min(LejaIndices)<0 and np.sum(np.abs(vinv[0,:])) > 2: # Try to compute new LejaPoints
         # print('once')
         u = VT.map_to_canonical_space(mesh, scaling)
         normScale = GaussScale(2)

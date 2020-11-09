@@ -19,6 +19,11 @@ import UnorderedMesh as UM
 import MeshUpdates2D as MeshUp
 from pyopoly1.Scaling import GaussScale
 
+from datetime import datetime
+
+
+start = datetime.now()
+
 
 # T = 0.01  # final time, code computes PDF of X_T
 # s = 0.75  # the exponent in the relation k = h^s
@@ -31,10 +36,10 @@ h=0.01
 s=0.75
 kstep = h ** s
 kstep = 0.1
-xmin=-2
-xmax=2
-ymin=-2
-ymax=2
+xmin=-4
+xmax=4
+ymin=-3
+ymax=3
 
 
 # def generateGRow(point, allPoints, kstep, h):
@@ -66,7 +71,7 @@ pdf = fun.Gaussian(scale, mesh)
 '''Initialize Transition probabilities'''
 GMat = np.empty([len(mesh), len(mesh)])*np.NaN
 for i in range(len(mesh)):
-    v = fun.G(i,mesh, h)
+    v = kstep**2*fun.G(i,mesh, h)
     GMat[i,:len(v)] = v
 
       
@@ -79,13 +84,15 @@ while t < 101:
     surfaces.append(np.copy(pdf))
     t=t+1
     
+end = now = datetime.now()
+print("Time: ", end-start)
 
-fig = plt.figure()
-ax = Axes3D(fig)
-index =35
-ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
-index =16
-ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
+# fig = plt.figure()
+# ax = Axes3D(fig)
+# index =35
+# ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
+# index =16
+# ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
 # ax.scatter(meshVals[:,0], meshVals[:,1], newPDF, c='k', marker='.')
 
 # 
