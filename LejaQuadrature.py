@@ -6,7 +6,7 @@ import numpy as np
 import UnorderedMesh as UM
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from Functions import f1, f2, g1, g2, GVals
+from Functions import drift, diff, GVals, f1,f2,g1,g2, GVals2
 from scipy.interpolate import griddata, interp2d 
 from pyopoly1.LejaPoints import getLejaSetFromPoints, mapPointsBack, mapPointsTo, getLejaPoints
 from pyopoly1.QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolation_Simple, QuadratureByInterpolationND_DivideOutGaussian
@@ -14,6 +14,7 @@ from pyopoly1.families import HermitePolynomials
 from pyopoly1.Scaling import GaussScale
 from pyopoly1 import indexing
 import math
+
 
 
 
@@ -50,14 +51,14 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 lejaPointsFinal, new = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
 
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step):
-    sigmaX=np.sqrt(h)*g1()
-    sigmaY=np.sqrt(h)*g2()
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step, GMat):
+    sigmaX=np.sqrt(h)*diff(np.asarray([[0,0]]))[0,0]
+    sigmaY=np.sqrt(h)*diff(np.asarray([[0,0]]))[1,1]
     
     newPDF = []
     condNums = []
     countUseMorePoints = 0 # Used to count if we have to revert to alternative procedure
-    
+    meshSize = len(mesh)
     '''Try to Divide out Guassian using quadratic fit'''
     for ii in range(len(mesh)):
         # print('########################',ii/len(mesh)*100, '%')
@@ -67,8 +68,12 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
         scaling = GaussScale(2)
         scaling.setMu(np.asarray([[muX,muY]]).T)
         scaling.setSigma(np.asarray([sigmaX,sigmaY]))
-      
-        value, condNum, scaleUsed = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, np.expand_dims(GVals(muX, muY, mesh, h),1)*pdf)
+        
+        GPDF = np.expand_dims(GMat[ii,:meshSize], 1)*pdf
+        # GPDF2 = np.expand_dims(GVals2(muX, muY, mesh, h),1)*pdf
+        # assert np.max(abs(GPDF2-GPDF)) < 10**(-7)
+        
+        value, condNum, scaleUsed = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF)
       
         '''Alternative Method'''
         if math.isnan(condNum) or value <0 or condNum >10: 

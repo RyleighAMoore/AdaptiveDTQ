@@ -21,7 +21,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 5
+NumSteps = 17
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -34,6 +34,8 @@ ComputeErrors = True
 # Make sure the file matches the Function.py functions used.
 SolutionPDFFile = './PickledData/SolnPDF-Vol.p'
 SolutionMeshFile = './PickledData/SolnMesh-Vol.p'
+SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
+SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
 
 ''' Initializd orthonormal Polynomial family'''
 poly = HermitePolynomials(rho=0)
@@ -47,7 +49,7 @@ poly.lambdas = lambdas
 mesh = M.getICMesh(1, kstep, h)
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
-scale.setSigma(np.asarray([np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()]))
+scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
 pdf = fun.Gaussian(scale, mesh)
 
 
@@ -59,16 +61,25 @@ Meshes.append(np.copy(mesh))
 '''Delaunay triangulation for finding the boundary '''
 tri = Delaunay(mesh, incremental=True)
 
+# needLPBool = numpy.zeros((2, 2), dtype=bool)
+
+'''Initialize Transition probabilities'''
+maxDegFreedom = 2000
+GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
+for i in range(len(mesh)):
+    v = fun.G(i,mesh, h)
+    GMat[i,:len(v)] = v
+
 '''Grid updates'''
 for i in trange(NumSteps):
     if (i >= 2) and (adjustBoundary or adjustDensity):
         '''Add points to mesh'''
-        mesh, pdf, tri, addBool = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
+        mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
         if (addBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
         '''Remove points from mesh'''
-        mesh, pdf, remBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly)
+        mesh, pdf, remBool, GMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat)
         if (remBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
@@ -78,7 +89,7 @@ for i in trange(NumSteps):
         '''Step forward in time'''
         print("Stepping Forward....")
         pdf = np.expand_dims(pdf,axis=1)
-        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i)
+        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i, GMat)
         pdf = np.squeeze(pdf)
         '''Add new values to lists for graphing'''
         PdfTraj.append(np.copy(pdf))

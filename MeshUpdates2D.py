@@ -30,43 +30,50 @@ maxDistanceBetweenPoints = 0.15
 
 
 
-def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, adjustBoundary =True, adjustDensity=False):
+def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, GMat, adjustBoundary =True, adjustDensity=False):
     '''If the mesh is changed, these become 1 so we know to recompute the triangulation'''
     changedBool2 = 0 
     changedBool1 = 0
+    meshSize = len(Mesh)
     if adjustDensity:
         Mesh, Pdf, triangulation, changedBool2 = addInteriorPoints(Mesh, Pdf, triangulation)
     if adjustBoundary:
         Mesh, Pdf, triangulation, changedBool1 = addPointsToBoundary(Mesh, Pdf, triangulation)
     ChangedBool = max(changedBool1, changedBool2)
-    return Mesh, Pdf, triangulation, ChangedBool
+    if ChangedBool==1:
+        newMeshSize = len(Mesh)
+        for i in range(meshSize+1, newMeshSize+1):
+            GMat = fun.AddPointToG(Mesh[:i,:], i-1, h, GMat)
+    
+    
+    return Mesh, Pdf, triangulation, ChangedBool, GMat
 
-def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly, adjustBoundary =True, adjustDensity=False):
+def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly, GMat, adjustBoundary =True, adjustDensity=False):
     '''If the mesh is changed, these become 1 so we know to recompute the triangulation'''
     ChangedBool2 = 0
     ChangedBool1 = 0
     ChangedBool3 = 0
     if adjustBoundary:
-        Mesh, Pdf, ChangedBool2 = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool)
-    if adjustDensity:
-        Mesh, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly)
-    Mesh, Pdf, ChangedBool3 = checkForAndRemoveZeroPoints(Mesh,Pdf, tri)
+        Mesh, Pdf, ChangedBool2, GMat = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat)
+    # if adjustDensity:
+    #     Mesh, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly)
+    Mesh, Pdf, ChangedBool3, GMat = checkForAndRemoveZeroPoints(Mesh,Pdf, tri, GMat)
     ChangedBool = max(ChangedBool1, ChangedBool2, ChangedBool3)
-    return Mesh, Pdf, ChangedBool
+    return Mesh, Pdf, ChangedBool, GMat
 
-def checkForAndRemoveZeroPoints(Mesh, Pdf, tri):
+def checkForAndRemoveZeroPoints(Mesh, Pdf, tri, GMat):
     print("Checking for small points to remove....")
     ChangedBool=False
     if np.min(Pdf) < removeZerosValuesIfLessThanTolerance:
         zeros =  np.asarray([Pdf < removeZerosValuesIfLessThanTolerance])
         for i in range(len(zeros)):
             if zeros.T[i][0]==1:
-                Mesh, Pdf = removePoint(i, Mesh, Pdf)
+                Mesh, Pdf,GMat = removePoint(i, Mesh, Pdf, GMat)
         print("Removed", (np.sum(zeros)), "points that were tiny")
         ChangedBool =True
     if ChangedBool == 1:
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
-    return Mesh, Pdf, ChangedBool
+    return Mesh, Pdf, ChangedBool, GMat
             
 
 def getBoundaryPoints(Mesh, tri, alpha):
@@ -96,7 +103,7 @@ def checkIntegrandForAddingPointsAroundBoundaryPoints(PDF, addPointsToBoundaryIf
     return np.asarray(addingAround).T
 
 
-def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool):
+def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat):
     stillRemoving = True
     ChangedBool = 0
     initLength = len(Mesh)
@@ -108,7 +115,7 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool):
             for val in range(len(boundaryZeroPointsBoolArray)-1,-1,-1):
                 if boundaryZeroPointsBoolArray[val] == 1: # remove the point
                     ChangedBool=1
-                    Mesh, Pdf = removePoint(val, Mesh, Pdf)
+                    Mesh, Pdf, GMat = removePoint(val, Mesh, Pdf, GMat)
         else: # Stop removing points
             stillRemoving = False
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
@@ -118,7 +125,7 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool):
         nearestPoint, distToNearestPoints = UM.findNearestKPoints(Mesh[i,0],Mesh[i,1], Mesh, 6)
         dist = np.mean(distToNearestPoints)
         if dist > 2*maxDistanceBetweenPoints: # Remove outlier
-            Mesh, Pdf = removePoint(i, Mesh, Pdf)
+            Mesh, Pdf, GMat = removePoint(i, Mesh, Pdf, GMat)
             ChangedBool = 1
             print("outlier")
     
@@ -126,13 +133,15 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool):
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
     
     print("Boundary points removed", initLength -len(Mesh))  
-    return Mesh, Pdf, ChangedBool
+    return Mesh, Pdf, ChangedBool, GMat
 
 
-def removePoint(index, Mesh, Pdf):
+def removePoint(index, Mesh, Pdf, GMat):
     Mesh = np.delete(Mesh, index, 0)
     Pdf = np.delete(Pdf, index, 0)
-    return Mesh, Pdf
+    GMat = np.delete(GMat, index,0)
+    GMat = np.delete(GMat, index,1)
+    return Mesh, Pdf, GMat
 
 def houseKeepingAfterAdjustingMesh(Mesh, tri):
     '''Updates all the Vertices information for the mesh. Must be run after removing points'''
@@ -157,11 +166,10 @@ def addPoint(Px,Py, Mesh, Pdf, triangulation):
 def addPointsToBoundary(Mesh, Pdf, triangulation):
     numBoundaryAdded = 0
     keepAdding = True
-    changedBool = 0
+    ChangedBool = 0
     print("adding boundary points...")
     while keepAdding:
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation)
-    
         if max(boundaryPointsToAddAround == 1):
             for val in range(len(boundaryPointsToAddAround)-1,-1,-1):
                 if boundaryPointsToAddAround[val] == 1: # if we should extend boundary
@@ -175,10 +183,10 @@ def addPointsToBoundary(Mesh, Pdf, triangulation):
                         numBoundaryAdded = numBoundaryAdded + 1
         else:
             keepAdding =False
-        if changedBool == 1:
+        if ChangedBool == 1:
             tri = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
     print("# boundary points Added = ", numBoundaryAdded)    
-    return Mesh, Pdf, triangulation, changedBool
+    return Mesh, Pdf, triangulation, ChangedBool
 
 
 def addPointsRadially(pointX, pointY, mesh, numPointsToAdd):

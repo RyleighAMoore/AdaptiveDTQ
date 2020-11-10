@@ -16,34 +16,34 @@ from scipy.special import erf
 #     return 1
 
 '''Erf'''
-# def f1(x, y):
-#     return 5*erf(10*x)
-
-# def f2(x, y):
-#     return 0
-
-# def g1(x=0,y=0):
-#     return 1
-
-# def g2(x=0,y=0):
-#     return 1
-
-
-'''Volcano'''
 def f1(x, y):
-    r = np.sqrt(x ** 2 + y ** 2)
-    return 10*x*(1- r ** 2)
-
+    return 5*erf(10*x)
 
 def f2(x, y):
-    r = np.sqrt(x ** 2 + y ** 2)
-    return 10*y*(1- r ** 2) 
+    return 0
 
 def g1(x=0,y=0):
     return 1
 
 def g2(x=0,y=0):
     return 1
+
+
+'''Volcano'''
+# def f1(x, y):
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     return 10*x*(1- r ** 2)
+
+
+# def f2(x, y):
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     return 10*y*(1- r ** 2) 
+
+# def g1(x=0,y=0):
+#     return 1
+
+# def g2(x=0,y=0):
+#     return 1
 
 '''Moving hill'''
 # def f1(x, y):
@@ -83,12 +83,9 @@ def dnorm_partialx(x, mu, sigma):
     return np.divide(-x+mu,sigma**2)*np.divide(1, (sigma * np.sqrt(2 * np.pi))) * np.exp(np.divide(-(x - mu) ** 2, 2 * sigma ** 2))
 
 
-def GVals(Px, Py, mesh, h):
-    vals = []
-    for i in range(len(mesh)):
-        val = G(Px, Py, mesh[i,0], mesh[i,1], h)
-        vals.append(np.copy(val))
-    return np.asarray(vals)
+def GVals(indexOfMesh, mesh, h):
+    val = G(indexOfMesh,mesh,h)
+    return val
 
 def HVals(x1,x2,mesh,h):
     y1 = mesh[:,0]
@@ -112,10 +109,86 @@ def covPart(Px, Py, mesh, cov):
     return np.asarray(vals)
 
 
-def G(x1, x2, y1, y2, h):
-    return ((2 * np.pi * g1() ** 2 * h) ** (-1 / 2) * np.exp(-(x1 - y1 - h * f1(y1, y2)) ** 2 / (2 * g1() ** 2 * h))) * (
-                (2 * np.pi * g2() ** 2 * h) ** (-1 / 2) * np.exp(-(x2 - y2 - h * f2(y1, y2)) ** 2 / (2 * g2() ** 2 * h)))
+def drift(mesh):
+    x = mesh[:,0]
+    y = mesh[:,1]
+    r = np.sqrt(x ** 2 + y ** 2)
+    # return 1
+    # return np.asarray([10*x*(1- r ** 2), 10*y*(1- r ** 2)]).T
+    return np.asarray([5*erf(10*x), np.zeros((np.size(mesh,0)))]).T
+
+def diff(mesh):
+    if mesh.ndim ==1:
+        mesh = np.expand_dims(mesh, axis=0)
+    x = mesh[:,0]
+    y = mesh[:,1]
+    return np.diag([1,1])
+
+def G(indexOfMesh,mesh, h):
+    x = mesh[indexOfMesh,:]
+    D = mesh.shape[1]
+    mean = mesh+drift(mesh)*h
+    cov = diff(mesh) ** 2 * h
+    soln_vals = []
+    const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
+
+    for j in range(len(mesh)):
+        mu = mean[j,:]
+        Gs = np.exp(-1/2*((x-mu).T@np.linalg.inv(cov)@(x.T-mu.T)))
+        soln_vals.append(Gs*const)
+
+    return np.asarray(soln_vals)
+
 
 def G1D(x1, x2, y1, gamma1, h):
     return (1 / (np.sqrt(2 * np.pi * gamma1**2 * h))) * np.exp((-(x1 - y1 - h * f1(y1, x2 + f2(x1,x2))) ** 2) / (2 * gamma1 ** 2 * h))
 
+
+# import ICMeshGenerator as M
+# import Functions as fun
+
+def G2(x1, x2, y1, y2, h):
+    return ((2 * np.pi * g1() ** 2 * h) ** (-1 / 2) * np.exp(-(x1 - y1 - h * f1(y1, y2)) ** 2 / (2 * g1() ** 2 * h))) * (
+                (2 * np.pi * g2() ** 2 * h) ** (-1 / 2) * np.exp(-(x2 - y2 - h * f2(y1, y2)) ** 2 / (2 * g2() ** 2 * h)))
+
+# import UnorderedMesh as UM
+# mesh = UM.generateOrderedGridCenteredAtZero(-2, 2, -2, 2, 0.1, includeOrigin=True)
+
+def GVals2(Px, Py, mesh, h):
+    vals = []
+    for i in range(len(mesh)):
+        val = G2(Px, Py, mesh[i,0], mesh[i,1], h)
+        vals.append(np.copy(val))
+    return np.asarray(vals)
+# GMat2 = []
+# for i in range(len(mesh)):
+#     G1 = GVals(mesh[i,0], mesh[i,1], mesh, 0.1)
+#     GMat2.append(G1)
+
+# GMat2 = np.asarray(GMat2)
+
+# maxDegFreedom = len(mesh)
+# GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
+# for i in range(len(mesh)):
+#     v = fun.G(i,mesh, 0.1)
+#     GMat[i,:len(v)] = v
+
+def AddPointToG(mesh, newPointindex, h, GMat):
+    newRow = G(newPointindex, mesh,h)
+    GMat[newPointindex,:len(newRow)] = newRow
+
+    D = mesh.shape[1]
+    mean = mesh[-1,:]+drift(np.expand_dims(mesh[-1,:],axis=0))*h
+    mean = mean[0]
+    cov = diff(mesh) ** 2 * h
+    newCol = []
+    const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
+    
+    for j in range(len(mesh)):
+        mu = mean
+        x = mesh[j,:]
+        Gs = np.exp(-1/2*((x-mu).T@np.linalg.inv(cov)@(x.T-mu.T)))
+        newCol.append(Gs*const)
+    
+    GMat[:len(newCol),newPointindex] = newCol
+    return GMat
