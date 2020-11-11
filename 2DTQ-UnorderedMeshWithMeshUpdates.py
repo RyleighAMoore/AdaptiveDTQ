@@ -13,7 +13,9 @@ from pyopoly1.Scaling import GaussScale
 import ICMeshGenerator as M
 import pickle  
 from Errors import ErrorVals
+from datetime import datetime
 
+start = datetime.now()
 
 '''Plotting Parameters'''
 PlotAnimation = True
@@ -21,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 17
+NumSteps = 15
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -69,6 +71,11 @@ GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
 for i in range(len(mesh)):
     v = fun.G(i,mesh, h)
     GMat[i,:len(v)] = v
+    
+LPMat = np.empty([maxDegFreedom, 12])
+LPMatBool = np.zeros((maxDegFreedom,1), dtype=bool)
+
+
 
 '''Grid updates'''
 for i in trange(NumSteps):
@@ -78,18 +85,18 @@ for i in trange(NumSteps):
         if (addBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-        '''Remove points from mesh'''
-        mesh, pdf, remBool, GMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat)
-        if (remBool == 1): 
-            '''Recalculate triangulation if mesh was changed'''
-            tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+        # '''Remove points from mesh'''
+        # mesh, pdf, remBool, GMat, LPMat, LPMatBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool)
+        # if (remBool == 1): 
+        #     '''Recalculate triangulation if mesh was changed'''
+        #     tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
 
     print('Length of mesh = ', len(mesh))
     if i >-1: 
         '''Step forward in time'''
         print("Stepping Forward....")
         pdf = np.expand_dims(pdf,axis=1)
-        pdf, condnums, meshTemp = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i, GMat)
+        pdf, condnums, meshTemp, LPMat, LPMatBool = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,12, i, GMat, LPMat, LPMatBool)
         pdf = np.squeeze(pdf)
         '''Add new values to lists for graphing'''
         PdfTraj.append(np.copy(pdf))
@@ -97,6 +104,8 @@ for i in trange(NumSteps):
          
     else:
         print('Length of mesh = ', len(mesh))
+end = now = datetime.now()
+print("Time: ", end-start)
 
 '''Plot figure'''
 if PlotFigure:

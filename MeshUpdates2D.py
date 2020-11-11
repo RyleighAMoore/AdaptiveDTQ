@@ -44,22 +44,20 @@ def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, GMat, adj
         newMeshSize = len(Mesh)
         for i in range(meshSize+1, newMeshSize+1):
             GMat = fun.AddPointToG(Mesh[:i,:], i-1, h, GMat)
-    
-    
     return Mesh, Pdf, triangulation, ChangedBool, GMat
 
-def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly, GMat, adjustBoundary =True, adjustDensity=False):
+def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly, GMat, LPMat, LPMatBool, adjustBoundary =True, adjustDensity=False):
     '''If the mesh is changed, these become 1 so we know to recompute the triangulation'''
     ChangedBool2 = 0
     ChangedBool1 = 0
     ChangedBool3 = 0
     if adjustBoundary:
-        Mesh, Pdf, ChangedBool2, GMat = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat)
+        Mesh, Pdf, ChangedBool2, GMat,LPMat, LPMatBool = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBool)
     # if adjustDensity:
     #     Mesh, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly)
     Mesh, Pdf, ChangedBool3, GMat = checkForAndRemoveZeroPoints(Mesh,Pdf, tri, GMat)
     ChangedBool = max(ChangedBool1, ChangedBool2, ChangedBool3)
-    return Mesh, Pdf, ChangedBool, GMat
+    return Mesh, Pdf, ChangedBool, GMat, LPMat, LPMatBool
 
 def checkForAndRemoveZeroPoints(Mesh, Pdf, tri, GMat):
     print("Checking for small points to remove....")
@@ -103,11 +101,11 @@ def checkIntegrandForAddingPointsAroundBoundaryPoints(PDF, addPointsToBoundaryIf
     return np.asarray(addingAround).T
 
 
-def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat):
+def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBool):
     stillRemoving = True
     ChangedBool = 0
     initLength = len(Mesh)
-
+    indexRem = []
     '''# Removing boundary points'''
     while stillRemoving: 
         boundaryZeroPointsBoolArray = checkIntegrandForRemovingSmallPoints(Pdf,Mesh,tri)
@@ -116,10 +114,18 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat):
                 if boundaryZeroPointsBoolArray[val] == 1: # remove the point
                     ChangedBool=1
                     Mesh, Pdf, GMat = removePoint(val, Mesh, Pdf, GMat)
+                    indexRem.append(val)
         else: # Stop removing points
             stillRemoving = False
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
         
+        Mat = np.zeros(np.shape(LPMat))
+        for ind in indexRem:
+            larger = LPMat > ind
+            Mat = Mat + larger
+            LPMatBool[val] = False
+        
+    indexRem = []
     '''Remove straggling points'''
     for i in range(len(Mesh)-1,-1,-1): 
         nearestPoint, distToNearestPoints = UM.findNearestKPoints(Mesh[i,0],Mesh[i,1], Mesh, 6)
@@ -127,13 +133,21 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat):
         if dist > 2*maxDistanceBetweenPoints: # Remove outlier
             Mesh, Pdf, GMat = removePoint(i, Mesh, Pdf, GMat)
             ChangedBool = 1
+            indexRem.append(i)
             print("outlier")
     
     if ChangedBool == 1:
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
+        
+    for ind in indexRem:
+            larger = LPMat > ind
+            Mat = Mat + larger
+            LPMatBool[val] = False
+    
+    LPMat = np.copy(LPMat) - Mat
     
     print("Boundary points removed", initLength -len(Mesh))  
-    return Mesh, Pdf, ChangedBool, GMat
+    return Mesh, Pdf, ChangedBool, GMat, LPMat, LPMatBool
 
 
 def removePoint(index, Mesh, Pdf, GMat):

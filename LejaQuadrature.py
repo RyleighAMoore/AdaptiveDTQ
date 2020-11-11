@@ -51,7 +51,7 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 lejaPointsFinal, new = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
 
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step, GMat):
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, step, GMat, LPMat, LPMatBool):
     sigmaX=np.sqrt(h)*diff(np.asarray([[0,0]]))[0,0]
     sigmaY=np.sqrt(h)*diff(np.asarray([[0,0]]))[1,1]
     
@@ -73,7 +73,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
         # GPDF2 = np.expand_dims(GVals2(muX, muY, mesh, h),1)*pdf
         # assert np.max(abs(GPDF2-GPDF)) < 10**(-7)
         
-        value, condNum, scaleUsed = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF)
+        value, condNum, scaleUsed, LPMat, LPMatBool = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMat, LPMatBool,ii)
       
         '''Alternative Method'''
         if math.isnan(condNum) or value <0 or condNum >10: 
@@ -99,6 +99,6 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, numNodes, s
     newPDFs = np.asarray(newPDF)
     condNums = np.asarray([condNums]).T
     
-    return newPDFs,condNums, mesh
+    return newPDFs,condNums, mesh, LPMat, LPMatBool
 
 
