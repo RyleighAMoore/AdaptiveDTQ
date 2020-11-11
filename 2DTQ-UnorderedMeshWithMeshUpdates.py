@@ -21,7 +21,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 5
+NumSteps = 30
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -34,6 +34,8 @@ ComputeErrors = True
 # Make sure the file matches the Function.py functions used.
 SolutionPDFFile = './PickledData/SolnPDF-Vol.p'
 SolutionMeshFile = './PickledData/SolnMesh-Vol.p'
+SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
+SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
 
 ''' Initializd orthonormal Polynomial family'''
 poly = HermitePolynomials(rho=0)

@@ -16,34 +16,34 @@ from scipy.special import erf
 #     return 1
 
 '''Erf'''
-# def f1(x, y):
-#     return 5*erf(10*x)
-
-# def f2(x, y):
-#     return 0
-
-# def g1(x=0,y=0):
-#     return 1
-
-# def g2(x=0,y=0):
-#     return 1
-
-
-'''Volcano'''
 def f1(x, y):
-    r = np.sqrt(x ** 2 + y ** 2)
-    return 10*x*(1- r ** 2)
-
+    return 5*erf(10*x)
 
 def f2(x, y):
-    r = np.sqrt(x ** 2 + y ** 2)
-    return 10*y*(1- r ** 2) 
+    return 0
 
 def g1(x=0,y=0):
     return 1
 
 def g2(x=0,y=0):
     return 1
+
+
+'''Volcano'''
+# def f1(x, y):
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     return 10*x*(1- r ** 2)
+
+
+# def f2(x, y):
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     return 10*y*(1- r ** 2) 
+
+# def g1(x=0,y=0):
+#     return 1
+
+# def g2(x=0,y=0):
+#     return 1
 
 '''Moving hill'''
 # def f1(x, y):
