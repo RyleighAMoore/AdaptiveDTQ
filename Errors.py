@@ -27,6 +27,7 @@ def ErrorVals(Meshes, PdfTraj, mesh2, surfaces):
         # fig = plt.figure()
         # ax = Axes3D(fig)
         # ax.scatter(Meshes[step][:,0], Meshes[step][:,1], np.abs((PdfTraj[step]-gridSolnOnLejas)), c='k', marker='.')
+        # plt.show()
         
         l2 = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step])*1)**2)/len(PdfTraj[step]))
         L2Errors.append(np.copy(l2))

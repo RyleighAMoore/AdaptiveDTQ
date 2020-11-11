@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 15
+NumSteps = 60
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -66,7 +66,7 @@ tri = Delaunay(mesh, incremental=True)
 # needLPBool = numpy.zeros((2, 2), dtype=bool)
 
 '''Initialize Transition probabilities'''
-maxDegFreedom = 2000
+maxDegFreedom = 10000
 GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
 for i in range(len(mesh)):
     v = fun.G(i,mesh, h)
@@ -85,11 +85,11 @@ for i in trange(NumSteps):
         if (addBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-        # '''Remove points from mesh'''
-        # mesh, pdf, remBool, GMat, LPMat, LPMatBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool)
-        # if (remBool == 1): 
-        #     '''Recalculate triangulation if mesh was changed'''
-        #     tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+        '''Remove points from mesh'''
+        mesh, pdf, remBool, GMat, LPMat, LPMatBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool)
+        if (remBool == 1): 
+            '''Recalculate triangulation if mesh was changed'''
+            tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
 
     print('Length of mesh = ', len(mesh))
     if i >-1: 
@@ -104,6 +104,21 @@ for i in trange(NumSteps):
          
     else:
         print('Length of mesh = ', len(mesh))
+        
+    if np.shape(GMat)[0] - len(mesh) < 1000:
+        GMat2 = np.empty([len(mesh)+1000, len(mesh)+1000])*np.NaN
+        GMat2[:len(mesh), :len(mesh)]= GMat[:len(mesh), :len(mesh)]
+        GMat = GMat2
+            
+    if np.shape(LPMat)[0] - len(mesh) < 1000:
+        LPMat2 = np.empty([len(mesh)+1000, 12])*-8
+        LPMat2[:len(mesh),:]= LPMat[:len(mesh), :]
+        LPMatIndices = LPMat2
+        LPMatBool2 = np.zeros((len(mesh)+1000,1), dtype=bool)
+        LPMatBool2[:len(mesh)]= LPMatBool2[:len(mesh)]
+        LPMatBool = LPMatBool2
+
+        
 end = now = datetime.now()
 print("Time: ", end-start)
 

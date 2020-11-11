@@ -118,16 +118,16 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         x,y = fullMesh.T
         vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
         pdf2 = fullPDF/vals.T
-        if LPMatBool[index][0]: # Don't Need LejaPoints
-            LejaIndices = LPMat[index,:].astype(int)
-            value, condNum = QuadratureByInterpolationND_KnownLP(poly, scale1, fullMesh, pdf2, LejaIndices)
-            if condNum > 3:
-                LPMatBool[index]=False
-            else:
-                return value[0], condNum, scale1, LPMat, LPMatBool
-
-
-        if not LPMatBool[index][0]: # Need Leja points.
+        # if LPMatBool[index][0]: # Don't Need LejaPoints
+        #     LejaIndices = LPMat[index,:].astype(int)
+        #     value, condNum = QuadratureByInterpolationND_KnownLP(poly, scale1, fullMesh, pdf2, LejaIndices)
+        #     if condNum > 3:
+        #         LPMatBool[index]=False
+        #     else:
+        #         # print("LP Reused")
+        #         return value[0], condNum, scale1, LPMat, LPMatBool
+            
+        if True or not LPMatBool[index][0]: # Need Leja points.
             value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2)
             LPMat[index, :] = np.asarray(indices)
             LPMatBool[index] = True

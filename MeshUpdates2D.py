@@ -182,15 +182,16 @@ def addPointsToBoundary(Mesh, Pdf, triangulation):
     keepAdding = True
     ChangedBool = 0
     print("adding boundary points...")
-    while keepAdding:
+    count = 0
+    while keepAdding and count < 3:
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation)
         if max(boundaryPointsToAddAround == 1):
             for val in range(len(boundaryPointsToAddAround)-1,-1,-1):
                 if boundaryPointsToAddAround[val] == 1: # if we should extend boundary
                     newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 8)
                     newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh)
-                    if len(newPoints)==0:
-                        keepAdding = False
+                    # if len(newPoints)==0:
+                    #     keepAdding = False
                     for point in range(len(newPoints)):
                         ChangedBool = 1
                         Mesh, Pdf, triangulation = addPoint(newPoints[point,0], newPoints[point,1], Mesh, Pdf, triangulation)
@@ -199,6 +200,7 @@ def addPointsToBoundary(Mesh, Pdf, triangulation):
             keepAdding =False
         if ChangedBool == 1:
             tri = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
+        count = count+1
     print("# boundary points Added = ", numBoundaryAdded)    
     return Mesh, Pdf, triangulation, ChangedBool
 
