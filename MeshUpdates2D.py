@@ -22,8 +22,8 @@ from scipy.interpolate import griddata
 
 
 ''''Tolerance Parameters'''
-addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
-removeZerosValuesIfLessThanTolerance = 10**(-4)
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-4)
+removeZerosValuesIfLessThanTolerance = 10**(-5)
 minDistanceBetweenPoints = 0.1
 minDistanceBetweenPointsBoundary = 0.1
 maxDistanceBetweenPoints = 0.1
@@ -160,12 +160,8 @@ def removePoint(index, Mesh, Pdf, GMat, LPMatBool, LPMat):
     # print(LPUpdateList)
     for i in LPUpdateList:
         LPMatBool[i] = False
-        
     LPMatBool = np.delete(LPMatBool, index,0)
-    
-    
-    
-    
+
     return Mesh, Pdf, GMat, LPMatBool
 
 def houseKeepingAfterAdjustingMesh(Mesh, tri):

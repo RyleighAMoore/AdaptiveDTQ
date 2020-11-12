@@ -74,6 +74,7 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas):
     normScale.setCov(np.asarray([[1,0],[0,1]]))
     
     mesh2, pdfNew, indices = LP.getLejaSetFromPoints(normScale, u, NumLejas, poly, pdf)
+    assert np.max(indices) < len(mesh)
 
     numSamples = len(mesh2)          
     V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
@@ -134,7 +135,8 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         if not LPMatBool[index][0]: # Need Leja points.
             value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,NumLejas)
             LPMat[index, :] = np.asarray(indices)
-            LPMatBool[index] = True
+            if condNum <10:
+                LPMatBool[index] = True
             return value[0], condNum, scale1, LPMat, LPMatBool
     return float('nan'), float('nan'), float('nan'), LPMat, LPMatBool
 

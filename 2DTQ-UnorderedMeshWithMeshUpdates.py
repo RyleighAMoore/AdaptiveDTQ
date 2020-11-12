@@ -67,7 +67,7 @@ tri = Delaunay(mesh, incremental=True)
 
 '''Initialize Transition probabilities'''
 maxDegFreedom = 2000
-NumLejas = 15
+NumLejas = 12
 GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
 for i in range(len(mesh)):
     v = fun.G(i,mesh, h)
@@ -86,10 +86,10 @@ for i in trange(NumSteps):
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
         '''Remove points from mesh'''
-        # mesh, pdf, remBool, GMat, LPMat, LPMatBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
-        # if (remBool == 1): 
-        #     '''Recalculate triangulation if mesh was changed'''
-        #     tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+        mesh, pdf, remBool, GMat, LPMat, LPMatBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
+        if (remBool == 1): 
+            '''Recalculate triangulation if mesh was changed'''
+            tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
     # assert np.nanmax(LPMat) < len(mesh)
     print('Length of mesh = ', len(mesh))
     if i >-1: 
