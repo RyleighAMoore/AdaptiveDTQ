@@ -63,7 +63,7 @@ def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
     return c[0], np.sum(np.abs(vinv[0,:]))
 
   
-def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
+def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas):
     '''Quadrature rule with change of variables for nonzero covariance. 
     Used by QuadratureByInterpolationND_DivideOutGaussian
     Selects a Leja points subset of the passed in mesh'''
@@ -73,7 +73,7 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf):
     normScale.setMu(np.asarray([[0,0]]).T)
     normScale.setCov(np.asarray([[1,0],[0,1]]))
     
-    mesh2, pdfNew, indices = LP.getLejaSetFromPoints(normScale, u, 12, poly, pdf)
+    mesh2, pdfNew, indices = LP.getLejaSetFromPoints(normScale, u, NumLejas, poly, pdf)
 
     numSamples = len(mesh2)          
     V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
@@ -96,7 +96,11 @@ def QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices):
 
     numSamples = len(mesh2)          
     V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
-    vinv = np.linalg.inv(V)
+    try:
+        vinv = np.linalg.inv(V)
+    except: 
+        print("Singular******************")
+        return 100000, 100000
     c = np.matmul(vinv, pdfNew)
     L = np.linalg.cholesky((scaling.cov))
     JacFactor = np.prod(np.diag(L))
@@ -105,7 +109,7 @@ def QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices):
 
 
 
-def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LPMat, LPMatBool, index):
+def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LPMat, LPMatBool, index, NumLejas):
     '''Divides out Gaussian using a quadratic fit. Then computes the update using a Leja Quadrature rule.'''
     # if not LPMatBool[index][0]:
     x,y = fullMesh.T
@@ -118,17 +122,17 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         x,y = fullMesh.T
         vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
         pdf2 = fullPDF/vals.T
-        # if LPMatBool[index][0]: # Don't Need LejaPoints
-        #     LejaIndices = LPMat[index,:].astype(int)
-        #     value, condNum = QuadratureByInterpolationND_KnownLP(poly, scale1, fullMesh, pdf2, LejaIndices)
-        #     if condNum > 3:
-        #         LPMatBool[index]=False
-        #     else:
-        #         # print("LP Reused")
-        #         return value[0], condNum, scale1, LPMat, LPMatBool
+        if LPMatBool[index][0]: # Don't Need LejaPoints
+            LejaIndices = LPMat[index,:].astype(int)
+            value, condNum = QuadratureByInterpolationND_KnownLP(poly, scale1, fullMesh, pdf2, LejaIndices)
+            if condNum > 3:
+                LPMatBool[index]=False
+            else:
+                # print("LP Reused")
+                return value[0], condNum, scale1, LPMat, LPMatBool
             
-        if True or not LPMatBool[index][0]: # Need Leja points.
-            value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2)
+        if not LPMatBool[index][0]: # Need Leja points.
+            value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,NumLejas)
             LPMat[index, :] = np.asarray(indices)
             LPMatBool[index] = True
             return value[0], condNum, scale1, LPMat, LPMatBool

@@ -24,9 +24,9 @@ from scipy.interpolate import griddata
 ''''Tolerance Parameters'''
 addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
 removeZerosValuesIfLessThanTolerance = 10**(-4)
-minDistanceBetweenPoints = 0.15
-minDistanceBetweenPointsBoundary = 0.15
-maxDistanceBetweenPoints = 0.15
+minDistanceBetweenPoints = 0.1
+minDistanceBetweenPointsBoundary = 0.1
+maxDistanceBetweenPoints = 0.1
 
 
 
@@ -35,8 +35,8 @@ def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, GMat, adj
     changedBool2 = 0 
     changedBool1 = 0
     meshSize = len(Mesh)
-    if adjustDensity:
-        Mesh, Pdf, triangulation, changedBool2 = addInteriorPoints(Mesh, Pdf, triangulation)
+    # if adjustDensity:
+    #     Mesh, Pdf, triangulation, changedBool2 = addInteriorPoints(Mesh, Pdf, triangulation)
     if adjustBoundary:
         Mesh, Pdf, triangulation, changedBool1 = addPointsToBoundary(Mesh, Pdf, triangulation)
     ChangedBool = max(changedBool1, changedBool2)
@@ -53,25 +53,25 @@ def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly, GMat, 
     ChangedBool3 = 0
     if adjustBoundary:
         Mesh, Pdf, ChangedBool2, GMat,LPMat, LPMatBool = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBool)
-    # if adjustDensity:
-    #     Mesh, Pdf, ChangedBool1 = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly)
-    Mesh, Pdf, ChangedBool3, GMat = checkForAndRemoveZeroPoints(Mesh,Pdf, tri, GMat)
+    if adjustDensity:
+        Mesh, Pdf, ChangedBool1,GMat, LPMat, LPMatBool = removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly,GMat, LPMat, LPMatBool)
+    Mesh, Pdf, ChangedBool3, GMat, LPMat, LPMatBool = checkForAndRemoveZeroPoints(Mesh,Pdf, tri, GMat,LPMat, LPMatBool)
     ChangedBool = max(ChangedBool1, ChangedBool2, ChangedBool3)
     return Mesh, Pdf, ChangedBool, GMat, LPMat, LPMatBool
 
-def checkForAndRemoveZeroPoints(Mesh, Pdf, tri, GMat):
+def checkForAndRemoveZeroPoints(Mesh, Pdf, tri, GMat, LPMat, LPMatBool):
     print("Checking for small points to remove....")
     ChangedBool=False
     if np.min(Pdf) < removeZerosValuesIfLessThanTolerance:
         zeros =  np.asarray([Pdf < removeZerosValuesIfLessThanTolerance])
         for i in range(len(zeros)):
             if zeros.T[i][0]==1:
-                Mesh, Pdf,GMat = removePoint(i, Mesh, Pdf, GMat)
+                Mesh, Pdf,GMat, LPMatBool = removePoint(i, Mesh, Pdf, GMat, LPMatBool, LPMat)
         print("Removed", (np.sum(zeros)), "points that were tiny")
         ChangedBool =True
     if ChangedBool == 1:
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
-    return Mesh, Pdf, ChangedBool, GMat
+    return Mesh, Pdf, ChangedBool, GMat, LPMat, LPMatBool
             
 
 def getBoundaryPoints(Mesh, tri, alpha):
@@ -105,25 +105,26 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBoo
     stillRemoving = True
     ChangedBool = 0
     initLength = len(Mesh)
-    indexRem = []
+    Mat = np.zeros(np.shape(LPMat))
+
     '''# Removing boundary points'''
     while stillRemoving: 
+        indexRem = []
         boundaryZeroPointsBoolArray = checkIntegrandForRemovingSmallPoints(Pdf,Mesh,tri)
         if max(boundaryZeroPointsBoolArray == 1):
             for val in range(len(boundaryZeroPointsBoolArray)-1,-1,-1):
                 if boundaryZeroPointsBoolArray[val] == 1: # remove the point
                     ChangedBool=1
-                    Mesh, Pdf, GMat = removePoint(val, Mesh, Pdf, GMat)
+                    Mesh, Pdf, GMat, LPMatBool = removePoint(val, Mesh, Pdf, GMat, LPMatBool, LPMat)
                     indexRem.append(val)
         else: # Stop removing points
             stillRemoving = False
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
         
-        Mat = np.zeros(np.shape(LPMat))
         for ind in indexRem:
             larger = LPMat > ind
             Mat = Mat + larger
-            LPMatBool[val] = False
+            # LPMatBool[ind] = False
         
     indexRem = []
     '''Remove straggling points'''
@@ -131,7 +132,7 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBoo
         nearestPoint, distToNearestPoints = UM.findNearestKPoints(Mesh[i,0],Mesh[i,1], Mesh, 6)
         dist = np.mean(distToNearestPoints)
         if dist > 2*maxDistanceBetweenPoints: # Remove outlier
-            Mesh, Pdf, GMat = removePoint(i, Mesh, Pdf, GMat)
+            Mesh, Pdf, GMat, LPMatBool = removePoint(i, Mesh, Pdf, GMat, LPMatBool, LPMat)
             ChangedBool = 1
             indexRem.append(i)
             print("outlier")
@@ -142,7 +143,7 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBoo
     for ind in indexRem:
             larger = LPMat > ind
             Mat = Mat + larger
-            LPMatBool[val] = False
+            # LPMatBool[ind] = False
     
     LPMat = np.copy(LPMat) - Mat
     
@@ -150,12 +151,22 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBoo
     return Mesh, Pdf, ChangedBool, GMat, LPMat, LPMatBool
 
 
-def removePoint(index, Mesh, Pdf, GMat):
+def removePoint(index, Mesh, Pdf, GMat, LPMatBool, LPMat):
     Mesh = np.delete(Mesh, index, 0)
     Pdf = np.delete(Pdf, index, 0)
     GMat = np.delete(GMat, index,0)
     GMat = np.delete(GMat, index,1)
-    return Mesh, Pdf, GMat
+    LPUpdateList = np.where(LPMat == index)[0]
+    # print(LPUpdateList)
+    for i in LPUpdateList:
+        LPMatBool[i] = False
+        
+    LPMatBool = np.delete(LPMatBool, index,0)
+    
+    
+    
+    
+    return Mesh, Pdf, GMat, LPMatBool
 
 def houseKeepingAfterAdjustingMesh(Mesh, tri):
     '''Updates all the Vertices information for the mesh. Must be run after removing points'''
@@ -316,7 +327,7 @@ def getSlopes(mesh, PDF):
     return Slopes/np.max(Slopes)
 
 
-def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly):
+def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly,GMat, LPMat, LPMatBool):
     ChangedBool=0
     startingLength = len(Mesh)
     Slopes = getSlopes(Mesh, Pdf)
@@ -338,7 +349,7 @@ def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly):
             nearestPoint, distances = UM.findNearestKPoints(Mesh[corrIndices[j],0],Mesh[corrIndices[j],1], meshWithSmallSlopes, 6)            # print("Making Less Dense!...")
             distToNearestPoint = np.max(distances)
             if distToNearestPoint < maxDistanceBetweenPoints:
-                Mesh, Pdf = removePoint(corrIndices[j], Mesh, Pdf)
+                Mesh, Pdf, GMat, LPMatBool = removePoint(corrIndices[j], Mesh, Pdf, GMat, LPMatBool,LPMat)
                 ChangedBool = 1
             # else:
             #     print("Skip removing top of hill")
@@ -348,10 +359,17 @@ def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly):
     print("Removed ", numReduced, "to decrease density.")
     if ChangedBool:
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
+    
+    Mat = np.zeros(np.shape(LPMat))
+    for ind in corrIndices:
+        larger = LPMat > ind
+        Mat = Mat + larger
+        
+    LPMat = np.copy(LPMat) - Mat
         
     # plt.scatter(Mesh[:,0], Mesh[:,1], c='r')
 
-    return Mesh, Pdf, ChangedBool
+    return Mesh, Pdf, ChangedBool, GMat, LPMat, LPMatBool
 
 def addInteriorPoints(Mesh, Pdf, triangulation):
     ChangedBool = 0
