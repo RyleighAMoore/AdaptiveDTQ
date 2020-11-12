@@ -34,8 +34,8 @@ ComputeErrors = True
 # Make sure the file matches the Function.py functions used.
 SolutionPDFFile = './PickledData/SolnPDF-Vol.p'
 SolutionMeshFile = './PickledData/SolnMesh-Vol.p'
-SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
-SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
+# SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
+# SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
 
 ''' Initializd orthonormal Polynomial family'''
 poly = HermitePolynomials(rho=0)
