@@ -16,17 +16,17 @@ from scipy.special import erf
 #     return 1
 
 '''Erf'''
-def f1(x, y):
-    return 5*erf(10*x)
+# def f1(x, y):
+#     return 5*erf(10*x)
 
-def f2(x, y):
-    return 0
+# def f2(x, y):
+#     return 0
 
-def g1(x=0,y=0):
-    return 1
+# def g1(x=0,y=0):
+#     return 1
 
-def g2(x=0,y=0):
-    return 1
+# def g2(x=0,y=0):
+#     return 1
 
 
 '''Volcano'''
@@ -46,17 +46,17 @@ def g2(x=0,y=0):
 #     return 1
 
 '''Moving hill'''
-# def f1(x, y):
-#     return 5
+def f1(x, y):
+    return 1
 
-# def f2(x, y):
-#     return 0
+def f2(x, y):
+    return 0
 
-# def g1(x=0,y=0):
-#     return 1
+def g1(x=0,y=0):
+    return 1
 
-# def g2(x=0,y=0):
-#     return 1
+def g2(x=0,y=0):
+    return 1
     
     
     
@@ -113,8 +113,8 @@ def drift(mesh):
     x = mesh[:,0]
     y = mesh[:,1]
     r = np.sqrt(x ** 2 + y ** 2)
-    # return 1
-    # return np.asarray([10*x*(1- r ** 2), 10*y*(1- r ** 2)]).T
+    return np.asarray([1,0]).T
+    return np.asarray([10*x*(1- r ** 2), 10*y*(1- r ** 2)]).T
     return np.asarray([5*erf(10*x), np.zeros((np.size(mesh,0)))]).T
 
 def diff(mesh):
@@ -122,6 +122,7 @@ def diff(mesh):
         mesh = np.expand_dims(mesh, axis=0)
     x = mesh[:,0]
     y = mesh[:,1]
+    # return np.diag([0.5,0.5])
     return np.diag([1,1])
 
 def G(indexOfMesh,mesh, h):

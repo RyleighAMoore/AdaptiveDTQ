@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 25
+NumSteps = 45
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -48,7 +48,7 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 
 '''pdf after one time step with Dirac initial condition centered at the origin'''
-mesh = M.getICMesh(1.2, kstep, h)
+mesh = M.getICMesh(1, kstep, h)
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
 scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
@@ -67,36 +67,45 @@ tri = Delaunay(mesh, incremental=True)
 
 '''Initialize Transition probabilities'''
 maxDegFreedom = 2000
-NumLejas = 15
+NumLejas = 12
+numQuadFit = 20
 GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
 for i in range(len(mesh)):
     v = fun.G(i,mesh, h)
     GMat[i,:len(v)] = v
     
 LPMat = np.empty([maxDegFreedom, NumLejas])
-LPMatBool = np.zeros((maxDegFreedom,1), dtype=bool)
+LPMatBool = np.zeros((maxDegFreedom,1), dtype=bool) # True if we have Lejas, False if we need Lejas
 
+QuadFitMat = np.empty([maxDegFreedom, numQuadFit])
+QuadFitBool = np.zeros((maxDegFreedom,1), dtype=bool) # True if have points, false if need points
 
 '''Grid updates'''
 for i in trange(NumSteps):
+    LPMat = np.empty([maxDegFreedom, NumLejas])
+    LPMatBool = np.zeros((maxDegFreedom,1), dtype=bool) # True if we have Lejas, False if we need Lejas
+    
+    QuadFitMat = np.empty([maxDegFreedom, numQuadFit])
+    QuadFitBool = np.zeros((maxDegFreedom,1), dtype=bool)
     if (i >= 1) and (adjustBoundary or adjustDensity):
         '''Add points to mesh'''
         mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
         if (addBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-        '''Remove points from mesh'''
-        mesh, pdf, remBool, GMat, LPMat, LPMatBool = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
-        if (remBool == 1): 
-            '''Recalculate triangulation if mesh was changed'''
-            tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+        if True:
+            '''Remove points from mesh'''
+            mesh, pdf, remBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
+            if (remBool == 1): 
+                '''Recalculate triangulation if mesh was changed'''
+                tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
     # assert np.nanmax(LPMat) < len(mesh)
     print('Length of mesh = ', len(mesh))
     if i >-1: 
         '''Step forward in time'''
         print("Stepping Forward....")
         pdf = np.expand_dims(pdf,axis=1)
-        pdf, condnums, meshTemp, LPMat, LPMatBool = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool)
+        pdf, condnums, meshTemp, LPMat, LPMatBool, QuadFitMat,QuadFitBool = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, QuadFitMat,QuadFitBool)
         pdf = np.squeeze(pdf)
         '''Add new values to lists for graphing'''
         PdfTraj.append(np.copy(pdf))
@@ -144,7 +153,7 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-    ax.set_zlim(0, np.max(PdfTraj[-1]))
+    ax.set_zlim(0, np.max(PdfTraj[-5]))
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                               interval=500, blit=False)
     plt.show()

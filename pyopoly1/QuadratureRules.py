@@ -110,15 +110,20 @@ def QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices):
 
 
 
-def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LPMat, LPMatBool, index, NumLejas):
+def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LPMat, LPMatBool, index, NumLejas, QuadFitMat,QuadFitBool):
     '''Divides out Gaussian using a quadratic fit. Then computes the update using a Leja Quadrature rule.'''
     # if not LPMatBool[index][0]:
     x,y = fullMesh.T
-
-    mesh, distances, ii = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh, 20, getIndices = True)
-    pdf = fullPDF[ii]
-    
-    scale1, temp, cc, Const = fitQuad(mesh, pdf)
+    if not QuadFitBool[index]:
+        mesh, distances, ii = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh, 20, getIndices = True)
+        pdf = fullPDF[ii]
+        scale1, temp, cc, Const = fitQuad(mesh, pdf)
+        QuadFitMat[index,:] = ii
+    else:
+        mesh = fullMesh[LejaIndices]
+        pdf = fullPDF[LejaIndices]
+        scale1, temp, cc, Const = fitQuad(mesh, pdf)
+        
     if not math.isnan(Const): # succeeded fitting Gaussian
         x,y = fullMesh.T
         vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
@@ -126,19 +131,20 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         if LPMatBool[index][0]: # Don't Need LejaPoints
             LejaIndices = LPMat[index,:].astype(int)
             value, condNum = QuadratureByInterpolationND_KnownLP(poly, scale1, fullMesh, pdf2, LejaIndices)
-            if condNum > 1.2:
+            if condNum > 3:
                 LPMatBool[index]=False
+                QuadFitBool[index] = False
             else:
                 # print("LP Reused")
-                return value[0], condNum, scale1, LPMat, LPMatBool
+                return value[0], condNum, scale1, LPMat, LPMatBool, QuadFitMat,QuadFitBool
             
         if not LPMatBool[index][0]: # Need Leja points.
             value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,NumLejas)
             LPMat[index, :] = np.asarray(indices)
             if condNum <10:
                 LPMatBool[index] = True
-            return value[0], condNum, scale1, LPMat, LPMatBool
-    return float('nan'), float('nan'), float('nan'), LPMat, LPMatBool
+            return value[0], condNum, scale1, LPMat, LPMatBool, QuadFitMat,QuadFitBool
+    return float('nan'), float('nan'), float('nan'), LPMat, LPMatBool, QuadFitMat,QuadFitBool
 
     # elif LPMatBool[index][0]:
     #     value, condNum = QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices)
