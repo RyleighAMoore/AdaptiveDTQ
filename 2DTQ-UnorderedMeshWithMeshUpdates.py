@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 45
+NumSteps = 25
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -36,8 +36,8 @@ ComputeErrors = True
 # Make sure the file matches the Function.py functions used.
 SolutionPDFFile = './PickledData/SolnPDF-Vol.p'
 SolutionMeshFile = './PickledData/SolnMesh-Vol.p'
-# SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
-# SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
+SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
+SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
 
 ''' Initializd orthonormal Polynomial family'''
 poly = HermitePolynomials(rho=0)
@@ -48,7 +48,7 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 
 '''pdf after one time step with Dirac initial condition centered at the origin'''
-mesh = M.getICMesh(1, kstep, h)
+mesh = M.getICMesh(1.2, kstep, h)
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
 scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
@@ -67,7 +67,7 @@ tri = Delaunay(mesh, incremental=True)
 
 '''Initialize Transition probabilities'''
 maxDegFreedom = 2000
-NumLejas = 12
+NumLejas = 15
 GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
 for i in range(len(mesh)):
     v = fun.G(i,mesh, h)
@@ -79,7 +79,7 @@ LPMatBool = np.zeros((maxDegFreedom,1), dtype=bool)
 
 '''Grid updates'''
 for i in trange(NumSteps):
-    if (i >= 2) and (adjustBoundary or adjustDensity):
+    if (i >= 1) and (adjustBoundary or adjustDensity):
         '''Add points to mesh'''
         mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
         if (addBool == 1): 

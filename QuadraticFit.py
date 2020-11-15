@@ -8,7 +8,7 @@ from pyopoly1.Scaling import GaussScale
 import Functions as fun
 
 
-def fitQuad(Px, Py, mesh, pdf):
+def fitQuad(mesh, pdf):
     zobs = np.log(pdf)
     zobs = np.squeeze(zobs)
     xy = mesh.T
