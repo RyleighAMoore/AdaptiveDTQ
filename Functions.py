@@ -30,33 +30,33 @@ from scipy.special import erf
 
 
 '''Volcano'''
-def f1(x, y):
-    r = np.sqrt(x ** 2 + y ** 2)
-    return 10*x*(1- r ** 2)
-
-
-def f2(x, y):
-    r = np.sqrt(x ** 2 + y ** 2)
-    return 10*y*(1- r ** 2) 
-
-def g1(x=0,y=0):
-    return 1
-
-def g2(x=0,y=0):
-    return 1
-
-'''Moving hill'''
 # def f1(x, y):
-#     return 5
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     return 10*x*(1- r ** 2)
+
 
 # def f2(x, y):
-#     return 0
+#     r = np.sqrt(x ** 2 + y ** 2)
+#     return 10*y*(1- r ** 2) 
 
 # def g1(x=0,y=0):
 #     return 1
 
 # def g2(x=0,y=0):
 #     return 1
+
+'''Moving hill'''
+def f1(x, y):
+    return 5
+
+def f2(x, y):
+    return 0
+
+def g1(x=0,y=0):
+    return 1
+
+def g2(x=0,y=0):
+    return 1
     
     
     
