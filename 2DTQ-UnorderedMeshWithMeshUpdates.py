@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 45
+NumSteps = 10
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -82,23 +82,23 @@ QuadFitBool = np.zeros((maxDegFreedom,1), dtype=bool) # True if have points, fal
 
 '''Grid updates'''
 for i in trange(NumSteps):
-    LPMat = np.empty([maxDegFreedom, NumLejas])
-    LPMatBool = np.zeros((maxDegFreedom,1), dtype=bool) # True if we have Lejas, False if we need Lejas
+    # LPMat = np.empty([maxDegFreedom, NumLejas])
+    # LPMatBool = np.zeros((maxDegFreedom,1), dtype=bool) # True if we have Lejas, False if we need Lejas
     
-    QuadFitMat = np.empty([maxDegFreedom, numQuadFit])
-    QuadFitBool = np.zeros((maxDegFreedom,1), dtype=bool)
+    # QuadFitMat = np.empty([maxDegFreedom, numQuadFit])
+    # QuadFitBool = np.zeros((maxDegFreedom,1), dtype=bool)
     if (i >= 1) and (adjustBoundary or adjustDensity):
         '''Add points to mesh'''
         mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
         if (addBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-        if True:
-            '''Remove points from mesh'''
-            mesh, pdf, remBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
-            if (remBool == 1): 
-                '''Recalculate triangulation if mesh was changed'''
-                tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+        # if True:
+        #     '''Remove points from mesh'''
+        #     mesh, pdf, remBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
+        #     if (remBool == 1): 
+        #         '''Recalculate triangulation if mesh was changed'''
+        #         tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
     # assert np.nanmax(LPMat) < len(mesh)
     print('Length of mesh = ', len(mesh))
     if i >-1: 
@@ -120,11 +120,11 @@ for i in trange(NumSteps):
         GMat = GMat2
             
     if np.shape(LPMat)[0] - len(mesh) < 1000:
-        LPMat2 = np.empty([len(mesh)+1000, NumLejas])*-8
+        LPMat2 = np.empty([len(mesh)+1000, NumLejas])
         LPMat2[:len(mesh),:]= LPMat[:len(mesh), :]
-        LPMatIndices = LPMat2
+        LPMat = LPMat2
         LPMatBool2 = np.zeros((len(mesh)+1000,1), dtype=bool)
-        LPMatBool2[:len(mesh)]= LPMatBool2[:len(mesh)]
+        LPMatBool2[:len(mesh)]= LPMatBool[:len(mesh)]
         LPMatBool = LPMatBool2
 
         
