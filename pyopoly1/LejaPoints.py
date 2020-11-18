@@ -11,6 +11,7 @@ from pyopoly1 import opolynd
 from pyopoly1.LejaUtilities import get_lu_leja_samples, sqrtNormal_weights
 from pyopoly1.opolynd import opolynd_eval
 import UnorderedMesh as UM
+from mpl_toolkits.mplot3d import Axes3D
 
 
 
@@ -150,48 +151,65 @@ numCandidateSamples = number of samples to chose candidates from.
 poly: standard normal PCE
 neighbors = [numNeighbors, mesh]
 '''
-def getLejaPointsWithStartingPoints(scaleParams, numLejaPoints, numCandidateSamples, poly, neighbors=[0,[]]):
-    Px = scaleParams.mu[0][0]; Py = scaleParams.mu[0][0]
-    sigmaX = np.sqrt(scaleParams.cov[0,0]); sigmaY = np.sqrt(scaleParams.cov[1,1])
-    if neighbors[0] > 0: 
-        numNeighbors = neighbors[0]; mesh = neighbors[1]
-        neighbors, distances = UM.findNearestKPoints(Px, Py, mesh, numNeighbors) 
-        neighbors = np.vstack((neighbors,[Px,Py]))
-    else: # make sure we have at least one point.
-        numNeighbors = 0
-        neighbors = np.asarray([[Px],[Py]]).T
+# def getLejaPointsWithStartingPoints(scaleParams, numLejaPoints, numCandidateSamples, poly, neighbors=[0,[]]):
+#     Px = scaleParams.mu[0][0]; Py = scaleParams.mu[0][0]
+#     sigmaX = np.sqrt(scaleParams.cov[0,0]); sigmaY = np.sqrt(scaleParams.cov[1,1])
+#     if neighbors[0] > 0: 
+#         numNeighbors = neighbors[0]; mesh = neighbors[1]
+#         neighbors, distances = UM.findNearestKPoints(Px, Py, mesh, numNeighbors) 
+#         neighbors = np.vstack((neighbors,[Px,Py]))
+#     else: # make sure we have at least one point.
+#         numNeighbors = 0
+#         neighbors = np.asarray([[Px],[Py]]).T
         
-    intialPoints = mapPointsTo(Px,Py,neighbors, 1,1)
-    lejaPointsFinal1, newLeja = getLejaPoints(numLejaPoints, intialPoints.T, poly, num_candidate_samples=numCandidateSamples)
-    lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal1, sigmaX, sigmaY)
-    newLeja = mapPointsBack(Px,Py,newLeja,sigmaX,sigmaY)
+#     intialPoints = mapPointsTo(Px,Py,neighbors, 1,1)
+#     lejaPointsFinal1, newLeja = getLejaPoints(numLejaPoints, intialPoints.T, poly, num_candidate_samples=numCandidateSamples)
+#     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal1, sigmaX, sigmaY)
+#     newLeja = mapPointsBack(Px,Py,newLeja,sigmaX,sigmaY)
     
-    plot= False
-    if plot:
-        plt.figure()
-        plt.plot(neighbors[:,0], neighbors[:,1], '*k', label='Neighbors', markersize=14)
-        plt.plot(Px, Py, '*r',label='Main Point',markersize=14)
-        plt.plot(lejaPointsFinal[:,0], lejaPointsFinal[:,1], '.c', label='Leja Points',markersize=10)
-        # plt.plot(lejaPointsFinal1[:,0], lejaPointsFinal1[:,1], '.r', label='Leja Points Unscaled',markersize=10)
+#     plot= False
+#     if plot:
+#         plt.figure()
+#         plt.plot(neighbors[:,0], neighbors[:,1], '*k', label='Neighbors', markersize=14)
+#         plt.plot(Px, Py, '*r',label='Main Point',markersize=14)
+#         plt.plot(lejaPointsFinal[:,0], lejaPointsFinal[:,1], '.c', label='Leja Points',markersize=10)
+#         # plt.plot(lejaPointsFinal1[:,0], lejaPointsFinal1[:,1], '.r', label='Leja Points Unscaled',markersize=10)
 
-        plt.legend()
-        plt.show()
+#         plt.legend()
+#         plt.show()
 
-    return lejaPointsFinal, newLeja
+#     return lejaPointsFinal, newLeja
 
 # poly = PCE.generatePCE(20, muX=0, muY=0, sigmaX = 1, sigmaY=1)
 # one, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 1000, poly)
 # mesh, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 12, 1000, poly, neighbors=[3,one])
 
-def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf):
+def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, NearestIndices):
     if pdf.shape == (len(pdf), ):
         pdf = np.expand_dims(pdf,1)
         
     assert numLejaPointsToReturn <= np.size(mesh,0), "Asked for subset is bigger than whole set"    
+    mesh, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], mesh, 30, getIndices = True)
+    pdf = pdf[indik]
     
-    nearest, idx = UM.findNearestPoint(scale.mu[0][0], scale.mu[1][0], mesh, includeIndex=False, samePointRet0 = False)
+    # kdt = KDTree(X, leaf_size=30, metric='euclidean')
+    # kdt.query(mesh, k=30, return_distance=False)
+    # mesh = mesh[NearestIndices.astype(int)]
+    # pdf = pdf[NearestIndices.astype(int)]
     
-    Px = nearest.T[0][0]; Py = nearest.T[1][0]
+    
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # # ax.scatter(mesh12[:,0], mesh12[:,1], pdf12, c='r', marker='o')
+    # ax.scatter(mesh[NearestIndices.astype(int),0], mesh[NearestIndices.astype(int),1], pdf[NearestIndices.astype(int)], c='k', marker='.')
+    # plt.show()
+    
+    # mesh = mesh12
+    # pdf =pdf12
+    
+    nearest,distance, idx = UM.findNearestPoint(scale.mu[0][0], scale.mu[1][0], mesh)
+    
+    Px = nearest.T[0]; Py = nearest.T[1]
     
     sigmaX = np.sqrt(scale.cov[0,0]); sigmaY = np.sqrt(scale.cov[1,1])
         

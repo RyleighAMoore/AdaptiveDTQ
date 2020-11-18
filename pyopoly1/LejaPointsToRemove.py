@@ -17,6 +17,8 @@ from pyopoly1 import LejaPoints as LP
 from pyopoly1 import opolynd
 from pyopoly1 import LejaUtilities
 from pyopoly1.opolynd import opolynd_eval
+from sklearn.neighbors import KDTree
+
 
 
 def getLejaPointsForRemoval(num_leja_samples, initial_samples, Mesh, numBasis, poly, dimensions=2):

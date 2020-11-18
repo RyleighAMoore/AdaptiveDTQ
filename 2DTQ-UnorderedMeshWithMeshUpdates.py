@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 10
+NumSteps = 65
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -93,19 +93,19 @@ for i in trange(NumSteps):
         if (addBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-        # if True:
-        #     '''Remove points from mesh'''
-        #     mesh, pdf, remBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
-        #     if (remBool == 1): 
-        #         '''Recalculate triangulation if mesh was changed'''
-        #         tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+        if i%10==0:
+            '''Remove points from mesh'''
+            mesh, pdf, remBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
+            if (remBool == 1): 
+                '''Recalculate triangulation if mesh was changed'''
+                tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
     # assert np.nanmax(LPMat) < len(mesh)
     print('Length of mesh = ', len(mesh))
     if i >-1: 
         '''Step forward in time'''
         print("Stepping Forward....")
         pdf = np.expand_dims(pdf,axis=1)
-        pdf, condnums, meshTemp, LPMat, LPMatBool, QuadFitMat,QuadFitBool = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, QuadFitMat,QuadFitBool)
+        pdf, condnums, meshTemp, LPMat, LPMatBool, QuadFitMat,QuadFitBool = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, QuadFitMat,QuadFitBool, numQuadFit)
         pdf = np.squeeze(pdf)
         '''Add new values to lists for graphing'''
         PdfTraj.append(np.copy(pdf))
@@ -153,7 +153,7 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-    ax.set_zlim(0, np.max(PdfTraj[-5]))
+    ax.set_zlim(0, np.max(PdfTraj[-1]))
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                               interval=500, blit=False)
     plt.show()

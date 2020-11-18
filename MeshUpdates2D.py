@@ -23,7 +23,7 @@ from scipy.interpolate import griddata
 
 ''''Tolerance Parameters'''
 addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
-removeZerosValuesIfLessThanTolerance = 10**(-4)
+removeZerosValuesIfLessThanTolerance = 10**(-3.5)
 minDistanceBetweenPoints = 0.15
 minDistanceBetweenPointsBoundary = 0.15
 maxDistanceBetweenPoints = 0.2
@@ -238,8 +238,8 @@ def addPointsRadially(pointX, pointY, mesh, numPointsToAdd):
     for i in range(numPointsToAdd):
         newPointX = radius*np.cos(i*dTheta)+pointX
         newPointY = radius*np.sin(i*dTheta) + pointY
-        nearestPoint,idx = UM.findNearestPoint(newPointX, newPointY, mesh)
-        distToNearestPoint= np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
+        nearestPoint,distToNearestPoint, idx = UM.findNearestPoint(newPointX, newPointY, mesh)
+        # distToNearestPoint= np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
         if distToNearestPoint >= minDistanceBetweenPointsBoundary*0.9:
             points.append([newPointX, newPointY])
     return np.asarray(points)
@@ -251,8 +251,8 @@ def checkIfDistToClosestPointIsOk(newPoints, Mesh):
     for i in range(len(newPoints)):
         newPointX = newPoints[i,0]
         newPointY = newPoints[i,1]
-        nearestPoint, dist = UM.findNearestPoint(newPointX, newPointY, Mesh, samePointRet0= True)
-        distToNearestPoint = np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
+        nearestPoint, distToNearestPoint, indx = UM.findNearestPoint(newPointX, newPointY, Mesh)
+        # distToNearestPoint = np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
         if distToNearestPoint > minDistanceBetweenPoints*0.9 and distToNearestPoint < maxDistanceBetweenPoints*1.1:
             points.append([newPointX, newPointY])
 

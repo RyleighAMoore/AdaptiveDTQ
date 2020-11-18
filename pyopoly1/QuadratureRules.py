@@ -63,7 +63,7 @@ def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
     return c[0], np.sum(np.abs(vinv[0,:]))
 
   
-def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas):
+def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas, NearestIndices):
     '''Quadrature rule with change of variables for nonzero covariance. 
     Used by QuadratureByInterpolationND_DivideOutGaussian
     Selects a Leja points subset of the passed in mesh'''
@@ -73,7 +73,16 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas):
     normScale.setMu(np.asarray([[0,0]]).T)
     normScale.setCov(np.asarray([[1,0],[0,1]]))
     
-    mesh2, pdfNew, indices = LP.getLejaSetFromPoints(normScale, u, NumLejas, poly, pdf)
+    # u = u[NearestIndices.astype(int)]
+    # # print(u.shape)
+    # pdf = pdf[NearestIndices.astype(int)]
+    # plt.figure()
+    # plt.plot(u[:,0], u[:,1],'ok')
+    # plt.plot(mesh[:,0], mesh[:,1],'.r')
+    # # plt.plot(mesh[index,0], fullMesh[index,1], 'og')
+    # plt.show()
+    
+    mesh2, pdfNew, indices = LP.getLejaSetFromPoints(normScale, u, NumLejas, poly, pdf, NearestIndices)
     assert np.max(indices) < len(mesh)
 
     numSamples = len(mesh2)          
@@ -100,7 +109,7 @@ def QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices):
     try:
         vinv = np.linalg.inv(V)
     except: 
-        print("Singular******************")
+        # print("Singular******************")
         return 100000, 100000
     c = np.matmul(vinv, pdfNew)
     L = np.linalg.cholesky((scaling.cov))
@@ -110,15 +119,23 @@ def QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices):
 
 
 
-def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LPMat, LPMatBool, index, NumLejas, QuadFitMat,QuadFitBool):
+def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LPMat, LPMatBool, index, NumLejas, QuadFitMat,QuadFitBool, numQuadPoints):
     '''Divides out Gaussian using a quadratic fit. Then computes the update using a Leja Quadrature rule.'''
     # if not LPMatBool[index][0]:
     x,y = fullMesh.T
     if not QuadFitBool[index]:
-        mesh, distances, ii = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh, 20, getIndices = True)
-        pdf = fullPDF[ii]
+        mesh, distances, ii = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh,numQuadPoints, getIndices = True)
+        # plt.figure()
+        # plt.plot(fullMesh[:,0], fullMesh[:,1],'ok')
+        # plt.plot(mesh[:,0], mesh[:,1],'.r')
+        # plt.plot(fullMesh[index,0], fullMesh[index,1], 'og')
+        # plt.show()
+        
+        mesh =  mesh[:numQuadPoints]
+        pdf = fullPDF[ii[:numQuadPoints]]
         scale1, temp, cc, Const = fitQuad(mesh, pdf)
         QuadFitMat[index,:] = ii
+        
     else:
         mesh = fullMesh[LejaIndices]
         pdf = fullPDF[LejaIndices]
@@ -139,7 +156,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
                 return value[0], condNum, scale1, LPMat, LPMatBool, QuadFitMat,QuadFitBool
             
         if not LPMatBool[index][0]: # Need Leja points.
-            value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,NumLejas)
+            value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,NumLejas, QuadFitMat[index,:])
             LPMat[index, :] = np.asarray(indices)
             if condNum <10:
                 LPMatBool[index] = True

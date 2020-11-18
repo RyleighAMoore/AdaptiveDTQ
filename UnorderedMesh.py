@@ -16,62 +16,23 @@ from mpl_toolkits.mplot3d import Axes3D
 #  ...  ...
 def findNearestKPoints(xCoord, yCoord, AllPoints, numNeighbors, getIndices = False):
     normList = []
-    for point in range(len(AllPoints)):
-        xVal = AllPoints[point,0]
-        yVal = AllPoints[point,1]
-        normList.append(np.sqrt((xCoord-xVal)**2+(yCoord-yVal)**2))
+    normList = (xCoord*np.ones(len(AllPoints)) - AllPoints[:,0])**2 + (yCoord*np.ones(len(AllPoints)) - AllPoints[:,1])**2
+    
     idx = np.argsort(normList)
-    neighbors = []
-    distances = []
-    indices = []
-    for k in range(1,numNeighbors+1):
-        neighbors.append(np.asarray([AllPoints[idx[k],0], AllPoints[idx[k],1]]))
-        distances.append(normList[idx[k]])
-        assert normList[idx[k]] > 0, "point wrong"
-        indices.append(idx[k])
-    neighbors = np.asarray(neighbors)
-    # if len(neighbors) > 0:
-    #     plt.figure()
-    #     plt.plot(AllPoints[:,0], AllPoints[:,1], '.')
-    #     plt.plot(xCoord,yCoord, '*r')
-    #     plt.plot(neighbors[:,0], neighbors[:,1],'.')
-    #     plt.show()
-    # print(distances)
     if getIndices:
-        return neighbors, distances, indices
-    return neighbors, distances
-
-# neighbors, distances = findNearestKPoints(-1.7, 1, Meshes[0], 1)
-
-def findNearestPoint(xCoord, yCoord, AllPoints, includeIndex=False, samePointRet0 = False):
-    normList = []
-    # point = np.asarray([xCoord,yCoord])
-    # normList =np.sum((point*np.shape(AllPoints)-AllPoints)**2,axis=1)
-
-    for point in range(len(AllPoints)):
-        xVal = AllPoints[point,0]
-        yVal = AllPoints[point,1]
-        normList.append(np.sqrt((xCoord-xVal)**2+(yCoord-yVal)**2))
-    idx = np.argsort(normList)
-    #print(idx)
-    if normList[idx[0]] == 0: # point is part of the set
-        if includeIndex == True:
-            try:
-                return np.asarray([[AllPoints[idx[1],0], AllPoints[idx[1],1]]]), idx[1]
-            except: 
-                t=0
-        else:
-            if samePointRet0:
-               return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]])
-            else:
-                return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]]), idx[0]
+        return AllPoints[idx[:numNeighbors]], normList[idx[:numNeighbors]], idx[:numNeighbors]
     else:
-        if includeIndex:
-            return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]]), idx[0]
-        else:
-            return np.asarray([[AllPoints[idx[0],0], AllPoints[idx[0],1]]]), idx[0]
+        return AllPoints[idx[:numNeighbors]], normList[idx[:numNeighbors]]
     
 
+def findNearestPoint(xCoord, yCoord, AllPoints):
+    points, normList, indices = findNearestKPoints(xCoord, yCoord, AllPoints, 2, getIndices = True)
+    if normList[0]==0:
+        return points[1], np.sqrt(normList[1]), indices[1]
+    else:
+        return points[0], np.sqrt(normList[0]), indices[0]
+    
+   
 # point: Point to center grid around
 # spacing: step size of grid
 # span: Units around the point to make the grid.
