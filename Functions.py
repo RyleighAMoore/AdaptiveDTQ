@@ -182,10 +182,10 @@ def AddPointToG(mesh, newPointindex, h, GMat):
     cov = diff(mesh) ** 2 * h # put inside loop if cov changes spatially
     newCol = np.empty(len(mesh))
     const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
-    
+    covInv = np.linalg.inv(cov)
     for j in range(len(mesh)):
         x = mesh[j,:]
-        Gs = np.exp(-1/2*((x-mu).T@np.linalg.inv(cov)@(x.T-mu.T)))
+        Gs = np.exp(-1/2*((x-mu).T@covInv@(x.T-mu.T)))
         newCol[j] = (Gs)
 
     GMat[:len(newCol),newPointindex] = newCol*const

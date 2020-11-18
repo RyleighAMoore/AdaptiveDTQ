@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 35
+NumSteps = 45
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -137,7 +137,6 @@ for i in trange(NumSteps):
         QuadFitBool = QuadFitBool2
 
 
-        
 end = now = datetime.now()
 print("Time: ", end-start)
 
