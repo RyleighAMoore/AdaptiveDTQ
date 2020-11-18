@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 65
+NumSteps = 20
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -66,7 +66,7 @@ tri = Delaunay(mesh, incremental=True)
 # needLPBool = numpy.zeros((2, 2), dtype=bool)
 
 '''Initialize Transition probabilities'''
-maxDegFreedom = 2000
+maxDegFreedom = 1000
 NumLejas = 12
 numQuadFit = 20
 GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
@@ -113,19 +113,29 @@ for i in trange(NumSteps):
          
     else:
         print('Length of mesh = ', len(mesh))
-        
-    if np.shape(GMat)[0] - len(mesh) < 1000:
-        GMat2 = np.empty([len(mesh)+1000, len(mesh)+1000])*np.NaN
-        GMat2[:len(mesh), :len(mesh)]= GMat[:len(mesh), :len(mesh)]
+    
+    sizer = len(mesh)
+    if np.shape(GMat)[0] - sizer < sizer:
+        GMat2 = np.empty([3*sizer, sizer+sizer])*np.NaN
+        GMat2[:sizer, :sizer]= GMat[:sizer, :sizer]
         GMat = GMat2
             
-    if np.shape(LPMat)[0] - len(mesh) < 1000:
-        LPMat2 = np.empty([len(mesh)+1000, NumLejas])
-        LPMat2[:len(mesh),:]= LPMat[:len(mesh), :]
+    if np.shape(LPMat)[0] - sizer < sizer:
+        LPMat2 = np.empty([3*sizer, NumLejas])
+        LPMat2[:sizer,:]= LPMat[:sizer, :]
         LPMat = LPMat2
-        LPMatBool2 = np.zeros((len(mesh)+1000,1), dtype=bool)
+        LPMatBool2 = np.zeros((3*sizer,1), dtype=bool)
         LPMatBool2[:len(mesh)]= LPMatBool[:len(mesh)]
         LPMatBool = LPMatBool2
+        
+    if np.shape(QuadFitBool)[0] - sizer < sizer:
+        QuadFitMat2 = np.empty([3*sizer, numQuadFit])
+        QuadFitMat2[:sizer,:]= QuadFitMat[:sizer, :]
+        QuadFitMat = QuadFitMat2
+        QuadFitBool2 = np.zeros((3*sizer,1), dtype=bool)
+        QuadFitBool2[:len(mesh)]= QuadFitBool[:len(mesh)]
+        QuadFitBool = QuadFitBool2
+
 
         
 end = now = datetime.now()
