@@ -6,7 +6,7 @@ import numpy as np
 import UnorderedMesh as UM
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from Functions import drift, diff, GVals, f1,f2,g1,g2, GVals2
+from Functions import drift, diff, GVals, f1,f2,g1,g2, GVals2, Gaussian
 from scipy.interpolate import griddata, interp2d 
 from pyopoly1.LejaPoints import getLejaSetFromPoints, mapPointsBack, mapPointsTo, getLejaPoints
 from pyopoly1.QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolation_Simple, QuadratureByInterpolationND_DivideOutGaussian
@@ -78,9 +78,20 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
         '''Alternative Method'''
         if math.isnan(condNum) or value <0 or condNum >10: 
             
+            # gauss = Gaussian(scaling, mesh)
+            # GPDFalt = GPDF/np.expand_dims(gauss, 1)
+            # if math.isnan(np.max(GPDFalt)):
+            #     value = 10**(-8)
+            # else: 
+            #     value, condNum, indices = QuadratureByInterpolationND(poly, scaling, mesh, GPDFalt,NumLejas)
+            #     value = value[0]
+            
             mesh12 = mapPointsBack(muX, muY, lejaPointsFinal, sigmaX, sigmaY)
+            meshLP, distances, ii = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], mesh,12, getIndices = True)
+            
+            pdfNew = pdf[ii]
     
-            pdfNew = np.asarray(griddata(mesh, pdf, mesh12, method='cubic', fill_value=0))
+            pdfNew = np.asarray(griddata(meshLP, pdfNew, mesh12, method='cubic', fill_value=0))
             pdfNew[pdfNew < 0] = 10**(-8)
             
             integrand = newIntegrand(muX, muY, mesh12, h)
@@ -90,7 +101,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
             value = value*(1/np.sqrt(2))
             countUseMorePoints = countUseMorePoints+1
             
-            if value <0:
+            if value <0 :
                 value = 10**(-8)
 
         newPDF.append(value)
