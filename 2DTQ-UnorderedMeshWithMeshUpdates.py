@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 20
+NumSteps = 10
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 

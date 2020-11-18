@@ -130,15 +130,14 @@ def G(indexOfMesh,mesh, h):
     D = mesh.shape[1]
     mean = mesh+drift(mesh)*h
     cov = diff(mesh) ** 2 * h
-    soln_vals = []
+    soln_vals = np.empty(len(mesh))
     const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
-
+    invCov = np.linalg.inv(cov)
     for j in range(len(mesh)):
         mu = mean[j,:]
-        Gs = np.exp(-1/2*((x-mu).T@np.linalg.inv(cov)@(x.T-mu.T)))
-        soln_vals.append(Gs*const)
-
-    return np.asarray(soln_vals)
+        Gs = np.exp(-1/2*((x-mu).T@invCov@(x.T-mu.T)))
+        soln_vals[j] = Gs
+    return soln_vals*const
 
 
 def G1D(x1, x2, y1, gamma1, h):
@@ -177,19 +176,17 @@ def GVals2(Px, Py, mesh, h):
 def AddPointToG(mesh, newPointindex, h, GMat):
     newRow = G(newPointindex, mesh,h)
     GMat[newPointindex,:len(newRow)] = newRow
-
     D = mesh.shape[1]
-    mean = mesh[-1,:]+drift(np.expand_dims(mesh[-1,:],axis=0))*h
-    mean = mean[0]
-    cov = diff(mesh) ** 2 * h
-    newCol = []
+    mu = mesh[-1,:]+drift(np.expand_dims(mesh[-1,:],axis=0))*h
+    mu = mu[0]
+    cov = diff(mesh) ** 2 * h # put inside loop if cov changes spatially
+    newCol = np.empty(len(mesh))
     const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
     
     for j in range(len(mesh)):
-        mu = mean
         x = mesh[j,:]
         Gs = np.exp(-1/2*((x-mu).T@np.linalg.inv(cov)@(x.T-mu.T)))
-        newCol.append(Gs*const)
-    
-    GMat[:len(newCol),newPointindex] = newCol
+        newCol[j] = (Gs)
+
+    GMat[:len(newCol),newPointindex] = newCol*const
     return GMat

@@ -184,29 +184,14 @@ neighbors = [numNeighbors, mesh]
 # one, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 1000, poly)
 # mesh, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 12, 1000, poly, neighbors=[3,one])
 
-def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, NearestIndices):
+def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf):
     if pdf.shape == (len(pdf), ):
         pdf = np.expand_dims(pdf,1)
         
     assert numLejaPointsToReturn <= np.size(mesh,0), "Asked for subset is bigger than whole set"    
     mesh, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], mesh, 30, getIndices = True)
     pdf = pdf[indik]
-    
-    # kdt = KDTree(X, leaf_size=30, metric='euclidean')
-    # kdt.query(mesh, k=30, return_distance=False)
-    # mesh = mesh[NearestIndices.astype(int)]
-    # pdf = pdf[NearestIndices.astype(int)]
-    
-    
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # # ax.scatter(mesh12[:,0], mesh12[:,1], pdf12, c='r', marker='o')
-    # ax.scatter(mesh[NearestIndices.astype(int),0], mesh[NearestIndices.astype(int),1], pdf[NearestIndices.astype(int)], c='k', marker='.')
-    # plt.show()
-    
-    # mesh = mesh12
-    # pdf =pdf12
-    
+        
     nearest,distance, idx = UM.findNearestPoint(scale.mu[0][0], scale.mu[1][0], mesh)
     
     Px = nearest.T[0]; Py = nearest.T[1]
@@ -259,61 +244,61 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf, NearestI
     return meshFull, pdfNew, indicesNew
 
 
-'''Some code for testing - Should make a test file out of some of these'''
-if __name__ == "__main__":
-    from Scaling import GaussScale
-    from families import HermitePolynomials
-    import indexing
-    import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D
-    h=0.01
-    import Functions as fun
-    import ICMeshGenerator as M
-    poly = HermitePolynomials(rho=0)
-    d=2
-    k = 40    
-    ab = poly.recurrence(k+1)
-    lambdas = indexing.total_degree_indices(d, k)
-    poly.lambdas = lambdas
+# '''Some code for testing - Should make a test file out of some of these'''
+# if __name__ == "__main__":
+#     from Scaling import GaussScale
+#     from families import HermitePolynomials
+#     import indexing
+#     import matplotlib.pyplot as plt
+#     from mpl_toolkits.mplot3d import Axes3D
+#     h=0.01
+#     import Functions as fun
+#     import ICMeshGenerator as M
+#     poly = HermitePolynomials(rho=0)
+#     d=2
+#     k = 40    
+#     ab = poly.recurrence(k+1)
+#     lambdas = indexing.total_degree_indices(d, k)
+#     poly.lambdas = lambdas
     
-    IC = np.sqrt(0.005)
-    mesh, two = getLejaPoints(230, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
-    # mesh = mapPointsBack(0, 0, mesh, IC, IC)
-    mesh = M.getICMesh(1,0.1,h)
+#     IC = np.sqrt(0.005)
+#     mesh, two = getLejaPoints(230, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
+#     # mesh = mapPointsBack(0, 0, mesh, IC, IC)
+#     mesh = M.getICMesh(1,0.1,h)
     
-    meshtest, two = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, returnIndices = False)
-    meshtest = mapPointsBack(0, 0, meshtest, IC, IC)
+#     meshtest, two = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, returnIndices = False)
+#     meshtest = mapPointsBack(0, 0, meshtest, IC, IC)
 
-    newmesh, two = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=0, candidateSampleMesh = mesh.T, returnIndices = False)
-    newmesh = mapPointsBack(0, 0, newmesh, IC, IC)
-
-
-    pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], IC, IC)
-    
-    ii=0
-    scale = GaussScale(2)
-    scale.setMu(np.asarray([[mesh[ii,0],mesh[ii,1]]]).T)
-    S = IC
-    scale.setSigma(np.asarray([S, S]))
-    numLejaPointsToReturn = 12
-    
-    meshFull, pdfNew = getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf)
-    
-    grd = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
-    gauss2 = fun.Gaussian(scale, grd)
-    
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    ax.scatter(grd[:,0], grd[:,1], gauss2, c='b', marker='.')
-    ax.scatter(mesh[:,0], mesh[:,1], pdf, c='k', marker='.')
-    ax.scatter(meshFull[:,0], meshFull[:,1], pdfNew, c='r', marker='o')
-
-    ax.scatter(mesh[ii,0], mesh[ii,1], np.max(pdf), c='g', marker='o')
+#     newmesh, two = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=0, candidateSampleMesh = mesh.T, returnIndices = False)
+#     newmesh = mapPointsBack(0, 0, newmesh, IC, IC)
 
 
-    plt.figure()
-    plt.scatter(meshFull[:,0], meshFull[:,1], label='Chosen points')
-    plt.scatter(meshtest[:,0], meshtest[:,1],c='r', label='Real points')
+#     pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], IC, IC)
+    
+#     ii=0
+#     scale = GaussScale(2)
+#     scale.setMu(np.asarray([[mesh[ii,0],mesh[ii,1]]]).T)
+#     S = IC
+#     scale.setSigma(np.asarray([S, S]))
+#     numLejaPointsToReturn = 12
+    
+#     meshFull, pdfNew = getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf)
+    
+#     grd = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
+#     gauss2 = fun.Gaussian(scale, grd)
+    
+#     fig = plt.figure()
+#     ax = Axes3D(fig)
+#     ax.scatter(grd[:,0], grd[:,1], gauss2, c='b', marker='.')
+#     ax.scatter(mesh[:,0], mesh[:,1], pdf, c='k', marker='.')
+#     ax.scatter(meshFull[:,0], meshFull[:,1], pdfNew, c='r', marker='o')
+
+#     ax.scatter(mesh[ii,0], mesh[ii,1], np.max(pdf), c='g', marker='o')
+
+
+#     plt.figure()
+#     plt.scatter(meshFull[:,0], meshFull[:,1], label='Chosen points')
+#     plt.scatter(meshtest[:,0], meshtest[:,1],c='r', label='Real points')
 
 
     
