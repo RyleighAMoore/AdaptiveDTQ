@@ -87,7 +87,15 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas):
 
     numSamples = len(mesh2)          
     V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
-    vinv = np.linalg.inv(V)
+    try:
+        vinv = np.linalg.inv(V)
+    except np.linalg.LinAlgError as err: 
+        if 'Singular matrix' in str(err):
+            # plt.figure()
+            # plt.plot(mesh[:,0], mesh[:,1], 'ok')
+            # plt.plot(scaling.mu[0], scaling.mu[1], '.r')
+            # plt.show()
+            return [1000], 1000, indices
     c = np.matmul(vinv, pdfNew)
     L = np.linalg.cholesky((scaling.cov))
     JacFactor = np.prod(np.diag(L))
@@ -108,9 +116,10 @@ def QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices):
     V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
     try:
         vinv = np.linalg.inv(V)
-    except: 
+    except np.linalg.LinAlgError as err: 
+        if 'Singular matrix' in str(err):
         # print("Singular******************")
-        return 100000, 100000
+            return 100000, 100000
     c = np.matmul(vinv, pdfNew)
     L = np.linalg.cholesky((scaling.cov))
     JacFactor = np.prod(np.diag(L))
