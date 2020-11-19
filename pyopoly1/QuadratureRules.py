@@ -167,8 +167,10 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         if not LPMatBool[index][0]: # Need Leja points.
             value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,NumLejas)
             LPMat[index, :] = np.asarray(indices)
-            if condNum <10:
+            if condNum < 10:
                 LPMatBool[index] = True
+            else: 
+                LPMatBool[index] = False
             return value[0], condNum, scale1, LPMat, LPMatBool, QuadFitMat,QuadFitBool
     return float('nan'), float('nan'), float('nan'), LPMat, LPMatBool, QuadFitMat,QuadFitBool
 

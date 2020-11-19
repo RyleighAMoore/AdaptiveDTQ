@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 65
+NumSteps = 45
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -36,8 +36,8 @@ ComputeErrors = True
 # Make sure the file matches the Function.py functions used.
 SolutionPDFFile = './PickledData/SolnPDF-Vol.p'
 SolutionMeshFile = './PickledData/SolnMesh-Vol.p'
-SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
-SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
+# SolutionPDFFile = './PickledData/SolnPDF-Erf.p'
+# SolutionMeshFile = './PickledData/SolnMesh-Erf.p'
 
 ''' Initializd orthonormal Polynomial family'''
 poly = HermitePolynomials(rho=0)
@@ -48,7 +48,7 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 
 '''pdf after one time step with Dirac initial condition centered at the origin'''
-mesh = M.getICMesh(1, kstep, h)
+mesh = M.getICMesh(1.3, kstep, h)
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
 scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
