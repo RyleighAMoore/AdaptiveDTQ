@@ -184,15 +184,18 @@ neighbors = [numNeighbors, mesh]
 # one, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 1000, poly)
 # mesh, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 12, 1000, poly, neighbors=[3,one])
 
-def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf):
-    if pdf.shape == (len(pdf), ):
-        pdf = np.expand_dims(pdf,1)
+def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
+    if Pdf.shape == (len(Pdf), 1):
+        pdf = np.expand_dims(Pdf,1)
         
-    assert numLejaPointsToReturn <= np.size(mesh,0), "Asked for subset is bigger than whole set"    
-    mesh, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], mesh, 30, getIndices = True)
-    pdf = pdf[indik]
+    assert numLejaPointsToReturn <= np.size(Mesh,0), "Asked for subset is bigger than whole set"    
+   
+    mesh, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], Mesh, 60, getIndices = True)
+    pdf = Pdf[indik]
         
-    nearest,distance, idx = UM.findNearestPoint(scale.mu[0][0], scale.mu[1][0], mesh)
+    nearest = mesh[0]
+    distance = distances[0]
+    idx = 0 
     
     Px = nearest.T[0]; Py = nearest.T[1]
     
@@ -200,48 +203,59 @@ def getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf):
         
     meshShortIC = np.delete(mesh, idx, axis=0)
     pdfShortIC = np.delete(pdf, idx, axis=0)
-        
+
     candidates = mapPointsTo(Px, Py, meshShortIC, 1/sigmaX, 1/sigmaY)
-    
-    # plt.figure()
-    # plt.scatter(candidates[:,0], candidates[:,1])
     
     lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[0,0]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, sigmaX, sigmaY)
+    
+    if np.isnan(indices[0]):
+        plt.figure()
+        plt.plot(Mesh[:,0], Mesh[:,1], '*k', label='mesh', markersize=14)
+        plt.plot(Px, Py, '*r',label='Main Point',markersize=14)
+        plt.plot(candidates[:,0], candidates[:,1], '.c', label='candidates',markersize=10)
+
+        # plt.plot(lejaPointsFinal[:,0], lejaPointsFinal[:,1], '.c', label='Leja Points',markersize=10)
+        plt.legend()
+        plt.show()
+    assert np.max(np.abs(lejaPointsFinal - mesh[indices])) < 10**(-15)
+    assert np.max(np.abs(mesh[indices] - Mesh[indik[indices]])) < 10**(-15)
     
     meshFull = np.vstack(([Px,Py], meshShortIC))
     
     pdfFull = np.vstack((pdf[idx], pdfShortIC))
     meshUnordered = np.copy(meshFull)
     
-    pdfNew = []
-    Pxs = []
-    Pys = []
-    # pdfGrid = np.asarray(griddata(mesh, pdf, mesh1, method='cubic', fill_value=0))
-    for i in range(len(indices)):
-        pdfNew.append(pdfFull[indices[i]])
-        Pxs.append(meshFull[indices[i],0])
-        Pys.append(meshFull[indices[i],1])
-    pdfNew = np.asarray(pdfNew)
-    meshFull = np.vstack((Pxs, Pys))
-    meshFull = np.asarray(meshFull).T
+    # pdfNew = []
+    # Pxs = []
+    # Pys = []
+    # # pdfGrid = np.asarray(griddata(mesh, pdf, mesh1, method='cubic', fill_value=0))
+    # for i in range(len(indices)):
+    #     pdfNew.append(Pdf[indices[i]])
+    #     Pxs.append(Pdf[indices[i],0])
+    #     Pys.append(meshFull[indices[i],1])
+    # pdfNew = np.asarray(pdfNew)
+    # meshFull = np.vstack((Pxs, Pys))
+    # meshFull = np.asarray(meshFull).T
     
     '''Correct Indices'''
     indicesNew = []
     for ii in range(len(indices)):
-        indx = np.where((mesh == meshUnordered[indices[ii]]).all(axis=1))
+        indx = np.where(np.isclose((Mesh - lejaPointsFinal[ii]),0).all(axis=1))
         indicesNew.append(indx[0][0])
         
     plot= False
     if plot:
         plt.figure()
-        plt.plot(mesh[:,0], mesh[:,1], '*k', label='mesh', markersize=14)
+        plt.plot(Mesh[:,0], Mesh[:,1], '*k', label='mesh', markersize=14)
         plt.plot(Px, Py, '*r',label='Main Point',markersize=14)
         plt.plot(lejaPointsFinal[:,0], lejaPointsFinal[:,1], '.c', label='Leja Points',markersize=10)
         plt.legend()
         plt.show()
-    lejaPointsFinal
-    return meshFull, pdfNew, indicesNew
+        
+    assert np.max(np.abs(Mesh[indik[indices]]-lejaPointsFinal)) < 10**(-15)
+
+    return Mesh[indicesNew], Pdf[indicesNew], indicesNew
 
 
 # '''Some code for testing - Should make a test file out of some of these'''

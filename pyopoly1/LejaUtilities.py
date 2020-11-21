@@ -41,7 +41,7 @@ def get_lu_leja_samples(poly, generate_basis_matrix,
 
     Returns
     -------
-    laja_samples : np.ndarray (num_vars, num_indices)
+    leja_samples : np.ndarray (num_vars, num_indices)
         The samples of the Leja sequence
 
     data_structures : tuple

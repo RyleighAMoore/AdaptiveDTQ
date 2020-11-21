@@ -36,10 +36,15 @@ h=0.01
 s=0.75
 kstep = h ** s
 kstep = 0.1
-xmin=-5
-xmax=5
-ymin=-2
-ymax=2
+xmin=-8.5
+xmax=8.5
+ymin=-3.2
+ymax=3.2
+
+# xmin=-2
+# xmax=2
+# ymin=-4
+# ymax=4
 
 
 # def generateGRow(point, allPoints, kstep, h):
@@ -51,7 +56,7 @@ ymax=2
 #         OrderA.append([point[0], point[1], allPoints[i,0], allPoints[i,1]])
 #     return row
 
-mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)
+mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep, includeOrigin=True)
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
 scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
@@ -89,11 +94,11 @@ print("Time: ", end-start)
 
 # fig = plt.figure()
 # ax = Axes3D(fig)
-# index =35
+# index =-1
 # ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
 # index =16
 # ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
-# ax.scatter(meshVals[:,0], meshVals[:,1], newPDF, c='k', marker='.')
+# # ax.scatter(meshVals[:,0], meshVals[:,1], newPDF, c='k', marker='.')
 
 # 
 
@@ -112,7 +117,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
 
 graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(surfaces[10]))
+ax.set_zlim(0, np.max(surfaces[-50]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
                                          interval=100, blit=False)
 
@@ -120,18 +125,18 @@ plt.show()
 
 # import pickle  
 
-# # pkl_file0 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Gpt02Erf.p", "wb" ) 
-# # pickle.dump(GMat, pkl_file0)
-# # pkl_file0.close()
+# pkl_file0 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Gpt02Erf.p", "wb" ) 
+# pickle.dump(GMat, pkl_file0)
+# pkl_file0.close()
 
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/SolnPDF-Vol.p", "wb" ) 
-# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/SolnMesh-Vol.p", "wb" ) 
+pkl_file = open("SolnPDF-ErfLong.p", "wb" ) 
+pkl_file2 = open("SolnMesh-ErfLong.p", "wb" ) 
 
-# import pickle  
-# pickle.dump(surfaces, pkl_file)
-# pickle.dump(mesh2, pkl_file2)
-# pkl_file.close()
-# pkl_file2.close()
+import pickle  
+pickle.dump(surfaces, pkl_file)
+pickle.dump(mesh, pkl_file2)
+pkl_file.close()
+pkl_file2.close()
 
 
 

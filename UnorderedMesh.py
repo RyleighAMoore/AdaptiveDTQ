@@ -124,10 +124,10 @@ def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep, includeOrig
     x2 = []
     for i in range(len(x)):
         for j in range(len(y)):
-            x1.append(X[i,j])
-            x2.append(Y[i,j])       
+            x1.append(X[j,i])
+            x2.append(Y[j,i])       
    
-    mesh = np.asarray([x2,x1]).T
+    mesh = np.asarray([x1,x2]).T
     if includeOrigin == False:
         mesh = np.delete(mesh,0,0)
     return mesh
