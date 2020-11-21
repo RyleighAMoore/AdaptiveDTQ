@@ -179,7 +179,7 @@ def removePoint(index, Mesh, Pdf, GMat, LPMatBool, LPMat, QuadFitBool, QuadFitMa
     QuadUpdateList = np.where(QuadFitMat == index)[0]
     for i in LPUpdateList:
         QuadFitBool[i] = False
-        QuadFitMat[i,:] = np.zeros(20)
+        # QuadFitMat[i,:] = np.zeros(20)
     
     LPMatBool = np.delete(LPMatBool, index,0)
     QuadFitBool = np.delete(QuadFitBool, index, 0)

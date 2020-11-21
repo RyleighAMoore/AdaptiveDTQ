@@ -221,10 +221,10 @@ def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
     assert np.max(np.abs(lejaPointsFinal - mesh[indices])) < 10**(-15)
     assert np.max(np.abs(mesh[indices] - Mesh[indik[indices]])) < 10**(-15)
     
-    meshFull = np.vstack(([Px,Py], meshShortIC))
+    # meshFull = np.vstack(([Px,Py], meshShortIC))
     
-    pdfFull = np.vstack((pdf[idx], pdfShortIC))
-    meshUnordered = np.copy(meshFull)
+    # pdfFull = np.vstack((pdf[idx], pdfShortIC))
+    # meshUnordered = np.copy(meshFull)
     
     # pdfNew = []
     # Pxs = []
@@ -238,11 +238,11 @@ def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
     # meshFull = np.vstack((Pxs, Pys))
     # meshFull = np.asarray(meshFull).T
     
-    '''Correct Indices'''
-    indicesNew = []
-    for ii in range(len(indices)):
-        indx = np.where(np.isclose((Mesh - lejaPointsFinal[ii]),0).all(axis=1))
-        indicesNew.append(indx[0][0])
+    # '''Correct Indices'''
+    # indicesNew = []
+    # for ii in range(len(indices)):
+    #     indx = np.where(np.isclose((Mesh - lejaPointsFinal[ii]),0).all(axis=1))
+    #     indicesNew.append(indx[0][0])
         
     plot= False
     if plot:
@@ -253,8 +253,8 @@ def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
         plt.legend()
         plt.show()
         
-    assert np.max(np.abs(Mesh[indik[indices]]-lejaPointsFinal)) < 10**(-15)
-
+    # assert np.max(np.abs(Mesh[indik[indices]]-lejaPointsFinal)) < 10**(-15)
+    indicesNew = indik[indices]
     return Mesh[indicesNew], Pdf[indicesNew], indicesNew
 
 
