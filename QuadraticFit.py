@@ -13,7 +13,6 @@ def fitQuad(mesh, pdf):
     zobs = np.squeeze(zobs)
     xy = mesh.T
     x, y = mesh.T
-    
     try:
         pred_params, uncert_cov = opt.curve_fit(quad, xy, zobs, p0 = [0,0,0,0,0,0])
     except:
@@ -26,25 +25,18 @@ def fitQuad(mesh, pdf):
     A = np.asarray([[c[0], c[2]],[c[2],c[1]]])
     B = np.expand_dims(np.asarray([c[3], c[4]]),1)
     
-
     if np.linalg.det(A)<= 0:
          return float('nan'),float('nan'),float('nan'),float('nan')
-        
-        
+         
     sigma = np.linalg.inv(A)
-
     Lam, U = np.linalg.eigh(A)
     if np.min(Lam) <= 0:
         return float('nan'),float('nan'),float('nan'),float('nan')
     
     La = np.diag(Lam)
-    mu = -1/2*U @ np.linalg.inv(La) @ (B.T @ U).T
-
-    # L = np.linalg.cholesky((sigma))
-    
+    mu = -1/2*U @ np.linalg.inv(La) @ (B.T @ U).T    
     Const = np.exp(-c[5]+1/4*B.T@U@np.linalg.inv(La)@U.T@B)
     
-    # zpred = quad(xy, *pred_params)    
     if math.isfinite(mu[0][0]) and math.isfinite(mu[1][0]) and math.isfinite(np.sqrt(sigma[0,0])) and math.isfinite(np.sqrt(sigma[1,1])):
         scaling = GaussScale(2)
         scaling.setMu(np.asarray([[mu[0][0],mu[1][0]]]).T)
@@ -62,7 +54,6 @@ def quad(xy, a, b, c, d, e, f):
     # A= np.asarray([[a,c],[c,b]])
     # B=np.asarray([[d, e]]).T
     quad = -(a*x**2+ b*y**2 + 2*c*x*y + d*x + e*y + f)
-
     return quad
 
 

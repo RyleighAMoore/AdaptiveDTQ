@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 120
+NumSteps = 100
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -81,12 +81,11 @@ QuadFitMat = np.empty([maxDegFreedom, numQuadFit])
 QuadFitBool = np.zeros((maxDegFreedom,1), dtype=bool) # True if have points, false if need points
 
 '''Grid updates'''
+LPReuseArr = []
+Timing = []
+AltMethod = []
+Timing.append(start)
 for i in trange(NumSteps):
-    # LPMat = np.empty([maxDegFreedom, NumLejas])
-    # LPMatBool = np.zeros((maxDegFreedom,1), dtype=bool) # True if we have Lejas, False if we need Lejas
-    
-    # QuadFitMat = np.empty([maxDegFreedom, numQuadFit])
-    # QuadFitBool = np.zeros((maxDegFreedom,1), dtype=bool)
     if (i >= 1) and (adjustBoundary or adjustDensity):
         '''Add points to mesh'''
         mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
@@ -99,17 +98,20 @@ for i in trange(NumSteps):
             if (remBool == 1): 
                 '''Recalculate triangulation if mesh was changed'''
                 tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-    # assert np.nanmax(LPMat) < len(mesh)
     print('Length of mesh = ', len(mesh))
     if i >-1: 
         '''Step forward in time'''
         print("Stepping Forward....")
         pdf = np.expand_dims(pdf,axis=1)
-        pdf, condnums, meshTemp, LPMat, LPMatBool, QuadFitMat,QuadFitBool = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, QuadFitMat,QuadFitBool, numQuadFit)
+        pdf, condnums, meshTemp, LPMat, LPMatBool, QuadFitMat,QuadFitBool, LPReuse, AltMethodCount = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, QuadFitMat,QuadFitBool, numQuadFit)
         pdf = np.squeeze(pdf)
         '''Add new values to lists for graphing'''
         PdfTraj.append(np.copy(pdf))
         Meshes.append(np.copy(mesh))
+        LPReuseArr.append(LPReuse)
+        time = datetime.now()
+        Timing.append(time)
+        AltMethod.append(AltMethodCount)
          
     else:
         print('Length of mesh = ', len(mesh))
@@ -137,7 +139,8 @@ for i in trange(NumSteps):
         QuadFitBool = QuadFitBool2
 
 
-end = now = datetime.now()
+end = datetime.now()
+Timing.append(end)
 print("Time: ", end-start)
 
 '''Plot figure'''

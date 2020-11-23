@@ -36,10 +36,10 @@ h=0.01
 s=0.75
 kstep = h ** s
 kstep = 0.1
-xmin=-8.5
-xmax=8.5
-ymin=-3.2
-ymax=3.2
+xmin=-1
+xmax=8
+ymin=-3
+ymax=3
 
 # xmin=-2
 # xmax=2
@@ -56,7 +56,11 @@ ymax=3.2
 #         OrderA.append([point[0], point[1], allPoints[i,0], allPoints[i,1]])
 #     return row
 
-mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep, includeOrigin=True)
+X, Y = np.mgrid[xmin:xmax:0.1, ymin:ymax:0.1]
+mesh = np.vstack([X.ravel(), Y.ravel()]).T
+
+
+# mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep, includeOrigin=True)
 scale = GaussScale(2)
 scale.setMu(np.asarray([[0,0]]).T)
 scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
@@ -89,7 +93,7 @@ while t < 101:
     surfaces.append(np.copy(pdf))
     t=t+1
     
-end = now = datetime.now()
+end = datetime.now()
 print("Time: ", end-start)
 
 # fig = plt.figure()

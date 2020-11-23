@@ -57,54 +57,54 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
             return np.asarray(samples).T, indicesLeja
         return np.asarray(samples).T, np.asarray(samples[:,num_initial_samples:]).T
   
-    if successBool == False:
-        print("Long Leja")
-        numInitialAdded = 0
-        pointsRemoved = []
-        initial_samples_edited = np.copy(initial_samples)
-        newLejaSamples = []
-        ii=0
-        while successBool == False: # Truncate initalSamples until succed to add a Leja point
-            print("Truncating Initial Samples")
-            assert len(pointsRemoved) <= num_initial_samples, "Removed all Initial points"
-            pointsRemoved.append(np.asarray([initial_samples_edited[:,0]]).T)
-            initial_samples_edited = np.delete(initial_samples_edited,0,1)
-            num_initial_samples_edited = len(initial_samples_edited.T) 
-            samples2, data_structures2, successBool = get_lu_leja_samples(poly, opolynd_eval,candidate_samples,num_leja_samples,preconditioning_function=precond_func,initial_samples=initial_samples_edited)
-            ii+=1
-        initial_samples_edited = np.copy(samples2[:, 0:num_initial_samples_edited+1])
-        numInitialAdded = num_initial_samples - ii# Able to add a Leja point!
-        newLejaSamples.append(np.copy(initial_samples_edited[:,-1]))
-        ii=0
-        while len(pointsRemoved) != 0: #Try to add one more point in Leja sequence
-            print("Trying to Add a point")
-            ii+=1
-            pointToAdd = pointsRemoved.pop(-1)
-            initial_samples_edited = np.hstack((pointToAdd,initial_samples_edited))
-            num_initial_samples_edited = len(initial_samples_edited[1,:])
-            num_leja_samples_edited = len(initial_samples_edited[1,:]) # Want to try and add the points
-            num_leja_samples_edited = num_leja_samples # Want to try and add the points
+#     if successBool == False:
+#         print("Long Leja")
+#         numInitialAdded = 0
+#         pointsRemoved = []
+#         initial_samples_edited = np.copy(initial_samples)
+#         newLejaSamples = []
+#         ii=0
+#         while successBool == False: # Truncate initalSamples until succed to add a Leja point
+#             print("Truncating Initial Samples")
+#             assert len(pointsRemoved) <= num_initial_samples, "Removed all Initial points"
+#             pointsRemoved.append(np.asarray([initial_samples_edited[:,0]]).T)
+#             initial_samples_edited = np.delete(initial_samples_edited,0,1)
+#             num_initial_samples_edited = len(initial_samples_edited.T) 
+#             samples2, data_structures2, successBool = get_lu_leja_samples(poly, opolynd_eval,candidate_samples,num_leja_samples,preconditioning_function=precond_func,initial_samples=initial_samples_edited)
+#             ii+=1
+#         initial_samples_edited = np.copy(samples2[:, 0:num_initial_samples_edited+1])
+#         numInitialAdded = num_initial_samples - ii# Able to add a Leja point!
+#         newLejaSamples.append(np.copy(initial_samples_edited[:,-1]))
+#         ii=0
+#         while len(pointsRemoved) != 0: #Try to add one more point in Leja sequence
+#             print("Trying to Add a point")
+#             ii+=1
+#             pointToAdd = pointsRemoved.pop(-1)
+#             initial_samples_edited = np.hstack((pointToAdd,initial_samples_edited))
+#             num_initial_samples_edited = len(initial_samples_edited[1,:])
+#             num_leja_samples_edited = len(initial_samples_edited[1,:]) # Want to try and add the points
+#             num_leja_samples_edited = num_leja_samples # Want to try and add the points
 
-            samples2, data_structures2, successBool = get_lu_leja_samples(poly,
-        opolynd_eval,candidate_samples,num_leja_samples_edited,preconditioning_function=precond_func,initial_samples=initial_samples_edited)
-            if successBool == True:
-#                initial_samples_edited = np.copy(samples2[:,0:num_initial_samples_edited])
-                numInitialAdded += 1
-                print("successfully Added a Point")
-            if successBool == False: 
-                pointsRemoved.append(np.asarray([initial_samples_edited[:,0]]).T)
-                initial_samples_edited = np.delete(initial_samples_edited,0,1)
-                num_leja_samples_edited = len(initial_samples_edited[1,:])+1  # Want to add one leja point
-                samples, data_structures, successBool = get_lu_leja_samples(poly,
-        opolynd_eval,candidate_samples,num_leja_samples_edited,preconditioning_function=precond_func,initial_samples=initial_samples_edited)                
-                initial_samples_edited = np.copy(samples[0:len(initial_samples_edited[1,:])+1,:])
-                newLejaSamples.append(np.copy(initial_samples_edited[:,-1]))
+#             samples2, data_structures2, successBool = get_lu_leja_samples(poly,
+#         opolynd_eval,candidate_samples,num_leja_samples_edited,preconditioning_function=precond_func,initial_samples=initial_samples_edited)
+#             if successBool == True:
+# #                initial_samples_edited = np.copy(samples2[:,0:num_initial_samples_edited])
+#                 numInitialAdded += 1
+#                 print("successfully Added a Point")
+#             if successBool == False: 
+#                 pointsRemoved.append(np.asarray([initial_samples_edited[:,0]]).T)
+#                 initial_samples_edited = np.delete(initial_samples_edited,0,1)
+#                 num_leja_samples_edited = len(initial_samples_edited[1,:])+1  # Want to add one leja point
+#                 samples, data_structures, successBool = get_lu_leja_samples(poly,
+#         opolynd_eval,candidate_samples,num_leja_samples_edited,preconditioning_function=precond_func,initial_samples=initial_samples_edited)                
+#                 initial_samples_edited = np.copy(samples[0:len(initial_samples_edited[1,:])+1,:])
+#                 newLejaSamples.append(np.copy(initial_samples_edited[:,-1]))
         
-        for i in range(num_initial_samples_edited, len(samples2[1, :])):    
-            newLejaSamples.append(np.asarray(samples2[:, i]))
-    samples = samples2[:, :num_leja_samples]
-    assert len(np.asarray(samples).T) <= len(poly.indices.T)
-    return np.asarray(samples).T, np.asarray(newLejaSamples)
+#         for i in range(num_initial_samples_edited, len(samples2[1, :])):    
+#             newLejaSamples.append(np.asarray(samples2[:, i]))
+#     samples = samples2[:, :num_leja_samples]
+#     assert len(np.asarray(samples).T) <= len(poly.indices.T)
+#     return np.asarray(samples).T, np.asarray(newLejaSamples)
 
 
 '''Some code for testing - Should make a test file out of some of these'''
@@ -184,66 +184,23 @@ neighbors = [numNeighbors, mesh]
 # one, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 1000, poly)
 # mesh, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 12, 1000, poly, neighbors=[3,one])
 
-def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
-    if Pdf.shape == (len(Pdf), 1):
-        pdf = np.expand_dims(Pdf,1)
-        
-    assert numLejaPointsToReturn <= np.size(Mesh,0), "Asked for subset is bigger than whole set"    
-   
-    mesh, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], Mesh, 60, getIndices = True)
+def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):   
+    mesh, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], Mesh, 30, getIndices = True)
     pdf = Pdf[indik]
-        
+    
     nearest = mesh[0]
     distance = distances[0]
     idx = 0 
     
-    Px = nearest.T[0]; Py = nearest.T[1]
-    
+    Px = nearest[0]; Py = nearest[1]
     sigmaX = np.sqrt(scale.cov[0,0]); sigmaY = np.sqrt(scale.cov[1,1])
-        
+    
     meshShortIC = np.delete(mesh, idx, axis=0)
-    pdfShortIC = np.delete(pdf, idx, axis=0)
-
     candidates = mapPointsTo(Px, Py, meshShortIC, 1/sigmaX, 1/sigmaY)
     
     lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[0,0]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, sigmaX, sigmaY)
-    
-    if np.isnan(indices[0]):
-        plt.figure()
-        plt.plot(Mesh[:,0], Mesh[:,1], '*k', label='mesh', markersize=14)
-        plt.plot(Px, Py, '*r',label='Main Point',markersize=14)
-        plt.plot(candidates[:,0], candidates[:,1], '.c', label='candidates',markersize=10)
 
-        # plt.plot(lejaPointsFinal[:,0], lejaPointsFinal[:,1], '.c', label='Leja Points',markersize=10)
-        plt.legend()
-        plt.show()
-    assert np.max(np.abs(lejaPointsFinal - mesh[indices])) < 10**(-15)
-    assert np.max(np.abs(mesh[indices] - Mesh[indik[indices]])) < 10**(-15)
-    
-    # meshFull = np.vstack(([Px,Py], meshShortIC))
-    
-    # pdfFull = np.vstack((pdf[idx], pdfShortIC))
-    # meshUnordered = np.copy(meshFull)
-    
-    # pdfNew = []
-    # Pxs = []
-    # Pys = []
-    # # pdfGrid = np.asarray(griddata(mesh, pdf, mesh1, method='cubic', fill_value=0))
-    # for i in range(len(indices)):
-    #     pdfNew.append(Pdf[indices[i]])
-    #     Pxs.append(Pdf[indices[i],0])
-    #     Pys.append(meshFull[indices[i],1])
-    # pdfNew = np.asarray(pdfNew)
-    # meshFull = np.vstack((Pxs, Pys))
-    # meshFull = np.asarray(meshFull).T
-    
-    # '''Correct Indices'''
-    # indicesNew = []
-    # for ii in range(len(indices)):
-    #     indx = np.where(np.isclose((Mesh - lejaPointsFinal[ii]),0).all(axis=1))
-    #     indicesNew.append(indx[0][0])
-        
     plot= False
     if plot:
         plt.figure()
@@ -253,7 +210,6 @@ def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
         plt.legend()
         plt.show()
         
-    # assert np.max(np.abs(Mesh[indik[indices]]-lejaPointsFinal)) < 10**(-15)
     indicesNew = indik[indices]
     return Mesh[indicesNew], Pdf[indicesNew], indicesNew
 

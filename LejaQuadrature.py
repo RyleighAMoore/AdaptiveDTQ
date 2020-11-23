@@ -59,6 +59,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
     condNums = []
     countUseMorePoints = 0 # Used to count if we have to revert to alternative procedure
     meshSize = len(mesh)
+    LPUse = 0
     '''Try to Divide out Guassian using quadratic fit'''
     for ii in range(len(mesh)):
         # print('########################',ii/len(mesh)*100, '%')
@@ -73,8 +74,8 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
         # GPDF2 = np.expand_dims(GVals2(muX, muY, mesh, h),1)*pdf
         # assert np.max(abs(GPDF2-GPDF)) < 10**(-7)
         
-        value, condNum, scaleUsed, LPMat, LPMatBool,QuadFitMat, QuadFitBool = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMat, LPMatBool,ii,NumLejas,QuadFitMat,QuadFitBool, numQuadFit)
-      
+        value, condNum, scaleUsed, LPMat, LPMatBool,QuadFitMat, QuadFitBool, reuseLP = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMat, LPMatBool,ii,NumLejas,QuadFitMat,QuadFitBool, numQuadFit)
+        LPUse = LPUse+reuseLP
         '''Alternative Method'''
         if math.isnan(condNum) or value <0 or condNum >10: 
             
@@ -106,11 +107,12 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
 
         newPDF.append(value)
         condNums.append(condNum)
-        
+    print('\n',(LPUse/len(mesh))*100, "% Reused Leja Points*********************************")
     print('\n',(countUseMorePoints/len(mesh))*100, "% Used Interpolation*********************************")
     newPDFs = np.asarray(newPDF)
     condNums = np.asarray([condNums]).T
     
-    return newPDFs,condNums, mesh, LPMat, LPMatBool,QuadFitMat,QuadFitBool
+    
+    return newPDFs,condNums, mesh, LPMat, LPMatBool,QuadFitMat,QuadFitBool, LPUse, countUseMorePoints
 
 
