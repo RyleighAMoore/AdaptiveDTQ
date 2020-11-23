@@ -14,6 +14,9 @@ import ICMeshGenerator as M
 import pickle  
 from Errors import ErrorVals
 
+from datetime import datetime
+start = datetime.now()
+
 
 '''Plotting Parameters'''
 PlotAnimation = True
@@ -21,7 +24,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 30
+NumSteps = 100
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -61,6 +64,8 @@ Meshes.append(np.copy(mesh))
 '''Delaunay triangulation for finding the boundary '''
 tri = Delaunay(mesh, incremental=True)
 
+Timing = []
+Timing.append(start)
 '''Grid updates'''
 for i in trange(NumSteps):
     if (i >= 2) and (adjustBoundary or adjustDensity):
@@ -85,10 +90,15 @@ for i in trange(NumSteps):
         '''Add new values to lists for graphing'''
         PdfTraj.append(np.copy(pdf))
         Meshes.append(np.copy(mesh))
+        time = datetime.now()
+        Timing.append(time)
          
     else:
         print('Length of mesh = ', len(mesh))
 
+
+end = datetime.now()
+Timing.append(end)
 '''Plot figure'''
 if PlotFigure:
     fig = plt.figure()
