@@ -120,7 +120,7 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
 
-graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[-1], linestyle="", marker="o")
+graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[2], linestyle="", marker="o")
 ax.set_zlim(0, np.max(surfaces[-50]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
                                          interval=100, blit=False)

@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 100
+NumSteps = 20
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -50,7 +50,9 @@ poly.lambdas = lambdas
 '''pdf after one time step with Dirac initial condition centered at the origin'''
 mesh = M.getICMesh(1.3, kstep, h)
 scale = GaussScale(2)
-scale.setMu(np.asarray([[0,0]]).T)
+scale.setMu(np.asarray([[h*fun.f1(0,0),h*fun.f1(0,0)]]).T)
+# scale.setMu(np.asarray([[0,0]]).T)
+
 scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
 pdf = fun.Gaussian(scale, mesh)
 
@@ -67,7 +69,7 @@ tri = Delaunay(mesh, incremental=True)
 
 '''Initialize Transition probabilities'''
 maxDegFreedom = 1000
-NumLejas = 12
+NumLejas = 6
 numQuadFit = 20
 GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
 for i in range(len(mesh)):
@@ -165,7 +167,7 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-    ax.set_zlim(0, np.max(PdfTraj[-1]))
+    ax.set_zlim(0, np.max(PdfTraj[5]))
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                               interval=500, blit=False)
     plt.show()
