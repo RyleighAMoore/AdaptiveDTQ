@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 20
+NumSteps = 100
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -32,12 +32,14 @@ kstep = 0.1
 h=0.01
 
 '''Errors'''
-ComputeErrors = True
+ComputeErrors = False
 # Make sure the file matches the Function.py functions used.
 # SolutionPDFFile = './PickledData/SolnPDF-Vol.p'
 # SolutionMeshFile = './PickledData/SolnMesh-Vol.p'
 SolutionPDFFile = 'PickledData/SolnPDF-Erf.p'
 SolutionMeshFile = 'PickledData/SolnMesh-Erf.p'
+SolutionPDFFile = 'SolnPDF-ErfIC.p'
+SolutionMeshFile = 'SolnMesh-ErfIC.p'
 
 ''' Initializd orthonormal Polynomial family'''
 poly = HermitePolynomials(rho=0)
@@ -50,7 +52,7 @@ poly.lambdas = lambdas
 '''pdf after one time step with Dirac initial condition centered at the origin'''
 mesh = M.getICMesh(1.3, kstep, h)
 scale = GaussScale(2)
-scale.setMu(np.asarray([[h*fun.f1(0,0),h*fun.f1(0,0)]]).T)
+scale.setMu(np.asarray([[h*fun.f1(0,0),h*fun.f2(0,0)]]).T)
 # scale.setMu(np.asarray([[0,0]]).T)
 
 scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
@@ -68,8 +70,8 @@ tri = Delaunay(mesh, incremental=True)
 # needLPBool = numpy.zeros((2, 2), dtype=bool)
 
 '''Initialize Transition probabilities'''
-maxDegFreedom = 1000
-NumLejas = 6
+maxDegFreedom = 5000
+NumLejas = 12
 numQuadFit = 20
 GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
 for i in range(len(mesh)):
@@ -167,10 +169,11 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-    ax.set_zlim(0, np.max(PdfTraj[5]))
+    ax.set_zlim(0, np.max(PdfTraj[-1]))
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                               interval=500, blit=False)
     plt.show()
+
 
 '''Errors'''
 if ComputeErrors:
@@ -178,5 +181,24 @@ if ComputeErrors:
     pkl_file2 = open(SolutionMeshFile, "rb" ) 
     mesh2 = pickle.load(pkl_file2)
     surfaces = pickle.load(pkl_file)
-    
     ErrorVals(Meshes, PdfTraj, mesh2, surfaces)
+
+
+# fig = plt.figure()
+# ax = Axes3D(fig)
+# index =1
+# ana = TwoDdiffusionEquation(Meshes[index],1, 0.01*(index+1))
+# ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
+# ax.scatter(Meshes[index][:,0], Meshes[index][:,1],ana, c='k', marker='.')
+# plt.show()
+
+from exactSolutions import TwoDdiffusionEquation
+from Errors import ErrorValsExact
+surfaces = []
+for ii in range(len(PdfTraj)):
+    ana = TwoDdiffusionEquation(Meshes[ii],1, 0.01*(ii+1))
+    # e = np.max(PdfTraj[ii] - ana)
+    surfaces.append(ana)
+
+ErrorValsExact(Meshes, PdfTraj, surfaces)
+    

@@ -31,20 +31,33 @@ for i in range(1,len(Meshes)):
     T.append((Timing[i]-Timing[0]).total_seconds())
     
 
-ii = np.linspace(1,len(PdfTraj)-1,len(PdfTraj)-1)
-plt.plot(ii, np.asarray(LPReuseArr),'o', label = 'Reused Leja Points')
-plt.plot(ii,sizes,'o',label = 'Mesh Size')
-plt.plot(ii,np.asarray(AltMethod),'o',label = 'Alt. Method Used')
-plt.xlabel('Time Step')
+ii = np.linspace(1,len(PdfTraj)-1,len(PdfTraj)-1)/100
+# plt.plot(ii, np.asarray(LPReuseArr),'o', label = 'Reused Leja Points')
+plt.plot(ii,sizes,'.',label = 'Mesh Size')
+# plt.plot(ii,np.asarray(AltMethod),'o',label = 'Alt. Method Used')
+plt.xlabel('Time')
 plt.ylabel('Number of Points')
-plt.legend()
+# plt.legend()
+
+fig, axs = plt.subplots(3)
+axs[0].plot(ii,sizes,'.')
+axs[0].set(ylabel="Number of Points")
+axs[1].plot(ii, 100*np.asarray(LPReuseArr)/sizes,'.')
+axs[1].set(ylabel="% Reusing Leja Points")
+axs[2].plot(ii,100*np.asarray(AltMethod)/sizes,'.')
+axs[2].set(xlabel="Time", ylabel="% Using Alt. Method")
+# axs[0].yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+
+
+
+# plt.legend()
 
 # plt.plot(ii, np.asarray(Times),'o',label = 'Reused Leja Points')
 
 plt.figure()
-plt.plot(ii, np.asarray(T)/60,'o')
+plt.plot(ii, np.asarray(T)/60,'.')
 plt.title("Cumulative Timing vs. Time Step: Erf")
-plt.xlabel('Time Step')
+plt.xlabel('Time')
 plt.ylabel('Cumulative time in minutes')
 
 

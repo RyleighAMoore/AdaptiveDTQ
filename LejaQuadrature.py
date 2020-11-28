@@ -107,7 +107,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
 
         newPDF.append(value)
         condNums.append(condNum)
-    print('\n',(countUseMorePoints/len(mesh))*100, "% Used Interpolation*********************************")
+    print('\n',(countUseMorePoints/len(mesh))*100, "% Used Interpolation**************")
     print('\n',(LPUse/len(mesh))*100, "% Reused Leja Points")
 
     newPDFs = np.asarray(newPDF)
