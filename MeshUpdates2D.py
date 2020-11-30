@@ -24,9 +24,9 @@ from scipy.interpolate import griddata
 ''''Tolerance Parameters'''
 addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
 removeZerosValuesIfLessThanTolerance = 10**(-3.5)
-minDistanceBetweenPoints = 0.25
-minDistanceBetweenPointsBoundary = 0.25
-maxDistanceBetweenPoints = 0.3
+minDistanceBetweenPoints = 0.2
+minDistanceBetweenPointsBoundary = 0.2
+maxDistanceBetweenPoints = 0.25
 
 
 

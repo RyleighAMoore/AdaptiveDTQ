@@ -28,7 +28,7 @@ adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
 '''Discretization Parameters'''
-kstep = 0.25
+kstep = 0.2
 h=0.01
 
 '''Errors'''
