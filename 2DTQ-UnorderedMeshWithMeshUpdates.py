@@ -23,12 +23,12 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 15
+NumSteps = 100
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
 '''Discretization Parameters'''
-kstep = 0.2
+kstep = 0.25
 h=0.01
 
 '''Errors'''
@@ -169,7 +169,7 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-    ax.set_zlim(0, np.max(PdfTraj[-1]))
+    ax.set_zlim(0, np.max(PdfTraj[-20]))
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                               interval=500, blit=False)
     plt.show()
