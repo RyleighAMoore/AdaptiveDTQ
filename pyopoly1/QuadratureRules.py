@@ -83,6 +83,8 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas):
     # plt.show()
     
     mesh2, pdfNew, indices = LP.getLejaSetFromPoints(normScale, u, NumLejas, poly, pdf)
+    if math.isnan(indices[0]):
+        return [10000], 10000, 10000
     assert np.max(indices) < len(mesh)
 
     numSamples = len(mesh2)          
@@ -157,7 +159,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         if LPMatBool[index][0]: # Don't Need LejaPoints
             LejaIndices = LPMat[index,:].astype(int)
             value, condNum = QuadratureByInterpolationND_KnownLP(poly, scale1, fullMesh, pdf2, LejaIndices)
-            if condNum > 1.1:
+            if condNum > 1.05:
                 LPMatBool[index]=False
                 QuadFitBool[index] = False
             else:

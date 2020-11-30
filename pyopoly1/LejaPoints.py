@@ -12,6 +12,7 @@ from pyopoly1.LejaUtilities import get_lu_leja_samples, sqrtNormal_weights
 from pyopoly1.opolynd import opolynd_eval
 import UnorderedMesh as UM
 from mpl_toolkits.mplot3d import Axes3D
+import math
 
 
 
@@ -185,20 +186,36 @@ neighbors = [numNeighbors, mesh]
 # mesh, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 12, 1000, poly, neighbors=[3,one])
 
 def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):   
-    mesh, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], Mesh, 30, getIndices = True)
-    pdf = Pdf[indik]
+    # mesh, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], Mesh, 1, getIndices = True)
+    # pdf = Pdf[indik]
     
-    nearest = mesh[0]
-    distance = distances[0]
-    idx = 0 
+    # nearest = mesh[0]
+    # distance = distances[0]
+    # idx = 0 
     
-    Px = nearest[0]; Py = nearest[1]
+    # Px = nearest[0]; Py = nearest[1]
     sigmaX = np.sqrt(scale.cov[0,0]); sigmaY = np.sqrt(scale.cov[1,1])
     
-    meshShortIC = np.delete(mesh, idx, axis=0)
-    candidates = mapPointsTo(Px, Py, meshShortIC, 1/sigmaX, 1/sigmaY)
+    # meshShortIC = np.delete(Mesh, idx, axis=0)
+    # candidates = mapPointsTo(scale.mu[0], scale.mu[1], meshShortIC, 1/sigmaX, 1/sigmaY)
+    candidatesFull = mapPointsTo(scale.mu[0], scale.mu[1], Mesh, 1/sigmaX, 1/sigmaY)
+    candidates, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], candidatesFull, 50, getIndices = True)
+    Px = candidates[0,0]
+    Py = candidates[0,1]
+    candidates = candidates[1:]
+
+    # pdf = Pdf[indik[1:]]
     
-    lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[0,0]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
+    lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[Px,Py]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
+    if math.isnan(indices[0]):
+        # plt.figure()
+        # plt.plot(candidates[:,0], candidates[:,1], '*k', label='mesh', markersize=14)
+        # plt.plot(Px, Py, '*r',label='Main Point',markersize=14)
+        # m = mapPointsTo(Px, Py, Mesh, 1/sigmaX, 1/sigmaY)
+        # plt.plot(m[:,0], m[:,1], '.c', label='all',markersize=10)
+        # plt.legend()
+        # plt.show()
+        return 0, 0, indices
     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, sigmaX, sigmaY)
 
     plot= False
@@ -209,7 +226,7 @@ def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
         plt.plot(lejaPointsFinal[:,0], lejaPointsFinal[:,1], '.c', label='Leja Points',markersize=10)
         plt.legend()
         plt.show()
-        
+
     indicesNew = indik[indices]
     return Mesh[indicesNew], Pdf[indicesNew], indicesNew
 

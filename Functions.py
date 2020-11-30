@@ -123,7 +123,7 @@ def diff(mesh):
     x = mesh[:,0]
     y = mesh[:,1]
     return np.diag([1,1])
-    # return np.diag([np.sqrt(2),np.sqrt(2)])
+    return np.diag([np.sqrt(2),np.sqrt(2)])
 
 def G(indexOfMesh,mesh, h):
     x = mesh[indexOfMesh,:]

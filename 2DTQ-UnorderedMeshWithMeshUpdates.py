@@ -23,12 +23,12 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 100
+NumSteps = 15
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
 '''Discretization Parameters'''
-kstep = 0.1
+kstep = 0.2
 h=0.01
 
 '''Errors'''
@@ -38,8 +38,8 @@ ComputeErrors = False
 # SolutionMeshFile = './PickledData/SolnMesh-Vol.p'
 SolutionPDFFile = 'PickledData/SolnPDF-Erf.p'
 SolutionMeshFile = 'PickledData/SolnMesh-Erf.p'
-SolutionPDFFile = 'SolnPDF-ErfIC.p'
-SolutionMeshFile = 'SolnMesh-ErfIC.p'
+# SolutionPDFFile = 'SolnPDF-ErfIC.p'
+# SolutionMeshFile = 'SolnMesh-ErfIC.p'
 
 ''' Initializd orthonormal Polynomial family'''
 poly = HermitePolynomials(rho=0)
@@ -122,7 +122,7 @@ for i in trange(NumSteps):
     
     sizer = len(mesh)
     if np.shape(GMat)[0] - sizer < sizer:
-        GMat2 = np.empty([3*sizer, sizer+sizer])*np.NaN
+        GMat2 = np.empty([3*sizer, 3*sizer])*np.NaN
         GMat2[:sizer, :sizer]= GMat[:sizer, :sizer]
         GMat = GMat2
             
