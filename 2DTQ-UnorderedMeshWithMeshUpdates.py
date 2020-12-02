@@ -18,12 +18,12 @@ from datetime import datetime
 start = datetime.now()
 
 '''Plotting Parameters'''
-PlotAnimation = False
+PlotAnimation = True
 PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 200
+NumSteps = 20
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -96,9 +96,10 @@ for i in trange(1,NumSteps+1):
         if (addBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-        if i%30==0:
+        if i%10==0:
             '''Remove points from mesh'''
             mesh, pdf, remBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
+            # tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
             if (remBool == 1): 
                 '''Recalculate triangulation if mesh was changed'''
                 tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)

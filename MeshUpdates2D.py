@@ -123,44 +123,41 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBoo
     while stillRemoving: 
         indexRem = []
         boundaryZeroPointsBoolArray = checkIntegrandForRemovingSmallPoints(Pdf,Mesh,tri)
-        if max(boundaryZeroPointsBoolArray == 1):
-            for val in range(len(boundaryZeroPointsBoolArray)-1,-1,-1):
-                if boundaryZeroPointsBoolArray[val] == 1: # remove the point
-                    ChangedBool=1
-                    Mesh, Pdf, GMat, LPMatBool, QuadFitBool, LPMat, QuadFitMat = removePoint(val, Mesh, Pdf, GMat, LPMatBool, LPMat, QuadFitBool, QuadFitMat)
-                    larger = LPMat > val
-                    LPMat = np.copy(LPMat) - larger
-                    indexRem.append(val)
-        else: # Stop removing points
+        iivals = np.expand_dims(np.arange(len(Mesh)),1)
+        index = iivals[boundaryZeroPointsBoolArray]
+        
+        Mesh = np.delete(Mesh, index, 0)
+        Pdf = np.delete(Pdf, index, 0)
+        GMat = np.delete(GMat, index,0)
+        GMat = np.delete(GMat, index,1)
+        largerLPMat = np.zeros(np.shape(LPMat))
+        largerQuadMat = np.zeros(np.shape(QuadFitMat))
+        ChangedBool = 1
+
+        
+        for ii in index:
+            LPUpdateList = np.where(LPMat == ii)[0]
+            for i in LPUpdateList:
+                LPMatBool[i] = False
+            QuadUpdateList = np.where(QuadFitMat == ii)[0]
+            for i in LPUpdateList:
+                QuadFitBool[i] = False
+            largerLP = LPMat >= ii
+            largerQuad = QuadFitMat >= ii
+            largerLPMat = largerLPMat + largerLP
+            largerQuadMat = largerQuadMat + largerQuad
+        
+        QuadFitMat = QuadFitMat - largerQuadMat
+        LPMat = LPMat - largerLPMat
+        
+        LPMatBool = np.delete(LPMatBool, index,0)
+        QuadFitBool = np.delete(QuadFitBool, index, 0)
+        LPMat = np.delete(LPMat, index, 0)
+        QuadFitMat = np.delete(QuadFitMat, index, 0)
+    
+        if max(boundaryZeroPointsBoolArray == 0):
             stillRemoving = False
         tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
-        
-        # Mat = np.zeros(np.shape(LPMat))
-        # for ind in indexRem:
-        #     larger = LPMat > ind
-        #     Mat = Mat + larger
-        #     LPMat = np.copy(LPMat) - Mat
-
-            # LPMatBool[ind] = False
-        
-    # indexRem = []
-    # '''Remove straggling points'''
-    # for i in range(len(Mesh)-1,-1,-1): 
-    #     nearestPoint, distToNearestPoints = UM.findNearestKPoints(Mesh[i,0],Mesh[i,1], Mesh, 6)
-    #     dist = np.mean(distToNearestPoints)
-    #     if dist > 2*maxDistanceBetweenPoints: # Remove outlier
-    #         Mesh, Pdf, GMat, LPMatBool, QuadFitBool = removePoint(i, Mesh, Pdf, GMat, LPMatBool, LPMat)
-    #         ChangedBool = 1
-    #         indexRem.append(i)
-    #         print("outlier")
-    
-    # if ChangedBool == 1:
-    #     tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
-        
-    # for ind in indexRem:
-    #     larger = LPMat > ind
-    #     Mat = Mat + larger
-    #     # LPMatBool[ind] = False
     
     
     print("Boundary points removed", initLength - len(Mesh))  
