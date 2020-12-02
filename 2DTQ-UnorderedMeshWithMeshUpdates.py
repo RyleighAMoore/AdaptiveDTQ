@@ -18,12 +18,12 @@ from datetime import datetime
 start = datetime.now()
 
 '''Plotting Parameters'''
-PlotAnimation = True
+PlotAnimation = False
 PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 100
+NumSteps = 200
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -71,7 +71,7 @@ tri = Delaunay(mesh, incremental=True)
 
 '''Initialize Transition probabilities'''
 maxDegFreedom = 5000
-NumLejas = 12
+NumLejas = 10
 numQuadFit = 20
 GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
 for i in range(len(mesh)):
@@ -89,14 +89,14 @@ LPReuseArr = []
 Timing = []
 AltMethod = []
 Timing.append(start)
-for i in trange(NumSteps):
+for i in trange(1,NumSteps+1):
     if (i >= 1) and (adjustBoundary or adjustDensity):
         '''Add points to mesh'''
         mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
         if (addBool == 1): 
             '''Recalculate triangulation if mesh was changed'''
             tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
-        if i%10==0:
+        if i%30==0:
             '''Remove points from mesh'''
             mesh, pdf, remBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
             if (remBool == 1): 
@@ -151,7 +151,7 @@ print("Time: ", end-start)
 if PlotFigure:
     fig = plt.figure()
     ax = Axes3D(fig)
-    index =PlotStepIndex
+    index =10
     ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
     plt.show()
 
@@ -168,10 +168,10 @@ if PlotAnimation:
     ax = fig.add_subplot(111, projection='3d')
     title = ax.set_title('3D Test')
         
-    graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker="o")
-    ax.set_zlim(0, np.max(PdfTraj[-20]))
+    graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker=".")
+    ax.set_zlim(0, np.max(PdfTraj[0]))
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
-                                              interval=500, blit=False)
+                                              interval=100, blit=False)
     plt.show()
 
 
@@ -196,7 +196,7 @@ from exactSolutions import TwoDdiffusionEquation
 from Errors import ErrorValsExact
 surfaces = []
 for ii in range(len(PdfTraj)):
-    ana = TwoDdiffusionEquation(Meshes[ii],1, 0.01*(ii+1))
+    ana = TwoDdiffusionEquation(Meshes[ii],1, 0.01*(ii+1),5)
     # e = np.max(PdfTraj[ii] - ana)
     surfaces.append(ana)
 

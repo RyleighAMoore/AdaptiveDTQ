@@ -22,11 +22,12 @@ from scipy.interpolate import griddata
 
 
 ''''Tolerance Parameters'''
-addPointsToBoundaryIfBiggerThanTolerance = 10**(-3)
-removeZerosValuesIfLessThanTolerance = 10**(-3.5)
+deg = 4
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-deg)
+removeZerosValuesIfLessThanTolerance = 10**(-deg-0.5)
 minDistanceBetweenPoints = 0.2
 minDistanceBetweenPointsBoundary = 0.2
-maxDistanceBetweenPoints = 0.25
+maxDistanceBetweenPoints = 0.22
 
 
 

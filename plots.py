@@ -32,11 +32,11 @@ for i in range(1,len(Meshes)):
     
 
 ii = np.linspace(1,len(PdfTraj)-1,len(PdfTraj)-1)/100
-# plt.plot(ii, np.asarray(LPReuseArr),'o', label = 'Reused Leja Points')
-plt.plot(ii,sizes,'.',label = 'Mesh Size')
-# plt.plot(ii,np.asarray(AltMethod),'o',label = 'Alt. Method Used')
-plt.xlabel('Time')
-plt.ylabel('Number of Points')
+# # plt.plot(ii, np.asarray(LPReuseArr),'o', label = 'Reused Leja Points')
+# plt.plot(ii,sizes,'.',label = 'Mesh Size')
+# # plt.plot(ii,np.asarray(AltMethod),'o',label = 'Alt. Method Used')
+# plt.xlabel('Time')
+# plt.ylabel('Number of Points')
 # plt.legend()
 
 fig, axs = plt.subplots(3)
