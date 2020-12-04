@@ -27,7 +27,7 @@ addPointsToBoundaryIfBiggerThanTolerance = 10**(-deg)
 removeZerosValuesIfLessThanTolerance = 10**(-deg-0.5)
 minDistanceBetweenPoints = 0.2
 minDistanceBetweenPointsBoundary = 0.2
-maxDistanceBetweenPoints = 0.22
+maxDistanceBetweenPoints = 0.25
 
 
 

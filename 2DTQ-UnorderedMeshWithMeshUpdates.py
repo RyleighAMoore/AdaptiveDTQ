@@ -23,7 +23,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 20
+NumSteps = 100
 adjustBoundary =True
 adjustDensity = False # Density changes are not working well right now 
 
@@ -71,7 +71,7 @@ tri = Delaunay(mesh, incremental=True)
 
 '''Initialize Transition probabilities'''
 maxDegFreedom = 5000
-NumLejas = 10
+NumLejas = 6
 numQuadFit = 20
 GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
 for i in range(len(mesh)):
@@ -88,6 +88,7 @@ QuadFitBool = np.zeros((maxDegFreedom,1), dtype=bool) # True if have points, fal
 LPReuseArr = []
 Timing = []
 AltMethod = []
+QuadFitRecomputed = []
 Timing.append(start)
 for i in trange(1,NumSteps+1):
     if (i >= 1) and (adjustBoundary or adjustDensity):
@@ -170,7 +171,7 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker=".")
-    ax.set_zlim(0, np.max(PdfTraj[0]))
+    ax.set_zlim(0, np.max(PdfTraj[5]))
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                               interval=100, blit=False)
     plt.show()
@@ -187,8 +188,8 @@ if ComputeErrors:
 
 # fig = plt.figure()
 # ax = Axes3D(fig)
-# index =1
-# ana = TwoDdiffusionEquation(Meshes[index],1, 0.01*(index+1))
+# index =20
+# ana = TwoDdiffusionEquation(Meshes[index],0.5, 0.01*(index+1),2)
 # ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
 # ax.scatter(Meshes[index][:,0], Meshes[index][:,1],ana, c='k', marker='.')
 # plt.show()
