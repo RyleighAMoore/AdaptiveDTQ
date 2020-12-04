@@ -213,35 +213,27 @@ def addPointsToBoundary(Mesh, Pdf, triangulation):
     count = 0
     MeshOrig = np.copy(Mesh)
     PdfOrig = np.copy(Pdf)
+    
     while keepAdding and count < 3:
-        newPointsToAdd = []
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation)
-        if max(boundaryPointsToAddAround == 1):
-            for val in range(len(boundaryPointsToAddAround)-1,-1,-1):
-                if boundaryPointsToAddAround[val] == 1: # if we should extend boundary
-                    newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 8)
-                    newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh)
-                    # if len(newPoints)==0:
-                    #     keepAdding = False
-                    if len(newPoints)>0:
-                        for point in range(len(newPoints)):
-                            newPoint = np.asarray([[newPoints[point,0]],[newPoints[point,1]]]).T
-                            newPointsToAdd.append(newPoint)
-                            Mesh = np.append(Mesh, newPoint, axis=0)
-                            # Pdf = np.append(Pdf, [0], axis=0)                      
-                            ChangedBool = 1
-                            # Mesh, Pdf, triangulation = addPoint(newPoints[point,0], newPoints[point,1], Mesh, Pdf, triangulation)
-                            numBoundaryAdded = numBoundaryAdded + 1
-        else:
-            keepAdding =False
-        if ChangedBool == 1:
-            tri = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
-        
-        if len(newPointsToAdd)>0:
-            interp = np.asarray([griddata(MeshOrig, PdfOrig, newPointsToAdd, method='cubic', fill_value=np.min(Pdf))])[0]
-            Pdf = np.append(Pdf, interp)
-            # print(np.max(interp))
-        count = count+1
+        iivals = np.expand_dims(np.arange(len(Mesh)),1)
+        index = iivals[boundaryPointsToAddAround]
+        if len(index) < 1:
+            keepAdding= False
+        for indx in index:
+            newPoints = addPointsRadially(Mesh[indx,0], Mesh[indx,1], Mesh, 8)
+            newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh)
+            if len(newPoints)>0:
+                Mesh = np.append(Mesh, newPoints, axis=0)
+                # Pdf = np.append(Pdf, [0], axis=0)                      
+                ChangedBool = 1
+                # Mesh, Pdf, triangulation = addPoint(newPoints[point,0], newPoints[point,1], Mesh, Pdf, triangulation)
+                numBoundaryAdded = numBoundaryAdded + 1
+  
+                tri = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
+                interp = np.asarray([griddata(MeshOrig, PdfOrig, newPoints, method='cubic', fill_value=removeZerosValuesIfLessThanTolerance)])[0]
+                Pdf = np.append(Pdf, interp)
+        count = count +1
     print("# boundary points Added = ", numBoundaryAdded)    
     return Mesh, Pdf, triangulation, ChangedBool
 
