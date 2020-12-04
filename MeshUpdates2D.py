@@ -29,6 +29,14 @@ minDistanceBetweenPoints = 0.2
 minDistanceBetweenPointsBoundary = 0.2
 maxDistanceBetweenPoints = 0.25
 
+def setGlobalVarsForMesh(mesh):
+    ''''May be used in the future for making code more adaptable to different IC'''
+    global minDistanceBetweenPoints
+    global minDistanceBetweenPointsBoundary
+    global maxDistanceBetweenPoints
+    minDistanceBetweenPoints = distanceMetrics.separationDistance(mesh)*1.5
+    minDistanceBetweenPointsBoundary = distanceMetrics.separationDistance(mesh)*1.5
+    maxDistanceBetweenPoints = 1.5*minDistanceBetweenPoints
 
 
 def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, GMat, adjustBoundary =True, adjustDensity=False):
@@ -190,20 +198,6 @@ def houseKeepingAfterAdjustingMesh(Mesh, tri):
     tri = Delaunay(Mesh, incremental=True)
     return tri
 
-
-def addPoint(Px,Py, Mesh, Pdf, triangulation):
-    newPoint = np.asarray([[Px],[Py]]).T
-    interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='cubic', fill_value=np.min(Pdf))])
-    if interp < 0:
-        interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='linear', fill_value=np.min(Pdf))])
-    if interp <=0:
-        interp = np.asarray([[10**(-10)]])
-
-    Mesh = np.append(Mesh, np.asarray([[Px],[Py]]).T, axis=0)
-    Pdf = np.append(Pdf, interp[0], axis=0)                      
-    triangulation.add_points(np.asarray([[Px],[Py]]).T, restart=False)
-    return  Mesh, Pdf, triangulation
-
     
 def addPointsToBoundary(Mesh, Pdf, triangulation):
     numBoundaryAdded = 0
@@ -213,7 +207,6 @@ def addPointsToBoundary(Mesh, Pdf, triangulation):
     count = 0
     MeshOrig = np.copy(Mesh)
     PdfOrig = np.copy(Pdf)
-    
     while keepAdding and count < 3:
         numPointsAdded = 0
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation)
@@ -232,7 +225,7 @@ def addPointsToBoundary(Mesh, Pdf, triangulation):
                 # tri = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
         if numPointsAdded > 0:
             newPoints = Mesh[-numPointsAdded:,:]
-            interp = np.asarray([griddata(MeshOrig, PdfOrig, newPoints, method='cubic', fill_value=removeZerosValuesIfLessThanTolerance)])[0]
+            interp = [griddata(MeshOrig, PdfOrig, newPoints, method='cubic', fill_value=removeZerosValuesIfLessThanTolerance)][0]
             Pdf = np.append(Pdf, interp)
         triangulation = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
         count = count +1
@@ -248,7 +241,6 @@ def addPointsRadially(pointX, pointY, mesh, numPointsToAdd):
         newPointX = radius*np.cos(i*dTheta)+pointX
         newPointY = radius*np.sin(i*dTheta) + pointY
         nearestPoint,distToNearestPoint, idx = UM.findNearestPoint(newPointX, newPointY, mesh)
-        # distToNearestPoint= np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
         if distToNearestPoint >= minDistanceBetweenPointsBoundary*0.9:
             points.append([newPointX, newPointY])
     return np.asarray(points)
@@ -264,7 +256,6 @@ def checkIfDistToClosestPointIsOk(newPoints, Mesh):
         # distToNearestPoint = np.sqrt((nearestPoint[0,0] - newPointX)**2 + (nearestPoint[0,1] - newPointY)**2)
         if distToNearestPoint > minDistanceBetweenPoints*0.9 and distToNearestPoint < maxDistanceBetweenPoints*1.1:
             points.append([newPointX, newPointY])
-
     return np.asarray(points)
 
 # https://stackoverflow.com/questions/23073170/calculate-bounding-polygon-of-alpha-shape-from-the-delaunay-triangulation
@@ -395,44 +386,48 @@ def removeInteriorPointsToMakeLessDense(Mesh, Pdf, tri, boundaryOnlyBool, poly,G
 
     return Mesh, Pdf, ChangedBool, GMat, LPMat, LPMatBool
 
-def addInteriorPoints(Mesh, Pdf, triangulation):
-    ChangedBool = 0
-    numInteriorAdded = 0
-    Slopes = getSlopes(Mesh, Pdf)
-    denisfyAroundPointIfSlopeLargerThanTolerance =0.05 #np.quantile(Slopes,0.5) # 0.05
-    interiorPointsToAddAround = np.asarray([np.asarray(Slopes)> denisfyAroundPointIfSlopeLargerThanTolerance]).T
-    meshWithBigSlopes = []
-    indexMax = np.argmax(Pdf) # We want to add around the largest value
-    interiorPointsToAddAround[indexMax]=1
-    for i in range(len(Mesh)):
-        if interiorPointsToAddAround[i]==1:
-            meshWithBigSlopes.append(Mesh[i,:])
-    meshWithBigSlopes = np.asarray(meshWithBigSlopes)
-    if len(meshWithBigSlopes) > 1:
-        spacing = distanceMetrics.fillDistance(meshWithBigSlopes)
-        ChangedBool = 0
-        numInteriorAdded = 0
-        if max(interiorPointsToAddAround == 1): 
-            print("adding interior points...")
-            for val in range(len(Slopes)-1,-1,-1):
-                if (spacing > minDistanceBetweenPoints) and (interiorPointsToAddAround[val] == 1): # if we should extend boundary
-                    newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4,minDistanceBetweenPoints, minDistanceBetweenPoints/2) 
+# def addInteriorPoints(Mesh, Pdf, triangulation):
+#     ChangedBool = 0
+#     numInteriorAdded = 0
+#     Slopes = getSlopes(Mesh, Pdf)
+#     denisfyAroundPointIfSlopeLargerThanTolerance =0.05 #np.quantile(Slopes,0.5) # 0.05
+#     interiorPointsToAddAround = np.asarray([np.asarray(Slopes)> denisfyAroundPointIfSlopeLargerThanTolerance]).T
+#     meshWithBigSlopes = []
+#     indexMax = np.argmax(Pdf) # We want to add around the largest value
+#     interiorPointsToAddAround[indexMax]=1
+#     for i in range(len(Mesh)):
+#         if interiorPointsToAddAround[i]==1:
+#             meshWithBigSlopes.append(Mesh[i,:])
+#     meshWithBigSlopes = np.asarray(meshWithBigSlopes)
+#     if len(meshWithBigSlopes) > 1:
+#         spacing = distanceMetrics.fillDistance(meshWithBigSlopes)
+#         ChangedBool = 0
+#         numInteriorAdded = 0
+#         if max(interiorPointsToAddAround == 1): 
+#             print("adding interior points...")
+#             for val in range(len(Slopes)-1,-1,-1):
+#                 if (spacing > minDistanceBetweenPoints) and (interiorPointsToAddAround[val] == 1): # if we should extend boundary
+#                     newPoints = addPointsRadially(Mesh[val,0], Mesh[val,1], Mesh, 4,minDistanceBetweenPoints, minDistanceBetweenPoints/2) 
                     
-                    newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, min(minDistanceBetweenPoints/Slopes[val], minDistanceBetweenPoints))
-                    for point in range(len(newPoints)):
-                        ChangedBool = 1
-                        numInteriorAdded+=1
-                        Mesh, Pdf, triangulation = addPoint(newPoints[point,0], newPoints[point,1], Mesh, Pdf, triangulation)
-        print("# interior points Added = ", numInteriorAdded)  
-    return Mesh, Pdf, triangulation, ChangedBool 
+#                     newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, min(minDistanceBetweenPoints/Slopes[val], minDistanceBetweenPoints))
+#                     for point in range(len(newPoints)):
+#                         ChangedBool = 1
+#                         numInteriorAdded+=1
+#                         Mesh, Pdf, triangulation = addPoint(newPoints[point,0], newPoints[point,1], Mesh, Pdf, triangulation)
+#         print("# interior points Added = ", numInteriorAdded)  
+#     return Mesh, Pdf, triangulation, ChangedBool 
 
+# def addPoint(Px,Py, Mesh, Pdf, triangulation):
+#     newPoint = np.asarray([[Px],[Py]]).T
+#     interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='cubic', fill_value=np.min(Pdf))])
+#     if interp < 0:
+#         interp = np.asarray([griddata(Mesh, Pdf, newPoint, method='linear', fill_value=np.min(Pdf))])
+#     if interp <=0:
+#         interp = np.asarray([[10**(-10)]])
 
-def setGlobalVarsForMesh(mesh):
-    ''''May be used in the future for making code more adaptable to different IC'''
-    global minDistanceBetweenPoints
-    global minDistanceBetweenPointsBoundary
-    global maxDistanceBetweenPoints
-    minDistanceBetweenPoints = distanceMetrics.separationDistance(mesh)*1.5
-    minDistanceBetweenPointsBoundary = distanceMetrics.separationDistance(mesh)*1.5
-    maxDistanceBetweenPoints = 1.5*minDistanceBetweenPoints
+#     Mesh = np.append(Mesh, np.asarray([[Px],[Py]]).T, axis=0)
+#     Pdf = np.append(Pdf, interp[0], axis=0)                      
+#     triangulation.add_points(np.asarray([[Px],[Py]]).T, restart=False)
+#     return  Mesh, Pdf, triangulation
+
 
