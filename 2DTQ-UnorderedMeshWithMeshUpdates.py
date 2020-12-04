@@ -94,20 +94,18 @@ for i in trange(1,NumSteps+1):
     if (i >= 1) and (adjustBoundary or adjustDensity):
         '''Add points to mesh'''
         mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
-        if (addBool == 1): 
-            '''Recalculate triangulation if mesh was changed'''
-            tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+        # if (addBool == 1): 
+        #     '''Recalculate triangulation if mesh was changed'''
+        #     tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
         if i%10==0:
             '''Remove points from mesh'''
-            mesh, pdf, remBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
-            # tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+            mesh, pdf, remBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat, triangulation = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
             if (remBool == 1): 
                 '''Recalculate triangulation if mesh was changed'''
                 tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
     print('Length of mesh = ', len(mesh))
     if i >-1: 
         '''Step forward in time'''
-        print("Stepping Forward....")
         pdf = np.expand_dims(pdf,axis=1)
         pdf, condnums, meshTemp, LPMat, LPMatBool, QuadFitMat,QuadFitBool, LPReuse, AltMethodCount = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, QuadFitMat,QuadFitBool, numQuadFit)
         pdf = np.squeeze(pdf)
