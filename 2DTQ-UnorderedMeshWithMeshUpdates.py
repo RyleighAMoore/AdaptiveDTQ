@@ -90,19 +90,27 @@ Timing = []
 AltMethod = []
 QuadFitRecomputed = []
 Timing.append(start)
+
+deg=4
+addPointsToBoundaryIfBiggerThanTolerance = 10**(-deg)
+removeZerosValuesIfLessThanTolerance = 10**(-deg-0.5)
+minDistanceBetweenPoints = 0.2
+minDistanceBetweenPointsBoundary = 0.2
+maxDistanceBetweenPoints = 0.25
+
 for i in trange(1,NumSteps+1):
     if (i >= 1) and (adjustBoundary or adjustDensity):
         '''Add points to mesh'''
-        mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
+        mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints)
         # if (addBool == 1): 
         #     '''Recalculate triangulation if mesh was changed'''
         #     tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
         if i%10==0:
             '''Remove points from mesh'''
-            mesh, pdf, remBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat, triangulation = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, adjustBoundary =adjustBoundary, adjustDensity=adjustDensity)
-            if (remBool == 1): 
-                '''Recalculate triangulation if mesh was changed'''
-                tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
+            mesh, pdf, remBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat, tri = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, removeZerosValuesIfLessThanTolerance)
+            # if (remBool == 1): 
+            #     '''Recalculate triangulation if mesh was changed'''
+            #     tri = MeshUp.houseKeepingAfterAdjustingMesh(mesh, tri)
     print('Length of mesh = ', len(mesh))
     if i >-1: 
         '''Step forward in time'''
