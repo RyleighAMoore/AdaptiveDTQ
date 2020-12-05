@@ -39,9 +39,8 @@ def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly, GMat, 
     ChangedBool2 = 0
     ChangedBool1 = 0
     ChangedBool3 = 0
-    Mesh, Pdf, ChangedBool2, GMat,LPMat, LPMatBool, QuadFitBool, triangulation = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat, removeZerosValuesIfLessThanTolerance)
+    Mesh, Pdf, ChangedBool2, GMat,LPMat, LPMatBool, QuadFitBool, tri = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat, removeZerosValuesIfLessThanTolerance)
     ChangedBool = max(ChangedBool1, ChangedBool2, ChangedBool3)
-    tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
     return Mesh, Pdf, ChangedBool, GMat, LPMat, LPMatBool,QuadFitBool, QuadFitMat, tri
 
 
@@ -79,28 +78,27 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBoo
         boundaryZeroPointsBoolArray = checkIntegrandForRemovingSmallPoints(Pdf,Mesh,tri, removeZerosValuesIfLessThanTolerance)
         iivals = np.expand_dims(np.arange(len(Mesh)),1)
         index = iivals[boundaryZeroPointsBoolArray] # Points to remove
-        
-        Mesh = np.delete(Mesh, index, 0)
-        Pdf = np.delete(Pdf, index, 0)
-        GMat = np.delete(GMat, index,0)
-        GMat = np.delete(GMat, index,1)
-        largerLPMat = np.zeros(np.shape(LPMat))
-        largerQuadMat = np.zeros(np.shape(QuadFitMat))
-        ChangedBool = 1
-        
-        for ii in index:
-            LPUpdateList = np.where(LPMat == ii)[0]
-            for i in LPUpdateList:
-                LPMatBool[i] = False
-            QuadUpdateList = np.where(QuadFitMat == ii)[0]
-            for i in LPUpdateList:
-                QuadFitBool[i] = False
-            largerLP = LPMat >= ii
-            largerQuad = QuadFitMat >= ii
-            largerLPMat = largerLPMat + largerLP
-            largerQuadMat = largerQuadMat + largerQuad
-        
         if len(index)>0:
+            Mesh = np.delete(Mesh, index, 0)
+            Pdf = np.delete(Pdf, index, 0)
+            GMat = np.delete(GMat, index,0)
+            GMat = np.delete(GMat, index,1)
+            largerLPMat = np.zeros(np.shape(LPMat))
+            largerQuadMat = np.zeros(np.shape(QuadFitMat))
+            ChangedBool = 1
+            
+            for ii in index:
+                LPUpdateList = np.where(LPMat == ii)[0]
+                for i in LPUpdateList:
+                    LPMatBool[i] = False
+                QuadUpdateList = np.where(QuadFitMat == ii)[0]
+                for i in LPUpdateList:
+                    QuadFitBool[i] = False
+                largerLP = LPMat >= ii
+                largerQuad = QuadFitMat >= ii
+                largerLPMat = largerLPMat + largerLP
+                largerQuadMat = largerQuadMat + largerQuad
+            
             QuadFitMat = QuadFitMat - largerQuadMat
             LPMat = LPMat - largerLPMat
             
@@ -109,7 +107,7 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBoo
             LPMat = np.delete(LPMat, index, 0)
             QuadFitMat = np.delete(QuadFitMat, index, 0)
             tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
-        if len(index) == 0:
+        else:
             stillRemoving = False
     return Mesh, Pdf, ChangedBool, GMat, LPMat, LPMatBool, QuadFitBool, tri
 
