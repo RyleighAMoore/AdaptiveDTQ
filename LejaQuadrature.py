@@ -52,6 +52,7 @@ poly.lambdas = lambdas
 lejaPointsFinal, new = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
 
 def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool,QuadFitMat,QuadFitBool, numQuadFit):
+    numLejas = LPMat.shape[1]
     sigmaX=np.sqrt(h)*diff(np.asarray([[0,0]]))[0,0]
     sigmaY=np.sqrt(h)*diff(np.asarray([[0,0]]))[1,1]
     
@@ -88,7 +89,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
             #     value = value[0]
             
             mesh12 = mapPointsBack(muX, muY, lejaPointsFinal, sigmaX, sigmaY)
-            meshLP, distances, ii = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], mesh,12, getIndices = True)
+            meshLP, distances, ii = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], mesh,numLejas, getIndices = True)
             
             pdfNew = pdf[ii]
     

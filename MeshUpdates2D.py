@@ -36,12 +36,8 @@ def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, GMat, add
 
 def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly, GMat, LPMat, LPMatBool, QuadFitBool,QuadFitMat, removeZerosValuesIfLessThanTolerance):
     '''If the mesh is changed, these become 1 so we know to recompute the triangulation'''
-    ChangedBool2 = 0
-    ChangedBool1 = 0
-    ChangedBool3 = 0
-    Mesh, Pdf, ChangedBool2, GMat,LPMat, LPMatBool, QuadFitBool, tri = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat, removeZerosValuesIfLessThanTolerance)
-    ChangedBool = max(ChangedBool1, ChangedBool2, ChangedBool3)
-    return Mesh, Pdf, ChangedBool, GMat, LPMat, LPMatBool,QuadFitBool, QuadFitMat, tri
+    Mesh, Pdf, GMat,LPMat, LPMatBool, QuadFitBool, tri = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat, removeZerosValuesIfLessThanTolerance)
+    return Mesh, Pdf, GMat, LPMat, LPMatBool,QuadFitBool, QuadFitMat, tri
 
 
 def getBoundaryPoints(Mesh, tri, alpha):
@@ -85,7 +81,6 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBoo
             GMat = np.delete(GMat, index,1)
             largerLPMat = np.zeros(np.shape(LPMat))
             largerQuadMat = np.zeros(np.shape(QuadFitMat))
-            ChangedBool = 1
             
             for ii in index:
                 LPUpdateList = np.where(LPMat == ii)[0]
@@ -109,7 +104,7 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBoo
             tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
         else:
             stillRemoving = False
-    return Mesh, Pdf, ChangedBool, GMat, LPMat, LPMatBool, QuadFitBool, tri
+    return Mesh, Pdf, GMat, LPMat, LPMatBool, QuadFitBool, tri
 
 
 
