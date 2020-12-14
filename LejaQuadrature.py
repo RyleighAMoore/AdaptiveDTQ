@@ -6,7 +6,7 @@ import numpy as np
 import UnorderedMesh as UM
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from Functions import drift, diff, GVals, Gaussian
+from Functions import drift, diff, GVals, Gaussian, G
 from scipy.interpolate import griddata, interp2d 
 from pyopoly1.LejaPoints import getLejaSetFromPoints, mapPointsBack, mapPointsTo, getLejaPoints
 from pyopoly1.QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolation_Simple, QuadratureByInterpolationND_DivideOutGaussian
@@ -72,8 +72,8 @@ k = 40
 ab = poly.recurrence(k+1)
 lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
-lejaPointsFinal, new = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
-
+lejaPointsFinal, new = getLejaPoints(10, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
+    
 def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool,QuadFitMat,QuadFitBool, numQuadFit, twiceQuadFit):
     numLejas = LPMat.shape[1]
     sigmaX=np.sqrt(h)*diff(np.asarray([[0,0]]))[0,0]
@@ -104,24 +104,23 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
         '''Alternative Method'''
         if math.isnan(condNum) or value <0 or condNum >10: 
             
-            # gauss = Gaussian(scaling, mesh)
-            # GPDFalt = GPDF/np.expand_dims(gauss, 1)
-            # if math.isnan(np.max(GPDFalt)):
-            #     value = 10**(-8)
-            # else: 
-            #     value, condNum, indices = QuadratureByInterpolationND(poly, scaling, mesh, GPDFalt,NumLejas)
-            #     value = value[0]
-            
             mesh12 = mapPointsBack(muX, muY, lejaPointsFinal, sigmaX, sigmaY)
-            meshLP, distances, indx = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], mesh,numLejas, getIndices = True)
-            
+            meshLP, distances, indx = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], mesh,numQuadFit, getIndices = True)
             pdfNew = pdf[indx]
+            
+            
     
-            pdfNew = np.asarray(griddata(meshLP, pdfNew, mesh12, method='cubic', fill_value=0))
+            pdf12 = np.asarray(griddata(meshLP, pdfNew, mesh12, method='cubic', fill_value=0))
             pdfNew[pdfNew < 0] = 10**(-8)
             
-            integrand = newIntegrand(muX, muY, mesh12, h)
-            testing = np.squeeze(pdfNew)*integrand
+            v = np.expand_dims(G(0,mesh12, h),1)
+            
+            # integrand = newIntegrand(muX, muY, mesh12, h)
+            # testing = np.squeeze(pdfNew)*integrand
+            
+            g = Gaussian(scaling, mesh12)
+            testing = np.squeeze((pdf12*v)/np.expand_dims(g,1))
+            # testing = np.squeeze(pdfNew)*integrand
             
             value, condNum = QuadratureByInterpolation_Simple(poly, scaling, mesh12, testing)
             value = value*(1/np.sqrt(2))

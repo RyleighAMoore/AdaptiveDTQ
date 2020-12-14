@@ -13,7 +13,7 @@ h=0.01
 
 
 
-x = np.arange(0.1,0.25,0.01)
+x = np.arange(0.05,0.3,0.05)
 times = np.asarray(np.arange(0,(NumSteps+1)*h,h))
 
 L2ErrorArray = np.zeros((len(x),len(times)))
@@ -24,7 +24,7 @@ timesArray = []
 stepArray = []
 count = 0
 for i in x:
-    Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= D.DTQ(NumSteps, i, h, 10)
+    Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= D.DTQ(NumSteps, i, h, 10, True, 4)
     L2ErrorArray[count,:] = np.asarray(L2Errors)
     LinfErrorArray[count,:] = np.asarray(LinfErrors)
     L1ErrorArray[count,:] = np.asarray(L1Errors)

@@ -24,7 +24,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 25
+NumSteps = 100
 
 '''Discretization Parameters'''
 a = 1
@@ -43,11 +43,11 @@ SolutionMeshFile = 'PickledData/SolnMesh-Erf.p'
 twiceQuadFit = True
 numLejas = 10
 
-Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 2)
-Meshes2, PdfTraj2, LinfErrors2, L2Errors2, L1Errors2, L2wErrors2, Timing2, LPReuseArr2, AltMethod2= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 3)
-Meshes3, PdfTraj3, LinfErrors3, L2Errors3, L1Errors3, L2wErrors3, Timing3, LPReuseArr3, AltMethod3= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 4)
-Meshes4, PdfTraj4, LinfErrors4, L2Errors4, L1Errors4, L2wErrors4, Timing4, LPReuseArr4, AltMethod4= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 5)
-Meshes5, PdfTraj5, LinfErrors5, L2Errors5, L1Errors5, L2wErrors5, Timing5, LPReuseArr5, AltMethod5= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 6)
+# Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 2)
+Meshes2, PdfTraj2, LinfErrors2, L2Errors2, L1Errors2, L2wErrors2, Timing2, LPReuseArr2, AltMethod2= DTQ(NumSteps, kstep, h, numLejas,True, 4)
+Meshes3, PdfTraj3, LinfErrors3, L2Errors3, L1Errors3, L2wErrors3, Timing3, LPReuseArr3, AltMethod3= DTQ(NumSteps, kstep, h, numLejas,False, 4)
+# Meshes4, PdfTraj4, LinfErrors4, L2Errors4, L1Errors4, L2wErrors4, Timing4, LPReuseArr4, AltMethod4= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 5)
+# Meshes5, PdfTraj5, LinfErrors5, L2Errors5, L1Errors5, L2wErrors5, Timing5, LPReuseArr5, AltMethod5= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 6)
 
 
 x = np.arange(0,(NumSteps+1)*h,h)
@@ -55,19 +55,19 @@ plt.figure()
 # plt.semilogy(x, np.asarray(LinfErrors), label = 'Linf Error, deg=2')
 # plt.semilogy(x, np.asarray(L2Errors), label = 'L2 Error, deg=2')
 # plt.semilogy(x, np.asarray(L1Errors), label = 'L1 Error, deg=2')
-plt.semilogy(x, np.asarray(L2wErrors), label = 'L2w Error, deg=2')
+# plt.semilogy(x, np.asarray(L2wErrors), label = 'L2w Error, deg=2')
 
-# plt.semilogy(x, np.asarray(LinfErrors2), '-.', label = 'Linf Error, deg=3')
-# plt.semilogy(x, np.asarray(L2Errors2),'-.', label = 'L2 Error, deg=3')
-# plt.semilogy(x, np.asarray(L1Errors2),'-.', label = 'L1 Error, deg=3')
-plt.semilogy(x, np.asarray(L2wErrors2),'-.', label = 'L2w Error, deg=3')
+plt.semilogy(x, np.asarray(LinfErrors2), '-.', label = 'Twice Quad fit: Linf Error, deg=3')
+plt.semilogy(x, np.asarray(L2Errors2),'-.', label = 'Twice Quad fit: L2 Error, deg=3')
+plt.semilogy(x, np.asarray(L1Errors2),'-.', label = 'Twice Quad fit: L1 Error, deg=3')
+plt.semilogy(x, np.asarray(L2wErrors2),'-.', label = 'Twice Quad fit: L2w Error, deg=3')
 
-# plt.semilogy(x, np.asarray(LinfErrors3), ':', label = 'Linf Error, deg=3')
-# plt.semilogy(x, np.asarray(L2Errors3),':', label = 'L2 Error, deg=3')
-# plt.semilogy(x, np.asarray(L1Errors3),':', label = 'L1 Error, deg=3')
+plt.semilogy(x, np.asarray(LinfErrors3), ':', label = 'Linf Error, deg=3')
+plt.semilogy(x, np.asarray(L2Errors3),':', label = 'L2 Error, deg=3')
+plt.semilogy(x, np.asarray(L1Errors3),':', label = 'L1 Error, deg=3')
 plt.semilogy(x, np.asarray(L2wErrors3),':', label = 'L2w Error, deg=4')
-plt.semilogy(x, np.asarray(L2wErrors4),':', label = 'L2w Error, deg=5')
-plt.semilogy(x, np.asarray(L2wErrors5),':', label = 'L2w Error, deg=6')
+# plt.semilogy(x, np.asarray(L2wErrors4),':', label = 'L2w Error, deg=5')
+# plt.semilogy(x, np.asarray(L2wErrors5),':', label = 'L2w Error, deg=6')
 
 plt.xlabel('Time')
 plt.ylabel('Error')

@@ -135,7 +135,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
 
     surfaces = []
     for ii in range(len(PdfTraj)):
-        ana = TwoDdiffusionEquation(Meshes[ii],1, h*(ii+1),5)
+        ana = TwoDdiffusionEquation(Meshes[ii],1, h*(ii+1),2)
         surfaces.append(ana)
 
     LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, plot=True)
