@@ -122,7 +122,7 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, addPointsToBoundaryIfBiggerTha
     count = 0
     MeshOrig = np.copy(Mesh)
     PdfOrig = np.copy(Pdf)
-    while keepAdding and count < 3:
+    while keepAdding:
         numPointsAdded = 0
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation,maxDistanceBetweenPoints)
         iivals = np.expand_dims(np.arange(len(Mesh)),1)

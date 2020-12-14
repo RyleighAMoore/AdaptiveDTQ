@@ -18,36 +18,14 @@ from exactSolutions import TwoDdiffusionEquation
 from Errors import ErrorValsExact
 
 
-# '''Plotting Parameters'''
-# PlotAnimation = False
-# PlotFigure = False
-# PlotStepIndex = -1
-
-# '''Initialization Parameters'''
-# NumSteps = 25
-
-# '''Discretization Parameters'''
-# kstep = 0.2
-# h=0.01
-
-# '''Errors'''
-# ComputeErrors = False
-# # Make sure the file matches the Function.py functions used.
-# # SolutionPDFFile = './PickledData/SolnPDF-Vol.p'
-# # SolutionMeshFile = './PickledData/SolnMesh-Vol.p'
-# SolutionPDFFile = 'PickledData/SolnPDF-Erf.p'
-# SolutionMeshFile = 'PickledData/SolnMesh-Erf.p'
-# # SolutionPDFFile = 'SolnPDF-ErfIC.p'
-# # SolutionMeshFile = 'SolnMesh-ErfIC.p'
-
-
-def DTQ(NumSteps, kstep, h):
+def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
     '''Mesh updates parameter'''
-    deg=4
+    # degree=3.5
+    deg =degree
     addPointsToBoundaryIfBiggerThanTolerance = 10**(-deg)
     removeZerosValuesIfLessThanTolerance = 10**(-deg-0.5)
-    minDistanceBetweenPoints = kstep
-    maxDistanceBetweenPoints = kstep+0.05
+    minDistanceBetweenPoints = max(0.15, kstep)
+    maxDistanceBetweenPoints =  max(0.2, kstep)
     start = datetime.now()
     
     ''' Initializd orthonormal Polynomial family'''
@@ -59,12 +37,11 @@ def DTQ(NumSteps, kstep, h):
     poly.lambdas = lambdas
     
     '''pdf after one time step with Dirac initial condition centered at the origin'''
-    mesh = M.getICMesh(1.3, kstep, h)
+    mesh = M.getICMesh(1, kstep, h)
     scale = GaussScale(2)
-    scale.setMu(np.asarray([[h*fun.f1(0,0),h*fun.f2(0,0)]]).T)
-    # scale.setMu(np.asarray([[0,0]]).T)
+    scale.setMu(h*fun.drift(np.asarray([0,0])).T)
+    scale.setCov(h*fun.diff(np.asarray([0,0])).T)
     
-    scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
     pdf = fun.Gaussian(scale, mesh)
     
     
@@ -79,9 +56,11 @@ def DTQ(NumSteps, kstep, h):
     # needLPBool = numpy.zeros((2, 2), dtype=bool)
     
     '''Initialize Transition probabilities'''
-    maxDegFreedom = 6000
-    NumLejas = 6
+    maxDegFreedom = len(mesh)*2
+    # NumLejas = 15
+    # numQuadFit = max(int(np.ceil(4/kstep)),20)
     numQuadFit = 20
+    
     GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
     for i in range(len(mesh)):
         v = fun.G(i,mesh, h)
@@ -102,10 +81,11 @@ def DTQ(NumSteps, kstep, h):
     
     
     for i in trange(1,NumSteps+1):
+        t = NumSteps*kstep
         if (i >= 1):
             '''Add points to mesh'''
             mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints)
-            if i%10==0:
+            if i%20==0:
                 '''Remove points from mesh'''
                 mesh, pdf, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat, tri = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, removeZerosValuesIfLessThanTolerance)
               
@@ -113,7 +93,7 @@ def DTQ(NumSteps, kstep, h):
         if i >-1: 
             '''Step forward in time'''
             pdf = np.expand_dims(pdf,axis=1)
-            pdf, condnums, meshTemp, LPMat, LPMatBool, QuadFitMat,QuadFitBool, LPReuse, AltMethodCount = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, QuadFitMat,QuadFitBool, numQuadFit)
+            pdf, condnums, meshTemp, LPMat, LPMatBool, QuadFitMat,QuadFitBool, LPReuse, AltMethodCount = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, QuadFitMat,QuadFitBool, numQuadFit, twiceQuadFit)
             pdf = np.squeeze(pdf)
             '''Add new values to lists for graphing'''
             PdfTraj.append(np.copy(pdf))
@@ -155,58 +135,9 @@ def DTQ(NumSteps, kstep, h):
 
     surfaces = []
     for ii in range(len(PdfTraj)):
-        ana = TwoDdiffusionEquation(Meshes[ii],1, 0.01*(ii+1),5)
+        ana = TwoDdiffusionEquation(Meshes[ii],1, h*(ii+1),5)
         surfaces.append(ana)
 
-    LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, plot=False)
+    LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, plot=True)
     return Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod
 
-# Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h)
-    
-# '''Plot figure'''
-# if PlotFigure:
-#     fig = plt.figure()
-#     ax = Axes3D(fig)
-#     index =10
-#     ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
-#     plt.show()
-
-# '''Plot Animation'''
-# if PlotAnimation:
-#     def update_graph(num):
-#         graph.set_data (Meshes[num][:,0], Meshes[num][:,1])
-#         graph.set_3d_properties(PdfTraj[num])
-#         title.set_text('3D Test, time={}'.format(num))
-#         return title, graph
-    
-    
-#     fig = plt.figure()
-#     ax = fig.add_subplot(111, projection='3d')
-#     title = ax.set_title('3D Test')
-        
-#     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker=".")
-#     ax.set_zlim(0, np.max(PdfTraj[5]))
-#     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
-#                                               interval=100, blit=False)
-#     plt.show()
-
-
-# '''Errors'''
-# if ComputeErrors:
-#     pkl_file = open(SolutionPDFFile, "rb" ) 
-#     pkl_file2 = open(SolutionMeshFile, "rb" ) 
-#     mesh2 = pickle.load(pkl_file2)
-#     surfaces = pickle.load(pkl_file)
-#     ErrorVals(Meshes, PdfTraj, mesh2, surfaces)
-
-
-# # fig = plt.figure()
-# # ax = Axes3D(fig)
-# # index =20
-# # ana = TwoDdiffusionEquation(Meshes[index],0.5, 0.01*(index+1),2)
-# # ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='r', marker='.')
-# # ax.scatter(Meshes[index][:,0], Meshes[index][:,1],ana, c='k', marker='.')
-# # plt.show()
-
-
-    
