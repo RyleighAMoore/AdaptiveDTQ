@@ -115,7 +115,9 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
             
             v = np.expand_dims(G(0,mesh12, h),1)
             
-            # integrand = newIntegrand(muX, muY, mesh12, h)
+            integrand1 = newIntegrand(muX, muY, mesh12, h)
+            testing1 = np.squeeze(pdf12)*integrand1
+            # testing1 = np.squeeze(pdf12)*testing1
             # testing = np.squeeze(pdfNew)*integrand
             
             g = Gaussian(scaling, mesh12)

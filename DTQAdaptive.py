@@ -24,8 +24,8 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
     deg =degree
     addPointsToBoundaryIfBiggerThanTolerance = 10**(-deg)
     removeZerosValuesIfLessThanTolerance = 10**(-deg-0.5)
-    minDistanceBetweenPoints = max(0.15, kstep)
-    maxDistanceBetweenPoints =  max(0.2, kstep)
+    minDistanceBetweenPoints = kstep #min(0.12, kstep)
+    maxDistanceBetweenPoints =  kstep + kstep*0.2 # max(0.17, kstep)
     start = datetime.now()
     
     ''' Initializd orthonormal Polynomial family'''
@@ -40,7 +40,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
     mesh = M.getICMesh(1, kstep, h)
     scale = GaussScale(2)
     scale.setMu(h*fun.drift(np.asarray([0,0])).T)
-    scale.setCov(h*fun.diff(np.asarray([0,0])).T)
+    scale.setCov((h*fun.diff(np.asarray([0,0]))*fun.diff(np.asarray([0,0])).T).T)
     
     pdf = fun.Gaussian(scale, mesh)
     
@@ -135,7 +135,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
 
     surfaces = []
     for ii in range(len(PdfTraj)):
-        ana = TwoDdiffusionEquation(Meshes[ii],1, h*(ii+1),2)
+        ana = TwoDdiffusionEquation(Meshes[ii],1, h*(ii+1),3)
         surfaces.append(ana)
 
     LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, plot=True)

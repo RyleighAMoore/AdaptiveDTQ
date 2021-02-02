@@ -60,7 +60,7 @@ def checkIntegrandForAddingPointsAroundBoundaryPoints(PDF, addPointsToBoundaryIf
     '''Check if the points on the edge are too big and we need more points around them
     Uses alpha hull to get the boundary points if boundaryOnly is True.'''
     valueList = -1*np.ones(len(PDF)) # Set to small values for placeholder
-    pointsOnEdge = getBoundaryPoints(Mesh, tri, maxDistanceBetweenPoints*2)
+    pointsOnEdge = getBoundaryPoints(Mesh, tri, maxDistanceBetweenPoints*1.5)
     for i in pointsOnEdge:
         valueList[i]=PDF[i]
     addingAround = [np.asarray(valueList) >= addPointsToBoundaryIfBiggerThanTolerance]
@@ -70,7 +70,7 @@ def checkIntegrandForAddingPointsAroundBoundaryPoints(PDF, addPointsToBoundaryIf
 def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat, removeZerosValuesIfLessThanTolerance):
     stillRemoving = True
     '''# Removing boundary points'''
-    while stillRemoving: 
+    while stillRemoving:
         boundaryZeroPointsBoolArray = checkIntegrandForRemovingSmallPoints(Pdf,Mesh,tri, removeZerosValuesIfLessThanTolerance)
         iivals = np.expand_dims(np.arange(len(Mesh)),1)
         index = iivals[boundaryZeroPointsBoolArray] # Points to remove
@@ -122,15 +122,15 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, addPointsToBoundaryIfBiggerTha
     count = 0
     MeshOrig = np.copy(Mesh)
     PdfOrig = np.copy(Pdf)
-    while keepAdding:
+    while keepAdding and count <3:
         numPointsAdded = 0
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation,maxDistanceBetweenPoints)
         iivals = np.expand_dims(np.arange(len(Mesh)),1)
         index = iivals[boundaryPointsToAddAround]
         if len(index) < 1:
-            keepAdding= False
+            keepAdding = False
         for indx in index:
-            newPoints = addPointsRadially(Mesh[indx,0], Mesh[indx,1], Mesh, 8, minDistanceBetweenPoints)
+            newPoints = addPointsRadially(Mesh[indx,0], Mesh[indx,1], Mesh, 8, minDistanceBetweenPoints, maxDistanceBetweenPoints)
             newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, minDistanceBetweenPoints,maxDistanceBetweenPoints)
             if len(newPoints)>0:
                 Mesh = np.append(Mesh, newPoints, axis=0)
@@ -140,13 +140,15 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, addPointsToBoundaryIfBiggerTha
         if numPointsAdded > 0:
             newPoints = Mesh[-numPointsAdded:,:]
             interp = [griddata(MeshOrig, PdfOrig, newPoints, method='cubic', fill_value=removeZerosValuesIfLessThanTolerance)][0]
+            # interp = np.ones(len(newPoints))*addPointsToBoundaryIfBiggerThanTolerance*0.9
+            # interp = np.zeros(len(newPoints))
             Pdf = np.append(Pdf, interp)
             triangulation = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
         count = count +1
     return Mesh, Pdf, triangulation, ChangedBool
 
 
-def addPointsRadially(pointX, pointY, mesh, numPointsToAdd, minDistanceBetweenPoints):
+def addPointsRadially(pointX, pointY, mesh, numPointsToAdd, minDistanceBetweenPoints, maxDistanceBetweenPoints):
     radius = minDistanceBetweenPoints
     dTheta = 2*np.pi/numPointsToAdd
     points = []
@@ -154,7 +156,7 @@ def addPointsRadially(pointX, pointY, mesh, numPointsToAdd, minDistanceBetweenPo
         newPointX = radius*np.cos(i*dTheta)+pointX
         newPointY = radius*np.sin(i*dTheta) + pointY
         nearestPoint,distToNearestPoint, idx = UM.findNearestPoint(newPointX, newPointY, mesh)
-        if distToNearestPoint >= minDistanceBetweenPoints*0.9:
+        if distToNearestPoint >= minDistanceBetweenPoints*0.9 and distToNearestPoint <= maxDistanceBetweenPoints*1.1:
             points.append([newPointX, newPointY])
     return np.asarray(points)
     
@@ -166,7 +168,7 @@ def checkIfDistToClosestPointIsOk(newPoints, Mesh, minDistanceBetweenPoints,maxD
         newPointX = newPoints[i,0]
         newPointY = newPoints[i,1]
         nearestPoint, distToNearestPoint, indx = UM.findNearestPoint(newPointX, newPointY, Mesh)
-        if distToNearestPoint > minDistanceBetweenPoints*0.9 and distToNearestPoint < maxDistanceBetweenPoints*1.1:
+        if distToNearestPoint >= minDistanceBetweenPoints*0.9 and distToNearestPoint <= maxDistanceBetweenPoints*1.1:
             points.append([newPointX, newPointY])
     return np.asarray(points)
 

@@ -5,16 +5,14 @@ import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 
 '''Initialization Parameters'''
-NumSteps = 20
+NumSteps = 100
 
 '''Discretization Parameters'''
-kstep = 0.2
+kstep = 0.15
 h=0.01
 
-
-
-x = np.arange(0.05,0.3,0.05)
-times = np.asarray(np.arange(0,(NumSteps+1)*h,h))
+x = [2,3,4,5]
+times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
 
 L2ErrorArray = np.zeros((len(x),len(times)))
 LinfErrorArray = np.zeros((len(x),len(times)))
@@ -24,7 +22,7 @@ timesArray = []
 stepArray = []
 count = 0
 for i in x:
-    Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= D.DTQ(NumSteps, i, h, 10, True, 4)
+    Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstep, h, 10, True, i)
     L2ErrorArray[count,:] = np.asarray(L2Errors)
     LinfErrorArray[count,:] = np.asarray(LinfErrors)
     L1ErrorArray[count,:] = np.asarray(L1Errors)
@@ -46,13 +44,22 @@ ax.set_ylabel('mesh space')
 ax.set_zlabel('Error')
 plt.show()    
 
+from matplotlib import rcParams
+# Font styling
+rcParams['font.family'] = 'serif'
+rcParams['font.weight'] = 'bold'
+rcParams['font.size'] = '12'
+fontprops = {'fontweight': 'bold'}
 
 plt.figure()
-for k in range(0, 11,1):
+count = 0
+for k in x:
+    print(count)
     # plt.semilogy(x, LinfErrorArray[k,:], label = 'Linf Error')
     # plt.semilogy(x, L2Errors[k,:], label = 'L2 Error')
     # plt.semilogy(x, np.asarray(L1Errors), label = 'L1 Error')
-    plt.semilogy(times, LinfErrorArray[k,:], label = 'Spatial Step Size %f' %stepArray[k])
-    plt.xlabel('Time Step')
-    plt.ylabel('Error')
+    plt.semilogy(times, L2wErrorArray[count,:], label = r'$\beta = %d$' %stepArray[count])
+    plt.xlabel('Time')
+    plt.ylabel(r'$L_{2w}$ Error')
     plt.legend()
+    count = count+1

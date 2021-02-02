@@ -11,16 +11,16 @@ def drift(mesh):
     # return np.asarray([x**2/2-y*x, x*y+y**2/2]).T
 
     # return np.asarray([x-y,x+y]).T
-    return np.asarray([2*np.ones((np.size(mesh,0))), np.zeros((np.size(mesh,0)))]).T
+    # return np.asarray([3*np.ones((np.size(mesh,0))), np.zeros((np.size(mesh,0)))]).T
     # return np.asarray([10*x*(1- r ** 2), 10*y*(1- r ** 2)]).T
-    # return np.asarray([5*erf(10*x), 5*erf(10*y)]).T
+    return np.asarray([3*erf(10*x), 3*erf(10*y)]).T
 
 def diff(mesh):
-    if mesh.ndim ==1:
+    if mesh.ndim == 1:
         mesh = np.expand_dims(mesh, axis=0)
-    # return np.diag([0.5,0.5])
+    return np.diag([0.5,0.5])+ np.ones((2,2))
     return np.diag([1,1])
-    return np.diag([np.sqrt(2),np.sqrt(2)])
+    # return np.diag([np.sqrt(2),np.sqrt(2)])
 
 # Density, distribution ction, quantile ction and random generation for the
 # normal distribution with mean equal to mu and standard deviation equal to sigma.
@@ -56,6 +56,7 @@ def G(indexOfMesh,mesh, h):
     D = mesh.shape[1]
     mean = mesh+drift(mesh)*h
     cov = diff(mesh) ** 2 * h
+    cov = diff(mesh)@diff(mesh).T * h
     soln_vals = np.empty(len(mesh))
     const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
     invCov = np.linalg.inv(cov)
@@ -75,6 +76,7 @@ def AddPointToG(mesh, newPointindex, h, GMat):
     mu = mesh[-1,:]+drift(np.expand_dims(mesh[-1,:],axis=0))*h
     mu = mu[0]
     cov = diff(mesh) ** 2 * h # put inside loop if cov changes spatially
+    cov = diff(mesh)@diff(mesh).T * h
     newCol = np.empty(len(mesh))
     const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
     covInv = np.linalg.inv(cov)

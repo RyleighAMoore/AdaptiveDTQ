@@ -63,8 +63,8 @@ mesh = np.vstack([X.ravel(), Y.ravel()]).T
 # mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep, includeOrigin=True)
 scale = GaussScale(2)
 # scale.setMu(np.asarray([[0,0]]).T)
-scale.setMu(np.asarray([[h*fun.f1(0,0),h*fun.f2(0,0)]]).T)
-scale.setSigma(np.asarray([np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[0,0],np.sqrt(h)*fun.diff(np.asarray([[0,0]]))[1,1]]))
+scale.setMu(h*fun.drift(np.asarray([0,0])).T)
+scale.setCov((h*fun.diff(np.asarray([0,0]))*fun.diff(np.asarray([0,0])).T).T)
 pdf = fun.Gaussian(scale, mesh)
 # 
 # for i in range(len(pdf)):
