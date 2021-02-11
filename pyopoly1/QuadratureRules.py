@@ -134,7 +134,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
     '''Divides out Gaussian using a quadratic fit. Then computes the update using a Leja Quadrature rule.'''
     # if not LPMatBool[index][0]:
     x,y = fullMesh.T
-    if not QuadFitBool[index]:
+    if 1>0: #not QuadFitBool[index]:
         mesh, distances, ii = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh,numQuadPoints, getIndices = True)
         # plt.figure()
         # plt.plot(fullMesh[:,0], fullMesh[:,1],'ok')
@@ -157,10 +157,14 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
                 pdf = fullPDF[ii[:numQuadPoints]]
                 scale1, temp, cc, Const = fitQuad(mesh, pdf)
             QuadFitMat[index,:] = ii
+            QuadFitBool[index] = True
         
     else:
-        QuadPoints = QuadFitMat[index,:]
+        QuadPoints = QuadFitMat[index,:].astype(int)
         mesh = fullMesh[QuadPoints]
+        # plt.figure()
+        # plt.scatter(mesh[:,0], mesh[:,1])
+        # plt.scatter(fullMesh[index,0], fullMesh[index,1])
         pdf = fullPDF[QuadPoints]
         scale1, temp, cc, Const = fitQuad(mesh, pdf)
         
@@ -185,6 +189,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
                 LPMatBool[index] = True
             else: 
                 LPMatBool[index] = False
+                QuadFitBool[index] = False
             return value[0], condNum, scale1, LPMat, LPMatBool, QuadFitMat,QuadFitBool,0
     return float('nan'), float('nan'), float('nan'), LPMat, LPMatBool, QuadFitMat,QuadFitBool,0
 

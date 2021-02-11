@@ -58,7 +58,6 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
     '''Initialize Transition probabilities'''
     maxDegFreedom = len(mesh)*2
     # NumLejas = 15
-    # numQuadFit = max(int(np.ceil(4/kstep)),20)
     numQuadFit = 20
     
     GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
@@ -85,7 +84,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
         if (i >= 1):
             '''Add points to mesh'''
             mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints)
-            if i%20==0:
+            if i>=10:
                 '''Remove points from mesh'''
                 mesh, pdf, GMat, LPMat, LPMatBool, QuadFitBool, QuadFitMat, tri = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool,QuadFitBool,QuadFitMat, removeZerosValuesIfLessThanTolerance)
               
@@ -135,7 +134,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
 
     surfaces = []
     for ii in range(len(PdfTraj)):
-        ana = TwoDdiffusionEquation(Meshes[ii],1, h*(ii+1),3)
+        ana = TwoDdiffusionEquation(Meshes[ii],np.sqrt(2), h*(ii+1),5)
         surfaces.append(ana)
 
     LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, plot=True)

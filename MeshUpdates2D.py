@@ -52,6 +52,10 @@ def getBoundaryPoints(Mesh, tri, alpha):
 
 def checkIntegrandForRemovingSmallPoints(PDF, Mesh, tri, removeZerosValuesIfLessThanTolerance):
     '''Check if any points are tiny and can be removed'''
+    # valueList = 10000*np.ones(len(PDF)) # Set to small values for placeholder
+    # pointsOnEdge = getBoundaryPoints(Mesh, tri, 0.15*1.5)
+    # for i in pointsOnEdge:
+    #     valueList[i]=PDF[i]
     possibleZeros = [np.asarray(PDF) < removeZerosValuesIfLessThanTolerance] # want value to be small
     return np.asarray(possibleZeros).T
 
@@ -71,9 +75,9 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBoo
     stillRemoving = True
     '''# Removing boundary points'''
     while stillRemoving:
-        boundaryZeroPointsBoolArray = checkIntegrandForRemovingSmallPoints(Pdf,Mesh,tri, removeZerosValuesIfLessThanTolerance)
+        ZeroPointsBoolArray = checkIntegrandForRemovingSmallPoints(Pdf,Mesh,tri, removeZerosValuesIfLessThanTolerance)
         iivals = np.expand_dims(np.arange(len(Mesh)),1)
-        index = iivals[boundaryZeroPointsBoolArray] # Points to remove
+        index = iivals[ZeroPointsBoolArray] # Points to remove
         if len(index)>0:
             Mesh = np.delete(Mesh, index, 0)
             Pdf = np.delete(Pdf, index, 0)
@@ -104,6 +108,7 @@ def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBoo
             tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
         else:
             stillRemoving = False
+        
     return Mesh, Pdf, GMat, LPMat, LPMatBool, QuadFitBool, tri
 
 

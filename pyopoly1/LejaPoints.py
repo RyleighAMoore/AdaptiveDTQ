@@ -49,6 +49,7 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
     
     if returnIndices:
         if successBool == False:
+            print("LEJA FAIL - LEJA FAIL - LEJA FAIL")
             return [float('nan')], [float('nan')]
         assert successBool == True, "Need to implement returning indices when successBool is False."
         

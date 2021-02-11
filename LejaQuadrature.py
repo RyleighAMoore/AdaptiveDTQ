@@ -76,8 +76,8 @@ lejaPointsFinal, new = getLejaPoints(10, np.asarray([[0,0]]).T, poly, num_candid
     
 def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool,QuadFitMat,QuadFitBool, numQuadFit, twiceQuadFit):
     numLejas = LPMat.shape[1]
-    sigmaX=np.sqrt(h)*diff(np.asarray([[0,0]]))[0,0]
-    sigmaY=np.sqrt(h)*diff(np.asarray([[0,0]]))[1,1]
+    # sigmaX=np.sqrt(h)*diff(np.asarray([[0,0]]))[0,0]
+    # sigmaY=np.sqrt(h)*diff(np.asarray([[0,0]]))[1,1]
     
     newPDF = []
     condNums = []
@@ -93,7 +93,8 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
         
         scaling = GaussScale(2)
         scaling.setMu(np.asarray([[muX,muY]]).T)
-        scaling.setSigma(np.asarray([sigmaX,sigmaY]))
+        scaling.setCov((h*diff(np.asarray([muX,muY]))*diff(np.asarray([muX,muY])).T).T)
+
         
         GPDF = np.expand_dims(GMat[ii,:meshSize], 1)*pdf
         # GPDF2 = np.expand_dims(GVals2(muX, muY, mesh, h),1)*pdf
@@ -103,13 +104,12 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
         LPUse = LPUse+reuseLP
         '''Alternative Method'''
         if math.isnan(condNum) or value <0 or condNum >10: 
-            
+            sigmaX=scaling.cov[0,0]
+            sigmaY=scaling.cov[1,1]
             mesh12 = mapPointsBack(muX, muY, lejaPointsFinal, sigmaX, sigmaY)
             meshLP, distances, indx = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], mesh,numQuadFit, getIndices = True)
             pdfNew = pdf[indx]
             
-            
-    
             pdf12 = np.asarray(griddata(meshLP, pdfNew, mesh12, method='cubic', fill_value=0))
             pdfNew[pdfNew < 0] = 10**(-8)
             

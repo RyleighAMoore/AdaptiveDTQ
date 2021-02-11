@@ -24,7 +24,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 20
+NumSteps = 40
 '''Discretization Parameters'''
 a = 1
 h=0.01
@@ -36,10 +36,12 @@ SolutionPDFFile = 'PickledData/SolnPDF-Erf.p'
 SolutionMeshFile = 'PickledData/SolnMesh-Erf.p'
 # SolutionPDFFile = 'SolnPDF-ErfIC.p'
 # SolutionMeshFile = 'SolnMesh-ErfIC.p'
-twiceQuadFit = False
+twiceQuadFit = True
 numLejas = 10
 
 Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 3)
+twiceQuadFit = False
+Meshes2, PdfTraj2, LinfErrors2, L2Errors2, L1Errors2, L2wErrors2, Timing2, LPReuseArr2, AltMethod2= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 3)
 
 
 x = np.arange(0,(NumSteps+1)*h,h)
@@ -48,6 +50,11 @@ plt.semilogy(x, np.asarray(LinfErrors), label = 'Linf Error, deg=2')
 plt.semilogy(x, np.asarray(L2Errors), label = 'L2 Error, deg=2')
 plt.semilogy(x, np.asarray(L1Errors), label = 'L1 Error, deg=2')
 plt.semilogy(x, np.asarray(L2wErrors), label = 'L2w Error, deg=2')
+
+plt.semilogy(x, np.asarray(LinfErrors2), '.', label = 'Linf Error, deg=2')
+plt.semilogy(x, np.asarray(L2Errors2),  '.',label = 'L2 Error, deg=2')
+plt.semilogy(x, np.asarray(L1Errors2),  '.',label = 'L1 Error, deg=2')
+plt.semilogy(x, np.asarray(L2wErrors2),  '.',label = 'L2w Error, deg=2')
 plt.xlabel('Time')
 plt.ylabel('Error')
 # plt.ylim([10**(-8), 10**(-1)])
@@ -65,7 +72,7 @@ plt.figure()
 # ax = Axes3D(fig)
 M= []
 S = []
-index = -1
+index = -2
 # for x in Meshes[0]:
 #     M.append(x)
 for x in Meshes[index]:
