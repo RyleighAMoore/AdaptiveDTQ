@@ -18,30 +18,30 @@ from QuadraticFit import fitQuad
 from scipy.interpolate import griddata
 import math
 
-def getValsWithinRadius(Px,Py,canonicalMesh, pdf, numCandidiates):
-    point = np.asarray([Px,Py])
-    normList =np.sqrt(np.sum((point*np.shape(canonicalMesh)-canonicalMesh)**2,axis=1))
-    meshVals = []
-    pdfVals = []
-    for val in range(len(normList)):
-        if normList[val] < np.sqrt(2)*numCandidiates:
-           meshVals.append(canonicalMesh[val])
-           pdfVals.append(pdf[val])
-    return np.asarray(meshVals), np.asarray(pdfVals)
+# def getValsWithinRadius(Px,Py,canonicalMesh, pdf, numCandidiates):
+#     point = np.asarray([Px,Py])
+#     normList =np.sqrt(np.sum((point*np.shape(canonicalMesh)-canonicalMesh)**2,axis=1))
+#     meshVals = []
+#     pdfVals = []
+#     for val in range(len(normList)):
+#         if normList[val] < np.sqrt(2)*numCandidiates:
+#            meshVals.append(canonicalMesh[val])
+#            pdfVals.append(pdf[val])
+#     return np.asarray(meshVals), np.asarray(pdfVals)
 
 
-def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
-    xCan=VT.map_to_canonical_space(mesh, scaling) 
-    V = poly.eval(xCan, range(len(xCan)))
-    vinv = np.linalg.inv(V)
-    c = np.matmul(vinv, pdf)
-    plot=False
-    if plot:
-        interp = np.matmul(V,c)
-        plt.figure()
-        plt.plot(mesh, interp,'.')
-        plt.plot(mesh, pdf)
-    return c[0]
+# def QuadratureByInterpolation1D(poly, scaling, mesh, pdf):
+#     xCan=VT.map_to_canonical_space(mesh, scaling) 
+#     V = poly.eval(xCan, range(len(xCan)))
+#     vinv = np.linalg.inv(V)
+#     c = np.matmul(vinv, pdf)
+#     plot=False
+#     if plot:
+#         interp = np.matmul(V,c)
+#         plt.figure()
+#         plt.plot(mesh, interp,'.')
+#         plt.plot(mesh, pdf)
+#     return c[0]
 
 
 def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):

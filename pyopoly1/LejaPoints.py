@@ -14,6 +14,8 @@ import UnorderedMesh as UM
 from mpl_toolkits.mplot3d import Axes3D
 import math
 from Functions import diff
+from pyopoly1 import variableTransformations as VT
+
 
 
 
@@ -114,6 +116,8 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
 allPoints nx2 array of the original point and the neighbors we consider.
 returns transformed points so that point is centered at 0,0
 """
+from pyopoly1 import variableTransformations as VT
+
 def mapPointsTo(mean, allPoints,cov):    
     dx = mean[0]*np.ones((1,len(allPoints))).T
     dy = mean[1]*np.ones((1,len(allPoints))).T
@@ -124,21 +128,22 @@ def mapPointsTo(mean, allPoints,cov):
     vals = np.linalg.inv(np.linalg.cholesky(cov))@(np.asarray(allPoints).T - delta.T)
     return vals.T
 
-def mapPointsBack(mean, allPoints, cov):    
-    dx = mean[0]*np.ones((1,len(allPoints))).T
-    dy = mean[1]*np.ones((1,len(allPoints))).T
-    delta = np.hstack((dx,dy))
+# def mapPointsBack(mean, allPoints, cov):    
+#     dx = mean[0]*np.ones((1,len(allPoints))).T
+#     dy = mean[1]*np.ones((1,len(allPoints))).T
+#     delta = np.hstack((dx,dy))
     
-    # scaleX = scaleX*np.ones((1,len(allPoints))).T
-    # scaleY = scaleY*np.ones((1,len(allPoints))).T
-    # scaleVec = np.hstack((scaleX,scaleY))
-    vals = np.linalg.cholesky(cov)@np.asarray(allPoints).T + delta.T
-    return vals.T
+#     # scaleX = scaleX*np.ones((1,len(allPoints))).T
+#     # scaleY = scaleY*np.ones((1,len(allPoints))).T
+#     # scaleVec = np.hstack((scaleX,scaleY))
+#     vals = np.linalg.cholesky(cov)@np.asarray(allPoints).T + delta.T
+#     return vals.T
 
 def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):   
     # sigmaX = np.sqrt(scale.cov[0,0]); sigmaY = np.sqrt(scale.cov[1,1])
     
-    candidatesFull = mapPointsTo(scale.mu, Mesh, np.sqrt(scale.cov))
+    # candidatesFull = mapPointsTo(scale.mu, Mesh, np.sqrt(scale.cov))
+    candidatesFull = VT.map_to_canonical_space(Mesh,scale)
     indices = [np.nan]
     count = 1
     while math.isnan(indices[0]) or count > 4:
@@ -162,7 +167,8 @@ def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
         # plt.legend()
         # plt.show()
         return 0, 0, indices
-    lejaPointsFinal = mapPointsBack(candidates[0],lejaPointsFinal, scale.cov)
+    lejaPointsFinal = VT.map_from_canonical_space(lejaPointsFinal, scale)
+    # lejaPointsFinal = mapPointsBack(candidates[0],lejaPointsFinal, scale.cov)
 
     plot= False
     if plot:

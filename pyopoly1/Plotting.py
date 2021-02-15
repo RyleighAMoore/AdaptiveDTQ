@@ -14,7 +14,6 @@ import pyopoly1.indexing
 from pyopoly1 import QuadratureRules as QR
 from Functions import *
 import UnorderedMesh as UM
-from pyopoly1.LejaPoints import getLejaPoints,mapPointsBack
 
 
 from pyopoly1.Scaling import GaussScale

@@ -8,12 +8,13 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from Functions import drift, diff, GVals, Gaussian, G
 from scipy.interpolate import griddata, interp2d 
-from pyopoly1.LejaPoints import getLejaSetFromPoints, mapPointsBack, mapPointsTo, getLejaPoints
+from pyopoly1.LejaPoints import getLejaSetFromPoints, getLejaPoints
 from pyopoly1.QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolation_Simple, QuadratureByInterpolationND_DivideOutGaussian
 from pyopoly1.families import HermitePolynomials
 from pyopoly1.Scaling import GaussScale
 from pyopoly1 import indexing
 import math
+from pyopoly1 import variableTransformations as VT
 
 
 
@@ -106,8 +107,8 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
             scaling.setCov((h*diff(np.asarray([muX,muY]))*diff(np.asarray([muX,muY])).T).T)
             # sigmaX=np.sqrt(scaling.cov[0,0])
             # sigmaY=np.sqrt(scaling.cov[1,1])
-            
-            mesh12 = mapPointsBack(mesh[ii,:], lejaPointsFinal, scaling.cov)
+            mesh12 = VT.map_from_canonical_space(lejaPointsFinal, scaling)
+            # mesh12 = mapPointsBack(mesh[ii,:], lejaPointsFinal, scaling.cov)
             meshLP, distances, indx = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], mesh,numQuadFit, getIndices = True)
             pdfNew = pdf[indx]
             
