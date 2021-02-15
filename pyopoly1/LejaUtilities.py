@@ -56,7 +56,7 @@ def get_lu_leja_samples(poly, generate_basis_matrix,
         num_initial_rows=0
     
     numSamples = len(candidate_samples.T)
-    basis_matrix = generate_basis_matrix(candidate_samples.T, poly.lambdas[:numSamples,:], poly.ab, poly)
+    basis_matrix = generate_basis_matrix(candidate_samples.T, poly.lambdas[:num_leja_samples,:], poly.ab, poly)
 
     assert num_leja_samples <= basis_matrix.shape[1]
     if preconditioning_function is not None:

@@ -13,6 +13,7 @@ from pyopoly1.opolynd import opolynd_eval
 import UnorderedMesh as UM
 from mpl_toolkits.mplot3d import Axes3D
 import math
+from Functions import diff
 
 
 
@@ -109,93 +110,49 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
 #     return np.asarray(samples).T, np.asarray(newLejaSamples)
 
 
-'''Some code for testing - Should make a test file out of some of these'''
-# from families import HermitePolynomials
-# import indexing
-# H = HermitePolynomials(rho=0)
-# d=2
-# k = 20   
-# ab = H.recurrence(k+1)
-# lambdas = indexing.total_degree_indices(d, k)
-# H.lambdas = lambdas
-# one, two = getLejaPoints(231, np.asarray([[0,0]]).T, H, candidateSampleMesh = [], returnIndices = False)
-# plt.figure()
-# plt.scatter(one[:,0], one[:,1])
-
 """
 allPoints nx2 array of the original point and the neighbors we consider.
 returns transformed points so that point is centered at 0,0
 """
-def mapPointsTo(Px, Py, allPoints,scaleX, scaleY):    
-    dx = Px*np.ones((1,len(allPoints))).T
-    dy = Py*np.ones((1,len(allPoints))).T
+def mapPointsTo(mean, allPoints,cov):    
+    dx = mean[0]*np.ones((1,len(allPoints))).T
+    dy = mean[1]*np.ones((1,len(allPoints))).T
     delta = np.hstack((dx,dy))
-    scaleX = scaleX*np.ones((1,len(allPoints))).T
-    scaleY = scaleY*np.ones((1,len(allPoints))).T
-    scaleVec = np.hstack((scaleX,scaleY))
-    vals = (np.asarray(allPoints) - delta)*scaleVec
-    return vals
+    # scaleX = scaleX*np.ones((1,len(allPoints))).T
+    # scaleY = scaleY*np.ones((1,len(allPoints))).T
+    # scaleVec = np.hstack((scaleX,scaleY))
+    vals = np.linalg.inv(np.linalg.cholesky(cov))@(np.asarray(allPoints).T - delta.T)
+    return vals.T
 
-def mapPointsBack(Px, Py, allPoints, scaleX, scaleY):    
-    dx = Px*np.ones((1,len(allPoints))).T
-    dy = Py*np.ones((1,len(allPoints))).T
+def mapPointsBack(mean, allPoints, cov):    
+    dx = mean[0]*np.ones((1,len(allPoints))).T
+    dy = mean[1]*np.ones((1,len(allPoints))).T
     delta = np.hstack((dx,dy))
-    scaleX = scaleX*np.ones((1,len(allPoints))).T
-    scaleY = scaleY*np.ones((1,len(allPoints))).T
-    scaleVec = np.hstack((scaleX,scaleY))
-    vals = (scaleVec)*np.asarray(allPoints) + delta
-    return vals
-
-'''
-scaleParams = [muX, muY, sigmaX, sigmaY]
-numNewLejaPoints = number of desired points
-numCandidateSamples = number of samples to chose candidates from.
-poly: standard normal PCE
-neighbors = [numNeighbors, mesh]
-'''
-# def getLejaPointsWithStartingPoints(scaleParams, numLejaPoints, numCandidateSamples, poly, neighbors=[0,[]]):
-#     Px = scaleParams.mu[0][0]; Py = scaleParams.mu[0][0]
-#     sigmaX = np.sqrt(scaleParams.cov[0,0]); sigmaY = np.sqrt(scaleParams.cov[1,1])
-#     if neighbors[0] > 0: 
-#         numNeighbors = neighbors[0]; mesh = neighbors[1]
-#         neighbors, distances = UM.findNearestKPoints(Px, Py, mesh, numNeighbors) 
-#         neighbors = np.vstack((neighbors,[Px,Py]))
-#     else: # make sure we have at least one point.
-#         numNeighbors = 0
-#         neighbors = np.asarray([[Px],[Py]]).T
-        
-#     intialPoints = mapPointsTo(Px,Py,neighbors, 1,1)
-#     lejaPointsFinal1, newLeja = getLejaPoints(numLejaPoints, intialPoints.T, poly, num_candidate_samples=numCandidateSamples)
-#     lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal1, sigmaX, sigmaY)
-#     newLeja = mapPointsBack(Px,Py,newLeja,sigmaX,sigmaY)
     
-#     plot= False
-#     if plot:
-#         plt.figure()
-#         plt.plot(neighbors[:,0], neighbors[:,1], '*k', label='Neighbors', markersize=14)
-#         plt.plot(Px, Py, '*r',label='Main Point',markersize=14)
-#         plt.plot(lejaPointsFinal[:,0], lejaPointsFinal[:,1], '.c', label='Leja Points',markersize=10)
-#         # plt.plot(lejaPointsFinal1[:,0], lejaPointsFinal1[:,1], '.r', label='Leja Points Unscaled',markersize=10)
-
-#         plt.legend()
-#         plt.show()
-
-#     return lejaPointsFinal, newLeja
-
-# poly = PCE.generatePCE(20, muX=0, muY=0, sigmaX = 1, sigmaY=1)
-# one, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 230, 1000, poly)
-# mesh, mesh2 = getLejaPointsWithStartingPoints([0,0,.1,.1], 12, 1000, poly, neighbors=[3,one])
+    # scaleX = scaleX*np.ones((1,len(allPoints))).T
+    # scaleY = scaleY*np.ones((1,len(allPoints))).T
+    # scaleVec = np.hstack((scaleX,scaleY))
+    vals = np.linalg.cholesky(cov)@np.asarray(allPoints).T + delta.T
+    return vals.T
 
 def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):   
-    sigmaX = np.sqrt(scale.cov[0,0]); sigmaY = np.sqrt(scale.cov[1,1])
-
-    candidatesFull = mapPointsTo(scale.mu[0], scale.mu[1], Mesh, 1/sigmaX, 1/sigmaY)
-    candidates, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], candidatesFull,50, getIndices = True)
-    Px = candidates[0,0]
-    Py = candidates[0,1]
-    candidates = candidates[1:]
+    # sigmaX = np.sqrt(scale.cov[0,0]); sigmaY = np.sqrt(scale.cov[1,1])
     
-    lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[Px,Py]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
+    candidatesFull = mapPointsTo(scale.mu, Mesh, np.sqrt(scale.cov))
+    indices = [np.nan]
+    count = 1
+    while math.isnan(indices[0]) or count > 4:
+        if count >1:
+            print("Trying to find Leja points again using more samples")
+        candidates, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], candidatesFull,30*int(count*np.ceil(np.max(diff(np.asarray([0,0]))))), getIndices = True)
+            
+        Px = candidates[0,0]
+        Py = candidates[0,1]
+        candidates = candidates[1:]
+        
+        lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[Px,Py]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
+        count = count+1
+    
     if math.isnan(indices[0]):
         # plt.figure()
         # plt.plot(candidates[:,0], candidates[:,1], '*k', label='mesh', markersize=14)
@@ -205,7 +162,7 @@ def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
         # plt.legend()
         # plt.show()
         return 0, 0, indices
-    lejaPointsFinal = mapPointsBack(Px,Py,lejaPointsFinal, sigmaX, sigmaY)
+    lejaPointsFinal = mapPointsBack(candidates[0],lejaPointsFinal, scale.cov)
 
     plot= False
     if plot:
@@ -219,73 +176,4 @@ def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
     indicesNew = indik[indices]
     return Mesh[indicesNew], Pdf[indicesNew], indicesNew
 
-
-# '''Some code for testing - Should make a test file out of some of these'''
-# if __name__ == "__main__":
-#     from Scaling import GaussScale
-#     from families import HermitePolynomials
-#     import indexing
-#     import matplotlib.pyplot as plt
-#     from mpl_toolkits.mplot3d import Axes3D
-#     h=0.01
-#     import Functions as fun
-#     import ICMeshGenerator as M
-#     poly = HermitePolynomials(rho=0)
-#     d=2
-#     k = 40    
-#     ab = poly.recurrence(k+1)
-#     lambdas = indexing.total_degree_indices(d, k)
-#     poly.lambdas = lambdas
-    
-#     IC = np.sqrt(0.005)
-#     mesh, two = getLejaPoints(230, np.asarray([[0,0]]).T, poly, candidateSampleMesh = [], returnIndices = False)
-#     # mesh = mapPointsBack(0, 0, mesh, IC, IC)
-#     mesh = M.getICMesh(1,0.1,h)
-    
-#     meshtest, two = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, returnIndices = False)
-#     meshtest = mapPointsBack(0, 0, meshtest, IC, IC)
-
-#     newmesh, two = getLejaPoints(12, np.asarray([[0,0]]).T, poly, num_candidate_samples=0, candidateSampleMesh = mesh.T, returnIndices = False)
-#     newmesh = mapPointsBack(0, 0, newmesh, IC, IC)
-
-
-#     pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], IC, IC)
-    
-#     ii=0
-#     scale = GaussScale(2)
-#     scale.setMu(np.asarray([[mesh[ii,0],mesh[ii,1]]]).T)
-#     S = IC
-#     scale.setSigma(np.asarray([S, S]))
-#     numLejaPointsToReturn = 12
-    
-#     meshFull, pdfNew = getLejaSetFromPoints(scale, mesh, numLejaPointsToReturn, poly, pdf)
-    
-#     grd = UM.generateOrderedGridCenteredAtZero(-.3, .3, -.3, .3, 0.01, includeOrigin=True)
-#     gauss2 = fun.Gaussian(scale, grd)
-    
-#     fig = plt.figure()
-#     ax = Axes3D(fig)
-#     ax.scatter(grd[:,0], grd[:,1], gauss2, c='b', marker='.')
-#     ax.scatter(mesh[:,0], mesh[:,1], pdf, c='k', marker='.')
-#     ax.scatter(meshFull[:,0], meshFull[:,1], pdfNew, c='r', marker='o')
-
-#     ax.scatter(mesh[ii,0], mesh[ii,1], np.max(pdf), c='g', marker='o')
-
-
-#     plt.figure()
-#     plt.scatter(meshFull[:,0], meshFull[:,1], label='Chosen points')
-#     plt.scatter(meshtest[:,0], meshtest[:,1],c='r', label='Real points')
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 

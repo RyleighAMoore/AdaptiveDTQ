@@ -17,6 +17,7 @@ from Errors import ErrorVals
 from datetime import datetime
 from exactSolutions import TwoDdiffusionEquation
 from Errors import ErrorValsExact
+from Functions import diff
 
 '''Plotting Parameters'''
 PlotAnimation = True
@@ -28,21 +29,21 @@ NumSteps = 20
 '''Discretization Parameters'''
 a = 1
 h=0.01
-kstep = 0.15
+kstep = min(0.15, 0.144*fun.diff(np.asarray([0,0]))[0,0]+0.0056)
 
 '''Errors'''
 ComputeErrors = False
-SolutionPDFFile = 'PickledData/SolnPDF-Erf.p'
-SolutionMeshFile = 'PickledData/SolnMesh-Erf.p'
+# SolutionPDFFile = 'PickledData/SolnPDF-Erf.p'
+# SolutionMeshFile = 'PickledData/SolnMesh-Erf.p'
 # SolutionPDFFile = 'SolnPDF-ErfIC.p'
 # SolutionMeshFile = 'SolnMesh-ErfIC.p'
 twiceQuadFit = False
 numLejas = 10
 
-Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 3)
+Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 3.5)
 
 
-x = np.arange(0,(NumSteps+1)*h,h)
+x = np.arange(h,(NumSteps+1.5)*h,h)
 plt.figure()
 plt.semilogy(x, np.asarray(LinfErrors), label = 'Linf Error, deg=2')
 plt.semilogy(x, np.asarray(L2Errors), label = 'L2 Error, deg=2')
@@ -86,8 +87,8 @@ S = np.asarray(S)
 
 # plt.tricontour(M[:,0], M[:,1], S, levels=15, linewidths=0.5, colors='k', alpha=0.6)
 plt.plot(M[:,0], M[:,1], 'k.', markersize='2')
-cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r", vmin=0.001, vmax = 0.06)
-# cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r", vmin=0.001, vmax = 1)
+# cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r", vmin=0.001, vmax = 0.06)
+cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r")
 
 cbar = plt.colorbar(cntr2)
 cbar.set_label("PDF value")

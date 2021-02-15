@@ -37,13 +37,12 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
     poly.lambdas = lambdas
     
     '''pdf after one time step with Dirac initial condition centered at the origin'''
-    mesh = M.getICMesh(1, kstep, h)
+    mesh = M.getICMesh(2*np.max(fun.diff(np.asarray([0,0]))), kstep, h)
     scale = GaussScale(2)
     scale.setMu(h*fun.drift(np.asarray([0,0])).T)
     scale.setCov((h*fun.diff(np.asarray([0,0]))*fun.diff(np.asarray([0,0])).T).T)
     
     pdf = fun.Gaussian(scale, mesh)
-    
     
     Meshes = []
     PdfTraj = []
@@ -58,7 +57,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
     '''Initialize Transition probabilities'''
     maxDegFreedom = len(mesh)*2
     # NumLejas = 15
-    numQuadFit = 20
+    numQuadFit = max(20,20*np.max(fun.diff(np.asarray([0,0]))).astype(int))*2
     
     GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
     for i in range(len(mesh)):
@@ -134,7 +133,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
 
     surfaces = []
     for ii in range(len(PdfTraj)):
-        ana = TwoDdiffusionEquation(Meshes[ii],np.sqrt(2), h*(ii+1),5)
+        ana = TwoDdiffusionEquation(Meshes[ii],fun.diff(np.asarray([0,0]))[0,0], h*(ii+1),fun.drift(np.asarray([0,0]))[0,0])
         surfaces.append(ana)
 
     LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, plot=True)
