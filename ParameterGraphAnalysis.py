@@ -5,7 +5,7 @@ import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 
 '''Initialization Parameters'''
-NumSteps = 100
+NumSteps = 30
 
 '''Discretization Parameters'''
 kstep = 0.15

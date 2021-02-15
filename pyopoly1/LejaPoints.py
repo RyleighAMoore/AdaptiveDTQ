@@ -17,8 +17,6 @@ from Functions import diff
 from pyopoly1 import variableTransformations as VT
 
 
-
-
 '''
 num_leja_samples: Total number of samples to be returned (including initial samples).
 initial_samples: The samples that we must include in the leja sequence.
@@ -61,88 +59,9 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
             indicesLeja = data_structures[2]
             return np.asarray(samples).T, indicesLeja
         return np.asarray(samples).T, np.asarray(samples[:,num_initial_samples:]).T
-  
-#     if successBool == False:
-#         print("Long Leja")
-#         numInitialAdded = 0
-#         pointsRemoved = []
-#         initial_samples_edited = np.copy(initial_samples)
-#         newLejaSamples = []
-#         ii=0
-#         while successBool == False: # Truncate initalSamples until succed to add a Leja point
-#             print("Truncating Initial Samples")
-#             assert len(pointsRemoved) <= num_initial_samples, "Removed all Initial points"
-#             pointsRemoved.append(np.asarray([initial_samples_edited[:,0]]).T)
-#             initial_samples_edited = np.delete(initial_samples_edited,0,1)
-#             num_initial_samples_edited = len(initial_samples_edited.T) 
-#             samples2, data_structures2, successBool = get_lu_leja_samples(poly, opolynd_eval,candidate_samples,num_leja_samples,preconditioning_function=precond_func,initial_samples=initial_samples_edited)
-#             ii+=1
-#         initial_samples_edited = np.copy(samples2[:, 0:num_initial_samples_edited+1])
-#         numInitialAdded = num_initial_samples - ii# Able to add a Leja point!
-#         newLejaSamples.append(np.copy(initial_samples_edited[:,-1]))
-#         ii=0
-#         while len(pointsRemoved) != 0: #Try to add one more point in Leja sequence
-#             print("Trying to Add a point")
-#             ii+=1
-#             pointToAdd = pointsRemoved.pop(-1)
-#             initial_samples_edited = np.hstack((pointToAdd,initial_samples_edited))
-#             num_initial_samples_edited = len(initial_samples_edited[1,:])
-#             num_leja_samples_edited = len(initial_samples_edited[1,:]) # Want to try and add the points
-#             num_leja_samples_edited = num_leja_samples # Want to try and add the points
 
-#             samples2, data_structures2, successBool = get_lu_leja_samples(poly,
-#         opolynd_eval,candidate_samples,num_leja_samples_edited,preconditioning_function=precond_func,initial_samples=initial_samples_edited)
-#             if successBool == True:
-# #                initial_samples_edited = np.copy(samples2[:,0:num_initial_samples_edited])
-#                 numInitialAdded += 1
-#                 print("successfully Added a Point")
-#             if successBool == False: 
-#                 pointsRemoved.append(np.asarray([initial_samples_edited[:,0]]).T)
-#                 initial_samples_edited = np.delete(initial_samples_edited,0,1)
-#                 num_leja_samples_edited = len(initial_samples_edited[1,:])+1  # Want to add one leja point
-#                 samples, data_structures, successBool = get_lu_leja_samples(poly,
-#         opolynd_eval,candidate_samples,num_leja_samples_edited,preconditioning_function=precond_func,initial_samples=initial_samples_edited)                
-#                 initial_samples_edited = np.copy(samples[0:len(initial_samples_edited[1,:])+1,:])
-#                 newLejaSamples.append(np.copy(initial_samples_edited[:,-1]))
-        
-#         for i in range(num_initial_samples_edited, len(samples2[1, :])):    
-#             newLejaSamples.append(np.asarray(samples2[:, i]))
-#     samples = samples2[:, :num_leja_samples]
-#     assert len(np.asarray(samples).T) <= len(poly.indices.T)
-#     return np.asarray(samples).T, np.asarray(newLejaSamples)
-
-
-"""
-allPoints nx2 array of the original point and the neighbors we consider.
-returns transformed points so that point is centered at 0,0
-"""
-from pyopoly1 import variableTransformations as VT
-
-def mapPointsTo(mean, allPoints,cov):    
-    dx = mean[0]*np.ones((1,len(allPoints))).T
-    dy = mean[1]*np.ones((1,len(allPoints))).T
-    delta = np.hstack((dx,dy))
-    # scaleX = scaleX*np.ones((1,len(allPoints))).T
-    # scaleY = scaleY*np.ones((1,len(allPoints))).T
-    # scaleVec = np.hstack((scaleX,scaleY))
-    vals = np.linalg.inv(np.linalg.cholesky(cov))@(np.asarray(allPoints).T - delta.T)
-    return vals.T
-
-# def mapPointsBack(mean, allPoints, cov):    
-#     dx = mean[0]*np.ones((1,len(allPoints))).T
-#     dy = mean[1]*np.ones((1,len(allPoints))).T
-#     delta = np.hstack((dx,dy))
-    
-#     # scaleX = scaleX*np.ones((1,len(allPoints))).T
-#     # scaleY = scaleY*np.ones((1,len(allPoints))).T
-#     # scaleVec = np.hstack((scaleX,scaleY))
-#     vals = np.linalg.cholesky(cov)@np.asarray(allPoints).T + delta.T
-#     return vals.T
 
 def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):   
-    # sigmaX = np.sqrt(scale.cov[0,0]); sigmaY = np.sqrt(scale.cov[1,1])
-    
-    # candidatesFull = mapPointsTo(scale.mu, Mesh, np.sqrt(scale.cov))
     candidatesFull = VT.map_to_canonical_space(Mesh,scale)
     indices = [np.nan]
     count = 1
@@ -159,16 +78,9 @@ def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
         count = count+1
     
     if math.isnan(indices[0]):
-        # plt.figure()
-        # plt.plot(candidates[:,0], candidates[:,1], '*k', label='mesh', markersize=14)
-        # plt.plot(Px, Py, '*r',label='Main Point',markersize=14)
-        # m = mapPointsTo(Px, Py, Mesh, 1/sigmaX, 1/sigmaY)
-        # plt.plot(m[:,0], m[:,1], '.c', label='all',markersize=10)
-        # plt.legend()
-        # plt.show()
         return 0, 0, indices
+    
     lejaPointsFinal = VT.map_from_canonical_space(lejaPointsFinal, scale)
-    # lejaPointsFinal = mapPointsBack(candidates[0],lejaPointsFinal, scale.cov)
 
     plot= False
     if plot:

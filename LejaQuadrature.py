@@ -105,10 +105,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
         '''Alternative Method'''
         if math.isnan(condNum) or value <0 or condNum >10: 
             scaling.setCov((h*diff(np.asarray([muX,muY]))*diff(np.asarray([muX,muY])).T).T)
-            # sigmaX=np.sqrt(scaling.cov[0,0])
-            # sigmaY=np.sqrt(scaling.cov[1,1])
             mesh12 = VT.map_from_canonical_space(lejaPointsFinal, scaling)
-            # mesh12 = mapPointsBack(mesh[ii,:], lejaPointsFinal, scaling.cov)
             meshLP, distances, indx = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], mesh,numQuadFit, getIndices = True)
             pdfNew = pdf[indx]
             

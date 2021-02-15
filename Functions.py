@@ -11,7 +11,7 @@ def drift(mesh):
     # return np.asarray([x**2/2-y*x, x*y+y**2/2]).T
 
     # return np.asarray([x-y,x+y]).T
-    return np.asarray([2*np.ones((np.size(mesh,0))), np.zeros((np.size(mesh,0)))]).T
+    return np.asarray([4*np.ones((np.size(mesh,0))), np.zeros((np.size(mesh,0)))]).T
     # return np.asarray([5*x*(3- r ** 2), 5*y*(3- r ** 2)]).T
     # return np.asarray([3*erf(10*x), 3*erf(10*y)]).T
 
@@ -20,7 +20,7 @@ def diff(mesh):
         mesh = np.expand_dims(mesh, axis=0)
     # return np.diag([1,1]) + np.ones((2,2))*0.5
     # return np.diag([mesh[:,0][0],mesh[:,1][0]])
-    return np.diag([0.2,0.2])
+    return np.diag([1,1])
 
 # Density, distribution ction, quantile ction and random generation for the
 # normal distribution with mean equal to mu and standard deviation equal to sigma.
