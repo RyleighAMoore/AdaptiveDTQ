@@ -75,7 +75,7 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 lejaPointsFinal, new = getLejaPoints(10, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
     
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool,QuadFitMat,QuadFitBool, numQuadFit, twiceQuadFit):
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool, numQuadFit, twiceQuadFit):
     numLejas = LPMat.shape[1]
     # sigmaX=np.sqrt(h)*diff(np.asarray([[0,0]]))[0,0]
     # sigmaY=np.sqrt(h)*diff(np.asarray([[0,0]]))[1,1]
@@ -100,7 +100,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
         # GPDF2 = np.expand_dims(GVals2(muX, muY, mesh, h),1)*pdf
         # assert np.max(abs(GPDF2-GPDF)) < 10**(-7)
         
-        value, condNum, scaleUsed, LPMat, LPMatBool,QuadFitMat, QuadFitBool, reuseLP = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMat, LPMatBool,ii,NumLejas,QuadFitMat,QuadFitBool, numQuadFit, twiceQuadFit)
+        value, condNum, scaleUsed, LPMat, LPMatBool, reuseLP = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMat, LPMatBool,ii,NumLejas, numQuadFit)
         LPUse = LPUse+reuseLP
         '''Alternative Method'''
         if math.isnan(condNum) or value <0 or condNum >10: 
@@ -139,6 +139,6 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
     condNums = np.asarray([condNums]).T
     
     
-    return newPDFs,condNums, mesh, LPMat, LPMatBool,QuadFitMat,QuadFitBool, LPUse, countUseMorePoints
+    return newPDFs,condNums, mesh, LPMat, LPMatBool, LPUse, countUseMorePoints
 
 

@@ -91,31 +91,17 @@ def QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices):
 
 
 
-def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LPMat, LPMatBool, index, NumLejas, QuadFitMat,QuadFitBool, numQuadPoints, twiceQuadFit):
+def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LPMat, LPMatBool, index, NumLejas, numQuadPoints):
     '''Divides out Gaussian using a quadratic fit. Then computes the update using a Leja Quadrature rule.'''
     x,y = fullMesh.T
-    if 1>0: #not QuadFitBool[index]:
+    if not LPMatBool[index][0]: # Do not have points for quadratic fit
         mesh, distances, ii = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh,numQuadPoints, getIndices = True)
-        
         mesh =  mesh[:numQuadPoints]
         pdf = fullPDF[ii[:numQuadPoints]]
         scale1, temp, cc, Const = fitQuad(mesh, pdf)
-        if np.isnan(Const):
-            vvv=0
-            # print("!!!!!!!!!!!!!!!!!!!")
-            #return float('nan'), float('nan'), float('nan'), LPMat, LPMatBool, QuadFitMat,QuadFitBool,0
-        else:
-            if twiceQuadFit:
-                '''Find mean again'''
-                mesh, distances, ii = UM.findNearestKPoints(scale1.mu[0][0],scale1.mu[1][0], fullMesh,numQuadPoints, getIndices = True)
-                mesh =  mesh[:numQuadPoints]
-                pdf = fullPDF[ii[:numQuadPoints]]
-                scale1, temp, cc, Const = fitQuad(mesh, pdf)
-            QuadFitMat[index,:] = ii
-            QuadFitBool[index] = True
         
     else:
-        QuadPoints = QuadFitMat[index,:].astype(int)
+        QuadPoints = LPMat[index,:].astype(int)
         mesh = fullMesh[QuadPoints]
         # plt.figure()
         # plt.scatter(mesh[:,0], mesh[:,1])
@@ -133,9 +119,8 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
             value, condNum = QuadratureByInterpolationND_KnownLP(poly, scale1, fullMesh, pdf2, LejaIndices)
             if condNum > 1.1:
                 LPMatBool[index]=False
-                QuadFitBool[index] = False
             else:
-                return value[0], condNum, scale1, LPMat, LPMatBool, QuadFitMat,QuadFitBool, 1
+                return value[0], condNum, scale1, LPMat, LPMatBool, 1
             
         if not LPMatBool[index][0]: # Need Leja points.
             value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,NumLejas)
@@ -144,9 +129,8 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
                 LPMatBool[index] = True
             else: 
                 LPMatBool[index] = False
-                QuadFitBool[index] = False
-            return value[0], condNum, scale1, LPMat, LPMatBool, QuadFitMat,QuadFitBool,0
-    return float('nan'), float('nan'), float('nan'), LPMat, LPMatBool, QuadFitMat,QuadFitBool,0
+            return value[0], condNum, scale1, LPMat, LPMatBool,0
+    return float('nan'), float('nan'), float('nan'), LPMat, LPMatBool,0
 
     # elif LPMatBool[index][0]:
     #     value, condNum = QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices)

@@ -25,7 +25,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 20
+NumSteps = 115
 '''Discretization Parameters'''
 a = 1
 h=0.01
@@ -41,7 +41,6 @@ twiceQuadFit = False
 numLejas = 10
 
 Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 3.5)
-
 
 x = np.arange(h,(NumSteps+1.5)*h,h)
 plt.figure()
