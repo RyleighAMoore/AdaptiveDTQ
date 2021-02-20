@@ -43,10 +43,10 @@ def fitQuad(mesh, pdf):
         scaling.setCov(sigma)
         
     cc=pred_params
-    x,y = xy   
-    vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const[0][0]
+    # x,y = xy   
+    # vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const[0][0]
     
-    return scaling, pdf/np.expand_dims(vals,1), pred_params, Const
+    return scaling, pdf, pred_params, Const
 
 
 def quad(xy, a, b, c, d, e, f):

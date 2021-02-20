@@ -11,7 +11,7 @@ def drift(mesh):
     # return np.asarray([x**2/2-y*x, x*y+y**2/2]).T
 
     # return np.asarray([x-y,x+y]).T
-    # return np.asarray([4*np.ones((np.size(mesh,0))), np.zeros((np.size(mesh,0)))]).T
+    # return np.asarray([3*np.ones((np.size(mesh,0))), np.zeros((np.size(mesh,0)))]).T
     # return np.asarray([5*x*(3- r ** 2), 5*y*(3- r ** 2)]).T
     return np.asarray([3*erf(10*x), 3*erf(10*y)]).T
 
@@ -41,6 +41,19 @@ def Gaussian(scaling, mesh):
     rv = multivariate_normal(scaling.mu.T[0], scaling.cov)        
     soln_vals = np.asarray([rv.pdf(mesh)]).T
     return np.squeeze(soln_vals)
+
+def weightExp(scaling,mesh):
+    mu = scaling.mu
+    D = mesh.shape[1]
+    cov = scaling.cov
+    soln_vals = np.empty(len(mesh))
+    # const = 1/(np.sqrt((np.pi)**D*abs(np.linalg.det(cov))))
+    invCov = np.linalg.inv(cov)
+    for j in range(len(mesh)):
+        x = np.expand_dims(mesh[j,:],1)
+        Gs = np.exp(-(x-mu).T@invCov@(x-mu))
+        soln_vals[j] = Gs
+    return soln_vals
 
 
 def covPart(Px, Py, mesh, cov):

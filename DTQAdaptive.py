@@ -80,7 +80,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
         if (i >= 1):
             '''Add points to mesh'''
             mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints)
-            if i>=10:
+            if i>=10 and i%5==0:
                 '''Remove points from mesh'''
                 mesh, pdf, GMat, LPMat, LPMatBool, tri = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool, removeZerosValuesIfLessThanTolerance)
               
@@ -88,7 +88,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
         if i >-1: 
             '''Step forward in time'''
             pdf = np.expand_dims(pdf,axis=1)
-            pdf, condnums, meshTemp, LPMat, LPMatBool, LPReuse, AltMethodCount = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, numQuadFit, twiceQuadFit)
+            pdf, condnums, meshTemp, LPMat, LPMatBool, LPReuse, AltMethodCount = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, numQuadFit)
             pdf = np.squeeze(pdf)
             '''Add new values to lists for graphing'''
             PdfTraj.append(np.copy(pdf))

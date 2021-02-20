@@ -25,7 +25,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 115
+NumSteps = 200
 '''Discretization Parameters'''
 a = 1
 h=0.01

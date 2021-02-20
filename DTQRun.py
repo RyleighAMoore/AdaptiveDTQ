@@ -40,7 +40,6 @@ SolutionPDFFile = 'PickledData/SolnPDF-Erf.p'
 SolutionMeshFile = 'PickledData/SolnMesh-Erf.p'
 # SolutionPDFFile = 'SolnPDF-ErfIC.p'
 # SolutionMeshFile = 'SolnMesh-ErfIC.p'
-twiceQuadFit = True
 numLejas = 10
 
 # Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 2)

@@ -20,23 +20,18 @@ import math
 
 
 def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
-    '''Quadrature rule with no change of variables. Must pass in mesh you want to use.
-    Only works with Gaussian that has 0 covariance.'''
+    '''Quadrature rule with no change of variables. Must pass in mesh you want to use.'''
     u = VT.map_to_canonical_space(mesh, scaling)
-    normScale = GaussScale(2)
-    normScale.setMu(np.asarray([[0,0]]).T)
-    normScale.setCov(np.asarray([[1,0],[0,1]]))
     
-    mesh2 = u
-    pdfNew = pdf
-    
-    numSamples = len(mesh2)          
-    V = opolynd.opolynd_eval(mesh2, poly.lambdas[:numSamples,:], poly.ab, poly)
+    numSamples = len(u)          
+    V = opolynd.opolynd_eval(u, poly.lambdas[:numSamples,:], poly.ab, poly)
     vinv = np.linalg.inv(V)
-    c = np.matmul(vinv, pdfNew)
+    c = np.matmul(vinv, pdf)
+    L = np.linalg.cholesky((scaling.cov))
+    JacFactor = np.prod(np.diag(L))
     
-    return c[0], np.sum(np.abs(vinv[0,:]))
-
+    return c[0]*JacFactor*np.pi, np.sum(np.abs(vinv[0,:]))
+    
   
 def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas):
     '''Quadrature rule with change of variables for nonzero covariance. 
@@ -113,6 +108,12 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
     if not math.isnan(Const): # succeeded fitting Gaussian
         x,y = fullMesh.T
         vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
+        # vals1 = vals*(1/np.sqrt(np.pi**2*np.linalg.det(scale1.cov)))
+        # vals2 = Gaussian(scale1, fullMesh)
+        # vals = weightExp(scale1,fullMesh)
+        # vals = np.expand_dims(vals,0)
+        # assert np.isclose(np.max(np.abs(vals-vals3)),0)
+        
         pdf2 = fullPDF/vals.T
         if LPMatBool[index][0]: # Don't Need LejaPoints
             LejaIndices = LPMat[index,:].astype(int)
@@ -130,12 +131,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
             else: 
                 LPMatBool[index] = False
             return value[0], condNum, scale1, LPMat, LPMatBool,0
-    return float('nan'), float('nan'), float('nan'), LPMat, LPMatBool,0
-
-    # elif LPMatBool[index][0]:
-    #     value, condNum = QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices)
-        
-        
+    return float('nan'), float('nan'), float('nan'), LPMat, LPMatBool, 0
         
         
         

@@ -6,7 +6,7 @@ import numpy as np
 import UnorderedMesh as UM
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from Functions import drift, diff, GVals, Gaussian, G
+from Functions import drift, diff, GVals, Gaussian, G, weightExp
 from scipy.interpolate import griddata, interp2d 
 from pyopoly1.LejaPoints import getLejaSetFromPoints, getLejaPoints
 from pyopoly1.QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolation_Simple, QuadratureByInterpolationND_DivideOutGaussian
@@ -75,7 +75,7 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 lejaPointsFinal, new = getLejaPoints(10, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
     
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool, numQuadFit, twiceQuadFit):
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool, numQuadFit):
     numLejas = LPMat.shape[1]
     # sigmaX=np.sqrt(h)*diff(np.asarray([[0,0]]))[0,0]
     # sigmaY=np.sqrt(h)*diff(np.asarray([[0,0]]))[1,1]
@@ -89,8 +89,8 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
     for ii in range(len(mesh)):
         # print('########################',ii/len(mesh)*100, '%')
         dr = h*drift(mesh[ii,:])
-        muX = mesh[ii,0] #+ dr[0][0]
-        muY = mesh[ii,1] #+ dr[0][1]
+        muX = mesh[ii,0] + dr[0][0]
+        muY = mesh[ii,1] + dr[0][1]
         
         scaling = GaussScale(2)
         scaling.setMu(np.asarray([[muX,muY]]).T)
@@ -105,6 +105,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
         '''Alternative Method'''
         if math.isnan(condNum) or value <0 or condNum >10: 
             scaling.setCov((h*diff(np.asarray([muX,muY]))*diff(np.asarray([muX,muY])).T).T)
+            
             mesh12 = VT.map_from_canonical_space(lejaPointsFinal, scaling)
             meshLP, distances, indx = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], mesh,numQuadFit, getIndices = True)
             pdfNew = pdf[indx]
@@ -114,17 +115,13 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
             
             v = np.expand_dims(G(0,mesh12, h),1)
             
-            integrand1 = newIntegrand(muX, muY, mesh12, h)
-            testing1 = np.squeeze(pdf12)*integrand1
-            # testing1 = np.squeeze(pdf12)*testing1
-            # testing = np.squeeze(pdfNew)*integrand
+            # g = Gaussian(scaling, mesh12)
+            g = weightExp(scaling,mesh12)
             
-            g = Gaussian(scaling, mesh12)
             testing = np.squeeze((pdf12*v)/np.expand_dims(g,1))
-            # testing = np.squeeze(pdfNew)*integrand
             
             value, condNum = QuadratureByInterpolation_Simple(poly, scaling, mesh12, testing)
-            value = value*(1/np.sqrt(2))
+            
             countUseMorePoints = countUseMorePoints+1
             
             if value <0 :
@@ -132,7 +129,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
 
         newPDF.append(value)
         condNums.append(condNum)
-    print('\n',(countUseMorePoints/len(mesh))*100, "% Used Interpolation**************")
+    print('\n',(countUseMorePoints/len(mesh))*100, "% Used Alternative Method**************")
     print('\n',(LPUse/len(mesh))*100, "% Reused Leja Points")
 
     newPDFs = np.asarray(newPDF)
