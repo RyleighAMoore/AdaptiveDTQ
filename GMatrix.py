@@ -32,17 +32,17 @@ def computeG(xvec, yvec, h):
     return test
 
 # Computes G_x(x,y)
-def computeG_partialx(xvec, yvec, h):
-    Y = np.zeros((len(yvec), len(yvec)))
-    for i in range(len(yvec)):
-        Y[i, :] = xvec  # Y has the same grid value along each column (col1 has x1, col2 has x2, etc)
-    mu = Y + fun.driftfun(Y) * h
-    r = fun.difffun(Y)
-    sigma = abs(fun.difffun(Y)) * np.sqrt(h)
-    sigma = np.reshape(sigma, [np.size(xvec), np.size(yvec)])  # make a matrix for the dnorm function
-    Y = np.transpose(Y)  # Transpose Y for use in the dnorm function
-    test = fun.dnorm_partialx(Y, mu, sigma)
-    return test
+# def computeG_partialx(xvec, yvec, h, t):
+#     Y = np.zeros((len(yvec), len(yvec)))
+#     for i in range(len(yvec)):
+#         Y[i, :] = xvec  # Y has the same grid value along each column (col1 has x1, col2 has x2, etc)
+#     mu = Y + fun.driftfun(Y, t) * h
+#     r = fun.difffun(Y)
+#     sigma = abs(fun.difffun(Y)) * np.sqrt(h)
+#     sigma = np.reshape(sigma, [np.size(xvec), np.size(yvec)])  # make a matrix for the dnorm function
+#     Y = np.transpose(Y)  # Transpose Y for use in the dnorm function
+#     test = fun.dnorm_partialx(Y, mu, sigma)
+#     return test
 
 
 # This adds a N dimensional row to a M by N dimensional G

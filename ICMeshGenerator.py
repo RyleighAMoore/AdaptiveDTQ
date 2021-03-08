@@ -6,7 +6,7 @@ def getICMesh(radius, stepSize, h):
 
     meshSpacing = stepSize #DM.separationDistance(mesh)*2
     grid = UM.generateOrderedGridCenteredAtZero(-1.6, 1.6, -1.6, 1.6, meshSpacing , includeOrigin=True)
-    noise = np.random.normal(0,np.sqrt(h)*fun.g1(), size = (len(grid),2))
+    noise = np.random.normal(0,1, size = (len(grid),2))
     
     noise = np.random.uniform(-meshSpacing, meshSpacing,size = (len(grid),2))
     

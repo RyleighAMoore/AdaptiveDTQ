@@ -17,7 +17,13 @@ import QuadRules
 from tqdm import tqdm, trange
 import UnorderedMesh as UM
 import MeshUpdates2D as MeshUp
-from Scaling import GaussScale
+from pyopoly1.Scaling import GaussScale
+
+from datetime import datetime
+from exactSolutions import TwoDdiffusionEquation
+from Errors import ErrorValsExact
+
+start = datetime.now()
 
 
 # T = 0.01  # final time, code computes PDF of X_T
@@ -30,28 +36,36 @@ from Scaling import GaussScale
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.05
-xmin=-2.5
-xmax=2.5
-ymin=-2.5
-ymax=2.5
+kstep = 0.1
+xmin=-3
+xmax=3.1
+ymin=-3
+ymax=3.1
+
+# xmin=-2
+# xmax=2
+# ymin=-4
+# ymax=4
 
 
-def generateGRow(point, allPoints, kstep, h):
-    row = []
-    OrderA = []
-    for i in range(len(allPoints)):
-        val = kstep**2*fun.G(point[0], point[1], allPoints[i,0], allPoints[i,1], h)
-        row.append(val)
-        OrderA.append([point[0], point[1], allPoints[i,0], allPoints[i,1]])
-    return row
+# def generateGRow(point, allPoints, kstep, h):
+#     row = []
+#     OrderA = []
+#     for i in range(len(allPoints)):
+#         val = kstep**2*fun.G(point[0], point[1], allPoints[i,0], allPoints[i,1], h)
+#         row.append(val)
+#         OrderA.append([point[0], point[1], allPoints[i,0], allPoints[i,1]])
+#     return row
 
-mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, xmin, xmax, kstep, includeOrigin=True)
-mesh2 = np.copy(mesh)
-# pdf = UM.generateICPDF(mesh[:,0], mesh[:,1], 0.1, 0.1)
+X, Y = np.mgrid[xmin:xmax:kstep, ymin:ymax:kstep]
+mesh = np.vstack([X.ravel(), Y.ravel()]).T
+
+
+# mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep, includeOrigin=True)
 scale = GaussScale(2)
-scale.setMu(np.asarray([[0,0]]).T)
-scale.setSigma(np.asarray([np.sqrt(h)*fun.g1(),np.sqrt(h)*fun.g2()]))
+# scale.setMu(np.asarray([[0,0]]).T)
+scale.setMu(h*fun.drift(np.asarray([0,0])).T)
+scale.setCov((h*fun.diff(np.asarray([0,0]))*fun.diff(np.asarray([0,0])).T).T)
 pdf = fun.Gaussian(scale, mesh)
 # 
 # for i in range(len(pdf)):
@@ -61,29 +75,37 @@ pdf = fun.Gaussian(scale, mesh)
 # index =-1
 # ax.scatter(mesh[:,0], mesh[:,1], pdf, c='r', marker='.')
 
-GMat = []
-for point in trange(len(mesh)):
-    gRow = generateGRow([mesh[point,0], mesh[point,1]], mesh, kstep, h)
-    GMat.append(np.copy(gRow))
-
+# GMat = []
+# for point in trange(len(mesh)):
+#     gRow = generateGRow([mesh[point,0], mesh[point,1]], mesh, kstep, h)
+#     GMat.append(np.copy(gRow))
+'''Initialize Transition probabilities'''
+GMat = np.empty([len(mesh), len(mesh)])
+for i in trange(len(mesh)):
+    v = kstep**2*fun.G(i,mesh, h)
+    GMat[i,:len(v)] = v
 
       
 surfaces = [] 
 surfaces.append(np.copy(pdf))
 t=0
-while t < 101:
+while t < 25:
     print(t)
     pdf = np.matmul(GMat, pdf)
     surfaces.append(np.copy(pdf))
     t=t+1
     
+end = datetime.now()
+print("Time: ", end-start)
 
-fig = plt.figure()
-ax = Axes3D(fig)
-index =35
-ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
-index =16
-ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
+# ana = TwoDdiffusionEquation(mesh, 1,0.01)
+# fig = plt.figure()
+# ax = Axes3D(fig)
+# index =0
+# ax.scatter(mesh[:,0], mesh[:,1], surfaces[index], c='r', marker='.')
+# ax.scatter(mesh[:,0], mesh[:,1], ana, c='k', marker='.')
+# index =20
+# ax.scatter(Meshes[index][:,0], Meshes[index][:,1], PdfTraj[index], c='k', marker='.')
 # ax.scatter(meshVals[:,0], meshVals[:,1], newPDF, c='k', marker='.')
 
 # 
@@ -102,8 +124,8 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
 
-graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[-1], linestyle="", marker="o")
-ax.set_zlim(0, np.max(surfaces[10]))
+graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[2], linestyle="", marker="o")
+ax.set_zlim(0, np.max(surfaces[25]))
 ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
                                          interval=100, blit=False)
 
@@ -111,16 +133,16 @@ plt.show()
 
 # import pickle  
 
-# # pkl_file0 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Gpt02Erf.p", "wb" ) 
-# # pickle.dump(GMat, pkl_file0)
-# # pkl_file0.close()
+# pkl_file0 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/Gpt02Erf.p", "wb" ) 
+# pickle.dump(GMat, pkl_file0)
+# pkl_file0.close()
 
-# pkl_file = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/SolnPDF-Vol.p", "wb" ) 
-# pkl_file2 = open("C:/Users/Rylei/Documents/SimpleDTQ/PickledData/SolnMesh-Vol.p", "wb" ) 
+# pkl_file = open("SolnPDF-ErfIC5.p", "wb" ) 
+# pkl_file2 = open("SolnMesh-ErfIC5.p", "wb" ) 
 
 # import pickle  
 # pickle.dump(surfaces, pkl_file)
-# pickle.dump(mesh2, pkl_file2)
+# pickle.dump(mesh, pkl_file2)
 # pkl_file.close()
 # pkl_file2.close()
 
@@ -130,3 +152,38 @@ plt.show()
 # ax = Axes3D(fig)
 # index =3
 # ax.scatter(mesh[:,0], mesh[:,1], G, c='r', marker='.')
+
+# from exactSolutions import TwoDdiffusionEquation
+# from Errors import ErrorValsExact
+# surfaces = []
+# Meshes = []
+# for ii in range(len(pdfSoln)):
+#     ana = TwoDdiffusionEquation(mesh,1, 0.01*(ii+1))
+#     Meshes.append(mesh)
+#     # e = np.max(PdfTraj[ii] - ana)
+#     surfaces.append(ana)
+
+# ErrorValsExact(Meshes, pdfSoln, surfaces)
+
+
+one = np.zeros(np.shape(GMat))
+one[0,0] = kstep*0.5
+one[-1,-1] = kstep*0.5
+
+two = np.zeros(np.shape(GMat))
+for i in range(1, len(GMat)-1):
+    two[i,i] = kstep
+
+GScale = one+two
+GmatScaled = GScale@GMat
+
+Meshes=[]
+for i in range(len(surfaces)):
+    Meshes.append(mesh)
+    
+solution = []
+for ii in range(len(surfaces)):
+    ana = TwoDdiffusionEquation(Meshes[ii],fun.diff(np.asarray([0,0]))[0,0], h*(ii+1),fun.drift(np.asarray([0,0]))[0,0])
+    solution.append(ana)
+
+LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, surfaces, solution, plot=True)

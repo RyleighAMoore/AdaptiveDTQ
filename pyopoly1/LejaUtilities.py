@@ -41,7 +41,7 @@ def get_lu_leja_samples(poly, generate_basis_matrix,
 
     Returns
     -------
-    laja_samples : np.ndarray (num_vars, num_indices)
+    leja_samples : np.ndarray (num_vars, num_indices)
         The samples of the Leja sequence
 
     data_structures : tuple
@@ -56,7 +56,7 @@ def get_lu_leja_samples(poly, generate_basis_matrix,
         num_initial_rows=0
     
     numSamples = len(candidate_samples.T)
-    basis_matrix = generate_basis_matrix(candidate_samples.T, poly.lambdas[:numSamples,:], poly.ab, poly)
+    basis_matrix = generate_basis_matrix(candidate_samples.T, poly.lambdas[:num_leja_samples,:], poly.ab, poly)
 
     assert num_leja_samples <= basis_matrix.shape[1]
     if preconditioning_function is not None:
@@ -66,18 +66,6 @@ def get_lu_leja_samples(poly, generate_basis_matrix,
         weights = None
     import scipy as sp
     import matplotlib.pyplot as plt
-
-    # P1,L1,U1 = sp.linalg.lu(basis_matrix)
-    # ind = np.ones(len(P1))
-    # plt.figure()
-    # for i in range(len(P1)):
-    #     ival = np.argmax(P1[:,i])
-    #     ind[i]=ival
-    #     if i<231:
-    #         plt.plot(candidate_samples.T[ival,0], candidate_samples.T[ival,1], '.r')
-    # import matplotlib.pyplot as plt
-    # plt.show()
-    
     
     L,U,p, successBoolean = truncated_pivoted_lu_factorization(
         basis_matrix,num_leja_samples,num_initial_rows)
@@ -99,10 +87,6 @@ def get_lu_leja_samples(poly, generate_basis_matrix,
         plt.plot(leja_samples[0,0],leja_samples[1,0],'*')
         plt.plot(leja_samples[0,:],leja_samples[1,:],'ro',zorder=10)
         plt.scatter(candidate_samples[0,:],candidate_samples[1,:],s=weights*100,color='b')
-        #plt.xlim(-1,1)
-        #plt.ylim(-1,1)
-        #plt.title('Leja sequence and candidates')
-        #print (weights[p])
         plt.show()
     return leja_samples, data_structures, successBoolean
 
