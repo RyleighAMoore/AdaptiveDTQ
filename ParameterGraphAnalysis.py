@@ -5,13 +5,16 @@ import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 
 '''Initialization Parameters'''
-NumSteps = 30
+NumSteps = 20
 
 '''Discretization Parameters'''
 kstep = 0.15
 h=0.01
 
-x = [2,3,4,5]
+x = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+# x = [17,18,19,20]
+
+# x=[20]
 times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
 
 L2ErrorArray = np.zeros((len(x),len(times)))

@@ -50,7 +50,7 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
     
     if returnIndices:
         if successBool == False:
-            print("LEJA FAIL - LEJA FAIL - LEJA FAIL")
+            # print("LEJA FAIL - LEJA FAIL - LEJA FAIL")
             return [float('nan')], [float('nan')]
         assert successBool == True, "Need to implement returning indices when successBool is False."
         
@@ -65,7 +65,7 @@ def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
     candidatesFull = VT.map_to_canonical_space(Mesh,scale)
     indices = [np.nan]
     count = 1
-    while math.isnan(indices[0]) or count > 4:
+    while math.isnan(indices[0]) and count < 4:
         if count >1:
             print("Trying to find Leja points again using more samples")
         candidates, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], candidatesFull,30*int(count*np.ceil(np.max(diff(np.asarray([0,0]))))), getIndices = True)
@@ -76,8 +76,16 @@ def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
         
         lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[Px,Py]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
         count = count+1
+        
+    if math.isnan(indices[0]): #Try one more time with full mesh
+        candidates, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], candidatesFull,len(Mesh), getIndices = True)
+        Px = candidates[0,0]
+        Py = candidates[0,1]
+        candidates = candidates[1:]
+        
     
     if math.isnan(indices[0]):
+        print("LEJA FAIL - LEJA FAIL - LEJA FAIL")
         return 0, 0, indices
     
     lejaPointsFinal = VT.map_from_canonical_space(lejaPointsFinal, scale)

@@ -20,7 +20,8 @@ import MeshUpdates2D as MeshUp
 from pyopoly1.Scaling import GaussScale
 
 from datetime import datetime
-
+from exactSolutions import TwoDdiffusionEquation
+from Errors import ErrorValsExact
 
 start = datetime.now()
 
@@ -36,10 +37,10 @@ h=0.01
 s=0.75
 kstep = h ** s
 kstep = 0.1
-xmin=-4
-xmax=6
-ymin=-4
-ymax=4
+xmin=-3
+xmax=3.1
+ymin=-3
+ymax=3.1
 
 # xmin=-2
 # xmax=2
@@ -88,7 +89,7 @@ for i in trange(len(mesh)):
 surfaces = [] 
 surfaces.append(np.copy(pdf))
 t=0
-while t < 101:
+while t < 25:
     print(t)
     pdf = np.matmul(GMat, pdf)
     surfaces.append(np.copy(pdf))
@@ -136,14 +137,14 @@ plt.show()
 # pickle.dump(GMat, pkl_file0)
 # pkl_file0.close()
 
-pkl_file = open("SolnPDF-ErfIC5.p", "wb" ) 
-pkl_file2 = open("SolnMesh-ErfIC5.p", "wb" ) 
+# pkl_file = open("SolnPDF-ErfIC5.p", "wb" ) 
+# pkl_file2 = open("SolnMesh-ErfIC5.p", "wb" ) 
 
-import pickle  
-pickle.dump(surfaces, pkl_file)
-pickle.dump(mesh, pkl_file2)
-pkl_file.close()
-pkl_file2.close()
+# import pickle  
+# pickle.dump(surfaces, pkl_file)
+# pickle.dump(mesh, pkl_file2)
+# pkl_file.close()
+# pkl_file2.close()
 
 
 
@@ -152,15 +153,37 @@ pkl_file2.close()
 # index =3
 # ax.scatter(mesh[:,0], mesh[:,1], G, c='r', marker='.')
 
-from exactSolutions import TwoDdiffusionEquation
-from Errors import ErrorValsExact
-surfaces = []
-Meshes = []
-for ii in range(len(pdfSoln)):
-    ana = TwoDdiffusionEquation(mesh,1, 0.01*(ii+1))
-    Meshes.append(mesh)
-    # e = np.max(PdfTraj[ii] - ana)
-    surfaces.append(ana)
+# from exactSolutions import TwoDdiffusionEquation
+# from Errors import ErrorValsExact
+# surfaces = []
+# Meshes = []
+# for ii in range(len(pdfSoln)):
+#     ana = TwoDdiffusionEquation(mesh,1, 0.01*(ii+1))
+#     Meshes.append(mesh)
+#     # e = np.max(PdfTraj[ii] - ana)
+#     surfaces.append(ana)
 
-ErrorValsExact(Meshes, pdfSoln, surfaces)
+# ErrorValsExact(Meshes, pdfSoln, surfaces)
+
+
+one = np.zeros(np.shape(GMat))
+one[0,0] = kstep*0.5
+one[-1,-1] = kstep*0.5
+
+two = np.zeros(np.shape(GMat))
+for i in range(1, len(GMat)-1):
+    two[i,i] = kstep
+
+GScale = one+two
+GmatScaled = GScale@GMat
+
+Meshes=[]
+for i in range(len(surfaces)):
+    Meshes.append(mesh)
     
+solution = []
+for ii in range(len(surfaces)):
+    ana = TwoDdiffusionEquation(Meshes[ii],fun.diff(np.asarray([0,0]))[0,0], h*(ii+1),fun.drift(np.asarray([0,0]))[0,0])
+    solution.append(ana)
+
+LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, surfaces, solution, plot=True)

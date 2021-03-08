@@ -19,13 +19,13 @@ def computeEigenvector(Gk):
     return np.real(vects[:,0])
 
 #  Function that returns the kernel matrix G(x,y)
-def computeG(xvec, yvec, h, t):
+def computeG(xvec, yvec, h):
     Y = np.zeros((len(yvec), len(yvec)))
     for i in range(len(yvec)):
         Y[i, :] = xvec  # Y has the same grid value along each column (col1 has x1, col2 has x2, etc)
-    mu = Y + fun.driftfun(Y, t) * h
-    r = fun.difffun(Y, t)
-    sigma = abs(fun.difffun(Y, t)) * np.sqrt(h)
+    mu = Y + fun.driftfun(Y) * h
+    r = fun.difffun(Y)
+    sigma = abs(fun.difffun(Y)) * np.sqrt(h)
     sigma = np.reshape(sigma, [np.size(xvec), np.size(yvec)])  # make a matrix for the dnorm function
     Y = np.transpose(Y)  # Transpose Y for use in the dnorm function
     test = fun.dnorm(Y, mu, sigma)

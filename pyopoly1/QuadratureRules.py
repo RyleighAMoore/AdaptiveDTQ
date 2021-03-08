@@ -14,7 +14,7 @@ import UnorderedMesh as UM
 from pyopoly1.families import HermitePolynomials
 import pyopoly1.indexing
 import pyopoly1.LejaPoints as LP
-from QuadraticFit import fitQuad
+from QuadraticFit import fitQuad, leastSquares
 from scipy.interpolate import griddata
 import math
 
@@ -93,7 +93,8 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         mesh, distances, ii = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], fullMesh,numQuadPoints, getIndices = True)
         mesh =  mesh[:numQuadPoints]
         pdf = fullPDF[ii[:numQuadPoints]]
-        scale1, temp, cc, Const = fitQuad(mesh, pdf)
+        # scale1, temp, cc, Const = fitQuad(mesh, pdf)
+        scale1, temp, cc, Const = leastSquares(mesh, pdf)
         
     else:
         QuadPoints = LPMat[index,:].astype(int)
@@ -102,7 +103,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         # plt.scatter(mesh[:,0], mesh[:,1])
         # plt.scatter(fullMesh[index,0], fullMesh[index,1])
         pdf = fullPDF[QuadPoints]
-        scale1, temp, cc, Const = fitQuad(mesh, pdf)
+        scale1, temp, cc, Const = leastSquares(mesh, pdf)
         
         
     if not math.isnan(Const): # succeeded fitting Gaussian

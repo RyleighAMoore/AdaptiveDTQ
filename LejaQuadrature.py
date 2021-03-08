@@ -75,7 +75,7 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 lejaPointsFinal, new = getLejaPoints(10, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
     
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool, numQuadFit):
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod):
     numLejas = LPMat.shape[1]
     # sigmaX=np.sqrt(h)*diff(np.asarray([[0,0]]))[0,0]
     # sigmaY=np.sqrt(h)*diff(np.asarray([[0,0]]))[1,1]
@@ -103,15 +103,15 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
         value, condNum, scaleUsed, LPMat, LPMatBool, reuseLP = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMat, LPMatBool,ii,NumLejas, numQuadFit)
         LPUse = LPUse+reuseLP
         '''Alternative Method'''
-        if math.isnan(condNum) or value <0 or condNum >10: 
+        if math.isnan(condNum) or value < 0 or condNum > conditionNumForAltMethod: 
             scaling.setCov((h*diff(np.asarray([muX,muY]))*diff(np.asarray([muX,muY])).T).T)
             
             mesh12 = VT.map_from_canonical_space(lejaPointsFinal, scaling)
             meshLP, distances, indx = UM.findNearestKPoints(scaling.mu[0][0],scaling.mu[1][0], mesh,numQuadFit, getIndices = True)
             pdfNew = pdf[indx]
             
-            pdf12 = np.asarray(griddata(meshLP, pdfNew, mesh12, method='cubic', fill_value=0))
-            pdfNew[pdfNew < 0] = 10**(-8)
+            pdf12 = np.asarray(griddata(meshLP, pdfNew, mesh12, method='linear', fill_value=np.min(pdf)))
+            pdfNew[pdfNew < 0] = np.min(pdf)
             
             v = np.expand_dims(G(0,mesh12, h),1)
             
@@ -124,8 +124,8 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
             
             countUseMorePoints = countUseMorePoints+1
             
-            if value <0 :
-                value = 10**(-8)
+        if value < 0:
+            value = np.min(pdf)
 
         newPDF.append(value)
         condNums.append(condNum)

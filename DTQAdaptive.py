@@ -23,9 +23,10 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
     # degree=3.5
     deg =degree
     addPointsToBoundaryIfBiggerThanTolerance = 10**(-deg)
-    removeZerosValuesIfLessThanTolerance = 10**(-deg-0.5)
+    removeZerosValuesIfLessThanTolerance = 10**(-deg-0.25)
     minDistanceBetweenPoints = kstep #min(0.12, kstep)
     maxDistanceBetweenPoints =  kstep + kstep*0.2 # max(0.17, kstep)
+    conditionNumForAltMethod = 3
     start = datetime.now()
     
     ''' Initializd orthonormal Polynomial family'''
@@ -37,7 +38,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
     poly.lambdas = lambdas
     
     '''pdf after one time step with Dirac initial condition centered at the origin'''
-    mesh = M.getICMesh(2*np.max(fun.diff(np.asarray([0,0]))), kstep, h)
+    mesh = M.getICMesh(5*np.max(fun.diff(np.asarray([0,0]))), kstep, h)
     scale = GaussScale(2)
     scale.setMu(h*fun.drift(np.asarray([0,0])).T)
     scale.setCov((h*fun.diff(np.asarray([0,0]))*fun.diff(np.asarray([0,0])).T).T)
@@ -75,20 +76,24 @@ def DTQ(NumSteps, kstep, h, NumLejas, twiceQuadFit, degree):
     Timing.append(start)
     
     
-    for i in trange(1,NumSteps+1):
+    for i in trange(0,NumSteps):
         t = NumSteps*kstep
-        if (i >= 1):
+        if (i >= 0):
             '''Add points to mesh'''
+            # plt.figure()
+            # plt.scatter(mesh[:,0], mesh[:,1])
             mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints)
-            if i>=10 and i%5==0:
-                '''Remove points from mesh'''
-                mesh, pdf, GMat, LPMat, LPMatBool, tri = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool, removeZerosValuesIfLessThanTolerance)
+            # plt.plot(mesh[:,0], mesh[:,1], '*r')
+
+        if i>=10 and i%10==0:
+            '''Remove points from mesh'''
+            mesh, pdf, GMat, LPMat, LPMatBool, tri = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool, removeZerosValuesIfLessThanTolerance)
               
         print('Length of mesh = ', len(mesh))
         if i >-1: 
             '''Step forward in time'''
             pdf = np.expand_dims(pdf,axis=1)
-            pdf, condnums, meshTemp, LPMat, LPMatBool, LPReuse, AltMethodCount = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, numQuadFit)
+            pdf, condnums, meshTemp, LPMat, LPMatBool, LPReuse, AltMethodCount = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod)
             pdf = np.squeeze(pdf)
             '''Add new values to lists for graphing'''
             PdfTraj.append(np.copy(pdf))

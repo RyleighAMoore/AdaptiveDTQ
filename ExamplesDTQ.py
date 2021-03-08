@@ -25,11 +25,11 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 200
+NumSteps = 20
 '''Discretization Parameters'''
 a = 1
 h=0.01
-kstep = min(0.15, 0.144*fun.diff(np.asarray([0,0]))[0,0]+0.0056)
+kstep = np.round(min(0.15, 0.144*fun.diff(np.asarray([0,0]))[0,0]+0.0056),2)
 
 '''Errors'''
 ComputeErrors = False
@@ -41,13 +41,19 @@ twiceQuadFit = False
 numLejas = 10
 
 Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 3.5)
+# Meshes2, PdfTraj2, LinfErrors2, L2Errors2, L1Errors2, L2wErrors2, Timing2, LPReuseArr2, AltMethod2= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 3.5)
 
 x = np.arange(h,(NumSteps+1.5)*h,h)
 plt.figure()
-plt.semilogy(x, np.asarray(LinfErrors), label = 'Linf Error, deg=2')
-plt.semilogy(x, np.asarray(L2Errors), label = 'L2 Error, deg=2')
-plt.semilogy(x, np.asarray(L1Errors), label = 'L1 Error, deg=2')
-plt.semilogy(x, np.asarray(L2wErrors), label = 'L2w Error, deg=2')
+plt.semilogy(x, np.asarray(LinfErrors), 'r', label = 'Linf Error, interp')
+plt.semilogy(x, np.asarray(L2Errors), 'b', label = 'L2 Error')
+plt.semilogy(x, np.asarray(L1Errors),'g', label = 'L1 Error')
+plt.semilogy(x, np.asarray(L2wErrors), 'c', label = 'L2w Error')
+
+# plt.semilogy(x, np.asarray(LinfErrors2), '.r', label = 'Linf Error')
+# plt.semilogy(x, np.asarray(L2Errors2), '.b',label = 'L2 Error')
+# plt.semilogy(x, np.asarray(L1Errors2), '.g',label = 'L1 Error')
+# plt.semilogy(x, np.asarray(L2wErrors2), '.c',label = 'L2w Error')
 plt.xlabel('Time')
 plt.ylabel('Error')
 # plt.ylim([10**(-8), 10**(-1)])
@@ -110,23 +116,38 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker=".")
-    ax.set_zlim(0, np.max(PdfTraj[-1]))
+    # ax.set_zlim(0, np.max(PdfTraj[10]))
     mini = np.min(Meshes[0])
     maxi = np.max(Meshes[0])
-    for i in range(len(Meshes)):
-        m = np.min(Meshes[i])
-        M = np.max(Meshes[i])
-        if m< mini:
-            mini = m
-        if M > maxi:
-            maxi = M
+    # for i in range(len(Meshes)):
+    #     m = np.min(Meshes[i])
+    #     M = np.max(Meshes[i])
+    #     if m< mini:
+    #         mini = m
+    #     if M > maxi:
+    #         maxi = M
         
-    ax.set_xlim(mini, maxi)
-    ax.set_ylim(mini, maxi)
+    # ax.set_xlim(mini, maxi)
+    # ax.set_ylim(mini, maxi)
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
                                               interval=300, blit=False)
     plt.show()
 
 
 
-    
+# plt.figure()
+
+# ii=69
+# plt.scatter(Meshes[ii][:,0], Meshes[ii][:,1])
+
+# ii=68
+# plt.scatter(Meshes[ii][:,0], Meshes[ii][:,1])
+
+# nn = []
+# mm = []
+# for i in range(len(Meshes)):
+#     mm.append(len(Meshes[i]))
+#     nn.append(len(Meshes2[i]))
+
+# plt.plot(mm)
+# plt.plot(nn, '.')

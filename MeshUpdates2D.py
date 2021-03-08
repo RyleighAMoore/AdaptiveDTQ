@@ -35,7 +35,7 @@ def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, GMat, add
 
 def removePointsFromMeshProcedure(Mesh, Pdf, tri, boundaryOnlyBool, poly, GMat, LPMat, LPMatBool, removeZerosValuesIfLessThanTolerance):
     '''If the mesh is changed, these become 1 so we know to recompute the triangulation'''
-    Mesh, Pdf, GMat,LPMat, LPMatBool, tri = removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBool, removeZerosValuesIfLessThanTolerance)
+    Mesh, Pdf, GMat,LPMat, LPMatBool, tri = removeSmallPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBool, removeZerosValuesIfLessThanTolerance)
     return Mesh, Pdf, GMat, LPMat, LPMatBool, tri
 
 
@@ -69,36 +69,33 @@ def checkIntegrandForAddingPointsAroundBoundaryPoints(PDF, addPointsToBoundaryIf
     addingAround = [np.asarray(valueList) >= addPointsToBoundaryIfBiggerThanTolerance]
     return np.asarray(addingAround).T
 
-
-def removeBoundaryPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBool, removeZerosValuesIfLessThanTolerance):
-    stillRemoving = True
+#TODO: Rename this, it really removes any small points
+#Also need to clean this, no while loop is needed.
+def removeSmallPoints(Mesh, Pdf, tri, boundaryOnlyBool, GMat, LPMat, LPMatBool, removeZerosValuesIfLessThanTolerance):
     '''# Removing boundary points'''
-    while stillRemoving:
-        ZeroPointsBoolArray = checkIntegrandForRemovingSmallPoints(Pdf,Mesh,tri, removeZerosValuesIfLessThanTolerance)
-        iivals = np.expand_dims(np.arange(len(Mesh)),1)
-        index = iivals[ZeroPointsBoolArray] # Points to remove
-        if len(index)>0:
-            Mesh = np.delete(Mesh, index, 0)
-            Pdf = np.delete(Pdf, index, 0)
-            GMat = np.delete(GMat, index,0)
-            GMat = np.delete(GMat, index,1)
-            largerLPMat = np.zeros(np.shape(LPMat))
-            
-            for ii in index:
-                LPUpdateList = np.where(LPMat == ii)[0]
-                for i in LPUpdateList:
-                    LPMatBool[i] = False
-                largerLP = LPMat >= ii
-                largerLPMat = largerLPMat + largerLP
-            
-            LPMat = LPMat - largerLPMat
-            
-            LPMatBool = np.delete(LPMatBool, index,0)
-            LPMat = np.delete(LPMat, index, 0)
-            tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
-        else:
-            stillRemoving = False
+    ZeroPointsBoolArray = checkIntegrandForRemovingSmallPoints(Pdf,Mesh,tri, removeZerosValuesIfLessThanTolerance)
+    iivals = np.expand_dims(np.arange(len(Mesh)),1)
+    index = iivals[ZeroPointsBoolArray] # Points to remove
+    if len(index)>0:
+        Mesh = np.delete(Mesh, index, 0)
+        Pdf = np.delete(Pdf, index, 0)
+        GMat = np.delete(GMat, index,0)
+        GMat = np.delete(GMat, index,1)
+        largerLPMat = np.zeros(np.shape(LPMat))
         
+        for ii in index:
+            LPUpdateList = np.where(LPMat == ii)[0]
+            for i in LPUpdateList:
+                LPMatBool[i] = False
+            largerLP = LPMat >= ii
+            largerLPMat = largerLPMat + largerLP
+        
+        LPMat = LPMat - largerLPMat
+        
+        LPMatBool = np.delete(LPMatBool, index,0)
+        LPMat = np.delete(LPMat, index, 0)
+        tri = houseKeepingAfterAdjustingMesh(Mesh, tri)
+    
     return Mesh, Pdf, GMat, LPMat, LPMatBool, tri
 
 
@@ -117,7 +114,9 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, addPointsToBoundaryIfBiggerTha
     count = 0
     MeshOrig = np.copy(Mesh)
     PdfOrig = np.copy(Pdf)
-    while keepAdding and count <3:
+    while keepAdding and count < 1:
+        count = count +1
+        # print("ADDing AGAIN----------------------------------------------")
         numPointsAdded = 0
         boundaryPointsToAddAround = checkIntegrandForAddingPointsAroundBoundaryPoints(Pdf, addPointsToBoundaryIfBiggerThanTolerance, Mesh, triangulation,maxDistanceBetweenPoints)
         iivals = np.expand_dims(np.arange(len(Mesh)),1)
@@ -126,7 +125,7 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, addPointsToBoundaryIfBiggerTha
             keepAdding = False
         for indx in index:
             newPoints = addPointsRadially(Mesh[indx,0], Mesh[indx,1], Mesh, 8, minDistanceBetweenPoints, maxDistanceBetweenPoints)
-            newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, minDistanceBetweenPoints,maxDistanceBetweenPoints)
+            # newPoints = checkIfDistToClosestPointIsOk(newPoints, Mesh, minDistanceBetweenPoints,maxDistanceBetweenPoints)
             if len(newPoints)>0:
                 Mesh = np.append(Mesh, newPoints, axis=0)
                 ChangedBool = 1
@@ -134,38 +133,42 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, addPointsToBoundaryIfBiggerTha
                 # tri = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
         if numPointsAdded > 0:
             newPoints = Mesh[-numPointsAdded:,:]
-            interp = [griddata(MeshOrig, PdfOrig, newPoints, method='cubic', fill_value=removeZerosValuesIfLessThanTolerance)][0]
-            # interp = np.ones(len(newPoints))*addPointsToBoundaryIfBiggerThanTolerance*0.9
-            # interp = np.zeros(len(newPoints))
+            interp = [griddata(MeshOrig,PdfOrig, newPoints, method='linear', fill_value=np.min(Pdf))][0]
+            # print(interp)
+            # interp = np.ones(len(newPoints))*removeZerosValuesIfLessThanTolerance 
+            # interp = np.ones(len(newPoints))*10**(-8)
+            interp[interp<0] = np.min(Pdf)
             Pdf = np.append(Pdf, interp)
             triangulation = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
-        count = count +1
+        else:
+            keepAdding = False
+        # keepAdding = False
     return Mesh, Pdf, triangulation, ChangedBool
 
 
 def addPointsRadially(pointX, pointY, mesh, numPointsToAdd, minDistanceBetweenPoints, maxDistanceBetweenPoints):
-    radius = minDistanceBetweenPoints
+    radius = minDistanceBetweenPoints/2 + maxDistanceBetweenPoints/2
     dTheta = 2*np.pi/numPointsToAdd
     points = []
     for i in range(numPointsToAdd):
         newPointX = radius*np.cos(i*dTheta)+pointX
         newPointY = radius*np.sin(i*dTheta) + pointY
         nearestPoint,distToNearestPoint, idx = UM.findNearestPoint(newPointX, newPointY, mesh)
-        if distToNearestPoint >= minDistanceBetweenPoints*0.9 and distToNearestPoint <= maxDistanceBetweenPoints*1.1:
+        if distToNearestPoint >= minDistanceBetweenPoints and distToNearestPoint <= maxDistanceBetweenPoints:
             points.append([newPointX, newPointY])
     return np.asarray(points)
     
 
-def checkIfDistToClosestPointIsOk(newPoints, Mesh, minDistanceBetweenPoints,maxDistanceBetweenPoints):
-    '''Checks to make sure that a new point we want to add is not too close or too far from another points'''
-    points = []
-    for i in range(len(newPoints)):
-        newPointX = newPoints[i,0]
-        newPointY = newPoints[i,1]
-        nearestPoint, distToNearestPoint, indx = UM.findNearestPoint(newPointX, newPointY, Mesh)
-        if distToNearestPoint >= minDistanceBetweenPoints*0.9 and distToNearestPoint <= maxDistanceBetweenPoints*1.1:
-            points.append([newPointX, newPointY])
-    return np.asarray(points)
+# def checkIfDistToClosestPointIsOk(newPoints, Mesh, minDistanceBetweenPoints,maxDistanceBetweenPoints):
+#     '''Checks to make sure that a new point we want to add is not too close or too far from another points'''
+#     points = []
+#     for i in range(len(newPoints)):
+#         newPointX = newPoints[i,0]
+#         newPointY = newPoints[i,1]
+#         nearestPoint, distToNearestPoint, indx = UM.findNearestPoint(newPointX, newPointY, Mesh)
+#         if distToNearestPoint >= minDistanceBetweenPoints*0.9 and distToNearestPoint <= maxDistanceBetweenPoints*1.1:
+#             points.append([newPointX, newPointY])
+#     return np.asarray(points)
 
 # https://stackoverflow.com/questions/23073170/calculate-bounding-polygon-of-alpha-shape-from-the-delaunay-triangulation
 def alpha_shape(points, triangulation, alpha, only_outer=True):

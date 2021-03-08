@@ -11,7 +11,7 @@ def drift(mesh):
     # return np.asarray([x**2/2-y*x, x*y+y**2/2]).T
 
     # return np.asarray([x-y,x+y]).T
-    # return np.asarray([3*np.ones((np.size(mesh,0))), np.zeros((np.size(mesh,0)))]).T
+    return np.asarray([np.ones((np.size(mesh,0))), np.zeros((np.size(mesh,0)))]).T
     # return np.asarray([5*x*(3- r ** 2), 5*y*(3- r ** 2)]).T
     return np.asarray([3*erf(10*x), 3*erf(10*y)]).T
 
@@ -103,17 +103,17 @@ def AddPointToG(mesh, newPointindex, h, GMat):
 
 
 
-# # Drift fuction
-# def driftfun(x):
-# #     if isinstance(x, int) | isinstance(x, float):
-# #         return 1
-# #     else:
-# #         return np.ones(np.shape(x)) * 1
-#     return x * (4 - x ** 2)
+# Drift fuction
+def driftfun(x):
+#     if isinstance(x, int) | isinstance(x, float):
+#         return 1
+#     else:
+#         return np.ones(np.shape(x)) * 1
+    return x * (4 - x ** 2)
 
-# # Diffusion ction
-# def difffun(x):
-#     return np.repeat(1, np.size(x))
+# Diffusion ction
+def difffun(x):
+    return np.repeat(1, np.size(x))
 
 '''Simple'''
 # def f1(x, y):
