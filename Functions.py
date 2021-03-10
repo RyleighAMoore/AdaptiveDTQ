@@ -9,7 +9,6 @@ def drift(mesh):
     y = mesh[:,1]
     r = np.sqrt(x ** 2 + y ** 2)
     # return np.asarray([x**2/2-y*x, x*y+y**2/2]).T
-
     # return np.asarray([x-y,x+y]).T
     return np.asarray([np.ones((np.size(mesh,0))), np.zeros((np.size(mesh,0)))]).T
     # return np.asarray([5*x*(3- r ** 2), 5*y*(3- r ** 2)]).T
@@ -21,6 +20,8 @@ def diff(mesh):
     # return np.diag([1,1]) + np.ones((2,2))*0.5
     # return np.diag([mesh[:,0][0],mesh[:,1][0]])
     return np.diag([1,1])
+
+    return np.diag([0.75,0.75])
 
 # Density, distribution ction, quantile ction and random generation for the
 # normal distribution with mean equal to mu and standard deviation equal to sigma.
@@ -105,101 +106,12 @@ def AddPointToG(mesh, newPointindex, h, GMat):
 
 # Drift fuction
 def driftfun(x):
-#     if isinstance(x, int) | isinstance(x, float):
-#         return 1
-#     else:
-#         return np.ones(np.shape(x)) * 1
-    return x * (4 - x ** 2)
+    if isinstance(x, int) | isinstance(x, float):
+        return 1
+    else:
+        return np.ones(np.shape(x)) * 1
+    # return x * (4 - x ** 2)
 
 # Diffusion ction
 def difffun(x):
     return np.repeat(1, np.size(x))
-
-'''Simple'''
-# def f1(x, y):
-#     return 0
-
-# def f2(x, y):
-#     return 0
-
-# def g1(x=0,y=0):
-#     return 1
-
-# def g2(x=0,y=0):
-#     return 1
-
-
-'''Volcano'''
-# def f1(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     return 10*x*(1- r ** 2)
-
-
-# def f2(x, y):
-#     r = np.sqrt(x ** 2 + y ** 2)
-#     return 10*y*(1- r ** 2) 
-
-# def g1(x=0,y=0):
-#     return 1
-
-# def g2(x=0,y=0):
-#     return 1
-
-'''Moving hill'''
-# def f1(x, y):
-#     return 5
-
-# def f2(x, y):
-#     return 0
-
-# def g1(x=0,y=0):
-#     return 1
-#     return np.sqrt(2)
-
-# def g2(x=0,y=0):
-#     return 1
-#     return np.sqrt(2)
-    
-    
-
-# def HVals(x1,x2,mesh,h):
-#     y1 = mesh[:,0]
-#     y2 = mesh[:,1]
-#     scale = h*g1(x1,x2)*g2(x1,x2)/(h*g1(y1,y2)*g2(y1,y2))
-#     val = scale*np.exp(-(h**2*f1(y1,y2)**2+2*h*f1(y1,y2)*(x1-y1))/(2*h*g1(x1,x2)**2) + -(h**2*f2(y1,y2)**2+2*h*f2(y1,y2)*(x2-y2))/(2*h*g2(x1,x2)**2))*np.exp((x1-y1+h*f1(y1,y2))**2/(2*h*g1(x1,x2)**2) - (x1-y1+h *f1(y1,y2))**2/(2*h*g1(y1,y2)**2) + (x2-y2+h*f2(y1,y2))**2/(2*h*g2(x1,x2)**2) - (x2-y2+h* f2(y1,y2))**2/(2*h*g2(y1,y2)**2))
-#     val = scale*np.exp(-(h**2*f1(y1,y2)**2-2*h*f1(y1,y2)*(x1-y1))/(2*h*g1(x1,x2)**2) + -(h**2*f2(y1,y2)**2-2*h*f2(y1,y2)*(x2-y2))/(2*h*g2(x1,x2)**2))*np.exp((x1-y1-h*f1(y1,y2))**2/(2*h*g1(x1,x2)**2) - (x1-y1-h *f1(y1,y2))**2/(2*h*g1(y1,y2)**2) + (x2-y2-h*f2(y1,y2))**2/(2*h*g2(x1,x2)**2) - (x2-y2-h* f2(y1,y2))**2/(2*h*g2(y1,y2)**2))
-#     return val
-
-
-# def G1D(x1, x2, y1, gamma1, h):
-#     return (1 / (np.sqrt(2 * np.pi * gamma1**2 * h))) * np.exp((-(x1 - y1 - h * f1(y1, x2 + f2(x1,x2))) ** 2) / (2 * gamma1 ** 2 * h))
-
-
-# # import ICMeshGenerator as M
-# # import Functions as fun
-
-# def G2(x1, x2, y1, y2, h):
-#     return ((2 * np.pi * g1() ** 2 * h) ** (-1 / 2) * np.exp(-(x1 - y1 - h * f1(y1, y2)) ** 2 / (2 * g1() ** 2 * h))) * (
-#                 (2 * np.pi * g2() ** 2 * h) ** (-1 / 2) * np.exp(-(x2 - y2 - h * f2(y1, y2)) ** 2 / (2 * g2() ** 2 * h)))
-
-# import UnorderedMesh as UM
-# mesh = UM.generateOrderedGridCenteredAtZero(-2, 2, -2, 2, 0.1, includeOrigin=True)
-
-# def GVals2(Px, Py, mesh, h):
-#     vals = []
-#     for i in range(len(mesh)):
-#         val = G2(Px, Py, mesh[i,0], mesh[i,1], h)
-#         vals.append(np.copy(val))
-#     return np.asarray(vals)
-# GMat2 = []
-# for i in range(len(mesh)):
-#     G1 = GVals(mesh[i,0], mesh[i,1], mesh, 0.1)
-#     GMat2.append(G1)
-
-# GMat2 = np.asarray(GMat2)
-
-# maxDegFreedom = len(mesh)
-# GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
-# for i in range(len(mesh)):
-#     v = fun.G(i,mesh, 0.1)
-#     GMat[i,:len(v)] = v

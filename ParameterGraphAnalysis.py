@@ -3,16 +3,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
+import Functions as fun
 
 '''Initialization Parameters'''
-NumSteps = 20
+NumSteps = 99
 
 '''Discretization Parameters'''
-kstep = 0.15
+kstep = np.round(min(0.15, 0.144*fun.diff(np.asarray([0,0]))[0,0]+0.0056),2)
 h=0.01
 
-x = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-# x = [17,18,19,20]
+x = [1,2,3,4,5,6,7,8,9,10,15,20]
+# x = [8,9,10]
 
 # x=[20]
 times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
@@ -25,7 +26,7 @@ timesArray = []
 stepArray = []
 count = 0
 for i in x:
-    Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstep, h, 10, True, i)
+    Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstep, h, 10, i)
     L2ErrorArray[count,:] = np.asarray(L2Errors)
     LinfErrorArray[count,:] = np.asarray(LinfErrors)
     L1ErrorArray[count,:] = np.asarray(L1Errors)

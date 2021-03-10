@@ -25,7 +25,7 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 20
+NumSteps = 35
 '''Discretization Parameters'''
 a = 1
 h=0.01
@@ -33,14 +33,11 @@ kstep = np.round(min(0.15, 0.144*fun.diff(np.asarray([0,0]))[0,0]+0.0056),2)
 
 '''Errors'''
 ComputeErrors = False
-# SolutionPDFFile = 'PickledData/SolnPDF-Erf.p'
-# SolutionMeshFile = 'PickledData/SolnMesh-Erf.p'
-# SolutionPDFFile = 'SolnPDF-ErfIC.p'
-# SolutionMeshFile = 'SolnMesh-ErfIC.p'
 twiceQuadFit = False
 numLejas = 10
+beta = 10
 
-Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 3.5)
+Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,beta)
 # Meshes2, PdfTraj2, LinfErrors2, L2Errors2, L1Errors2, L2wErrors2, Timing2, LPReuseArr2, AltMethod2= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 3.5)
 
 x = np.arange(h,(NumSteps+1.5)*h,h)
@@ -91,7 +88,7 @@ S = np.asarray(S)
 # plt.show()
 
 # plt.tricontour(M[:,0], M[:,1], S, levels=15, linewidths=0.5, colors='k', alpha=0.6)
-plt.plot(M[:,0], M[:,1], 'k.', markersize='2')
+plt.plot(M[:,0], M[:,1], 'k.', markersize='1', alpha=1)
 # cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r", vmin=0.001, vmax = 0.06)
 cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r")
 

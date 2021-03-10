@@ -66,8 +66,8 @@ def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):
     indices = [np.nan]
     count = 1
     while math.isnan(indices[0]) and count < 4:
-        if count >1:
-            print("Trying to find Leja points again using more samples")
+        # if count >1:
+            # print("Trying to find Leja points again using more samples")
         candidates, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], candidatesFull,30*int(count*np.ceil(np.max(diff(np.asarray([0,0]))))), getIndices = True)
             
         Px = candidates[0,0]

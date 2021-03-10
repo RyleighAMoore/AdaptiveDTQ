@@ -36,11 +36,11 @@ start = datetime.now()
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.1
-xmin=-3
-xmax=3.1
-ymin=-3
-ymax=3.1
+kstep = 0.08
+xmin=-2
+xmax=2.1
+ymin=-2
+ymax=2.1
 
 # xmin=-2
 # xmax=2
@@ -89,7 +89,7 @@ for i in trange(len(mesh)):
 surfaces = [] 
 surfaces.append(np.copy(pdf))
 t=0
-while t < 25:
+while t < 100:
     print(t)
     pdf = np.matmul(GMat, pdf)
     surfaces.append(np.copy(pdf))

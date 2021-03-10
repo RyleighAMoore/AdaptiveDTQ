@@ -17,44 +17,6 @@ import math
 from pyopoly1 import variableTransformations as VT
 
 
-
-
-def newIntegrand(x1,x2,mesh,h):
-    '''Calculates the linearization of the Guassian. This newIntegrand times pdf integrated against 
-    scaling = GaussScale(2)
-    scaling.setMu(np.asarray([[muX,muY]]).T)
-    scaling.setSigma(np.asarray([sigmaX,sigmaY])) is used when Quadratic fit fails.'''
-    pointX = np.asarray([x1,x2])
-    
-    y1 = mesh[:,0]
-    y2 = mesh[:,1]
-    
-    xDrift = drift(pointX)
-    f1x = xDrift[0][0]
-    f2x = xDrift[0][1]
-    yDrift = drift(mesh)
-    f1y = yDrift[:,0]
-    f2y = yDrift[:,1]
-    
-    xDiff = diff(pointX)
-    g1x = xDiff[0,0]
-    g2x = xDiff[1,1]
-    yDiff = diff(mesh)
-    g1y = yDiff[0,0]
-    g2y = yDiff[1,1]
-    
-    
-    # scale = h*g1(x1,x2)*g2(x1,x2)/(h*g1(y1,y2)*g2(y1,y2))
-    # val = scale*np.exp(-(h**2*f1(y1,y2)**2+2*h*f1(y1,y2)*(x1-y1))/(2*h*g1(x1,x2)**2) + -(h**2*f2(y1,y2)**2+2*h*f2(y1,y2)*(x2-y2))/(2*h*g2(x1,x2)**2))*np.exp((x1-y1+h*f1(y1,y2))**2/(2*h*g1(x1,x2)**2) - (x1-y1+h *f1(y1,y2))**2/(2*h*g1(y1,y2)**2) + (x2-y2+h*f2(y1,y2))**2/(2*h*g2(x1,x2)**2) - (x2-y2+h* f2(y1,y2))**2/(2*h*g2(y1,y2)**2))
-    # val = scale*np.exp(-(h**2*f1(y1,y2)**2-2*h*f1(y1,y2)*(x1-y1))/(2*h*g1(x1,x2)**2) + -(h**2*f2(y1,y2)**2-2*h*f2(y1,y2)*(x2-y2))/(2*h*g2(x1,x2)**2))*np.exp((x1-y1-h*f1(y1,y2))**2/(2*h*g1(x1,x2)**2) - (x1-y1-h *f1(y1,y2))**2/(2*h*g1(y1,y2)**2) + (x2-y2-h*f2(y1,y2))**2/(2*h*g2(x1,x2)**2) - (x2-y2-h* f2(y1,y2))**2/(2*h*g2(y1,y2)**2))
-    
-    scale = h*g1x*g2x/(h*g1y*g2y)
-    val = scale*np.exp(-(h**2*f1y**2-2*h*f1y*(x1-y1))/(2*h*g1x**2) + -(h**2*f2y**2-2*h*f2y*(x2-y2))/(2*h*g2x**2))*np.exp((x1-y1-h*f1y)**2/(2*h*g1x**2) - (x1-y1-h *f1y)**2/(2*h*g1y**2) + (x2-y2-h*f2y)**2/(2*h*g2x**2) - (x2-y2-h* f2y)**2/(2*h*g2y**2))
-    # assert np.isclose(scaleTest, scale).all()
-    # assert np.isclose(val, valTest).all()
-    return val
-
-
 def getMeshValsThatAreClose(Mesh, pdf, sigmaX, sigmaY, muX, muY, numStd = 4):
     MeshToKeep = []
     PdfToKeep = []
@@ -77,9 +39,6 @@ lejaPointsFinal, new = getLejaPoints(10, np.asarray([[0,0]]).T, poly, num_candid
     
 def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod):
     numLejas = LPMat.shape[1]
-    # sigmaX=np.sqrt(h)*diff(np.asarray([[0,0]]))[0,0]
-    # sigmaY=np.sqrt(h)*diff(np.asarray([[0,0]]))[1,1]
-    
     newPDF = []
     condNums = []
     countUseMorePoints = 0 # Used to count if we have to revert to alternative procedure
@@ -114,8 +73,6 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
             pdfNew[pdfNew < 0] = np.min(pdf)
             
             v = np.expand_dims(G(0,mesh12, h),1)
-            
-            # g = Gaussian(scaling, mesh12)
             g = weightExp(scaling,mesh12)
             
             testing = np.squeeze((pdf12*v)/np.expand_dims(g,1))
@@ -134,8 +91,6 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
 
     newPDFs = np.asarray(newPDF)
     condNums = np.asarray([condNums]).T
-    
-    
     return newPDFs,condNums, mesh, LPMat, LPMatBool, LPUse, countUseMorePoints
 
 
