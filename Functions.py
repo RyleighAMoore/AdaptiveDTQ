@@ -19,7 +19,7 @@ def diff(mesh):
         mesh = np.expand_dims(mesh, axis=0)
     # return np.diag([1,1]) + np.ones((2,2))*0.5
     # return np.diag([mesh[:,0][0],mesh[:,1][0]])
-    return np.diag([1,1])
+    # return np.diag([1,1])
 
     return np.diag([0.75,0.75])
 

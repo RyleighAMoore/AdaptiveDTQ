@@ -108,15 +108,15 @@ def DTQ(NumSteps, kstep, h, NumLejas, degree):
         
         sizer = len(mesh)
         if np.shape(GMat)[0] - sizer < sizer:
-            GMat2 = np.empty([3*sizer, 3*sizer])*np.NaN
+            GMat2 = np.empty([2*sizer, 2*sizer])*np.NaN
             GMat2[:sizer, :sizer]= GMat[:sizer, :sizer]
             GMat = GMat2
                 
         if np.shape(LPMat)[0] - sizer < sizer:
-            LPMat2 = np.empty([3*sizer, NumLejas])
+            LPMat2 = np.empty([2*sizer, NumLejas])
             LPMat2[:sizer,:]= LPMat[:sizer, :]
             LPMat = LPMat2
-            LPMatBool2 = np.zeros((3*sizer,1), dtype=bool)
+            LPMatBool2 = np.zeros((2*sizer,1), dtype=bool)
             LPMatBool2[:len(mesh)]= LPMatBool[:len(mesh)]
             LPMatBool = LPMatBool2
         

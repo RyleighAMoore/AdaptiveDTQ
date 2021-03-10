@@ -36,11 +36,11 @@ start = datetime.now()
 h=0.01
 s=0.75
 kstep = h ** s
-kstep = 0.08
-xmin=-2
-xmax=2.1
-ymin=-2
-ymax=2.1
+kstep = 0.1
+xmin=-5
+xmax=5.1
+ymin=-5
+ymax=5.1
 
 # xmin=-2
 # xmax=2

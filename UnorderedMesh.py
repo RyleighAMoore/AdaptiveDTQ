@@ -25,10 +25,10 @@ def findNearestKPoints(xCoord, yCoord, AllPoints, numNeighbors, getIndices = Fal
 
 def findNearestPoint(xCoord, yCoord, AllPoints):
     points, normList, indices = findNearestKPoints(xCoord, yCoord, AllPoints, 2, getIndices = True)
-    if normList[0]==0:
-        return points[1], np.sqrt(normList[1]), indices[1]
-    else:
-        return points[0], np.sqrt(normList[0]), indices[0]
+    # if normList[0]==0:
+    #     return points[1], np.sqrt(normList[1]), indices[1]
+    # else:
+    return points[0], np.sqrt(normList[0]), indices[0]
     
 
 def plotTri(tri, points):

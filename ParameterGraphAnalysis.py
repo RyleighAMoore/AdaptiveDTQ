@@ -6,14 +6,14 @@ from mpl_toolkits.mplot3d import Axes3D
 import Functions as fun
 
 '''Initialization Parameters'''
-NumSteps = 99
+NumSteps = 35
 
 '''Discretization Parameters'''
 kstep = np.round(min(0.15, 0.144*fun.diff(np.asarray([0,0]))[0,0]+0.0056),2)
 h=0.01
 
 x = [1,2,3,4,5,6,7,8,9,10,15,20]
-# x = [8,9,10]
+x = [3,4,5,6]
 
 # x=[20]
 times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
@@ -25,8 +25,10 @@ L2wErrorArray = np.zeros((len(x),len(times)))
 timesArray = []
 stepArray = []
 count = 0
+table = ""
 for i in x:
     Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstep, h, 10, i)
+    table = table + str(i) + "&" +str(L2wErrors[-1])+ "&" +str(L2Errors[-1]) + "&" +str(L1Errors[-1]) + "&" +str(LinfErrors[-1])  + "\\\ \hline "
     L2ErrorArray[count,:] = np.asarray(L2Errors)
     LinfErrorArray[count,:] = np.asarray(LinfErrors)
     L1ErrorArray[count,:] = np.asarray(L1Errors)
