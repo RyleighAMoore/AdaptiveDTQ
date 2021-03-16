@@ -18,7 +18,7 @@ from exactSolutions import TwoDdiffusionEquation
 from Errors import ErrorValsExact
 
 
-def DTQ(NumSteps, kstep, h, NumLejas, degree):
+def DTQ(NumSteps, kstep, h, NumLejas, degree, meshRadius):
     '''Mesh updates parameter'''
     # degree=3.5
     deg =degree
@@ -38,7 +38,11 @@ def DTQ(NumSteps, kstep, h, NumLejas, degree):
     poly.lambdas = lambdas
     
     '''pdf after one time step with Dirac initial condition centered at the origin'''
-    mesh = M.getICMesh(3*np.max(fun.diff(np.asarray([0,0]))), kstep, h)
+    mesh = M.getICMesh(meshRadius, kstep, h)
+    #mesh = M.getICMesh(2*np.max(fun.diff(np.asarray([0,0]))), kstep, h)
+
+    # mesh = M.getICMesh(2, kstep, h)
+
     scale = GaussScale(2)
     scale.setMu(h*fun.drift(np.asarray([0,0])).T)
     scale.setCov((h*fun.diff(np.asarray([0,0]))*fun.diff(np.asarray([0,0])).T).T)
@@ -65,7 +69,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, degree):
         v = fun.G(i,mesh, h)
         GMat[i,:len(v)] = v
         
-    LPMat = np.empty([maxDegFreedom, NumLejas])
+    LPMat = np.ones([maxDegFreedom, NumLejas])*-1
     LPMatBool = np.zeros((maxDegFreedom,1), dtype=bool) # True if we have Lejas, False if we need Lejas
         
     '''Grid updates'''
@@ -77,7 +81,6 @@ def DTQ(NumSteps, kstep, h, NumLejas, degree):
     
     
     for i in trange(1,NumSteps+1):
-        t = NumSteps*kstep
         if (i >= 0):
             '''Add points to mesh'''
             # plt.figure()
@@ -113,7 +116,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, degree):
             GMat = GMat2
                 
         if np.shape(LPMat)[0] - sizer < sizer:
-            LPMat2 = np.empty([2*sizer, NumLejas])
+            LPMat2 = np.ones([2*sizer, NumLejas])*-1
             LPMat2[:sizer,:]= LPMat[:sizer, :]
             LPMat = LPMat2
             LPMatBool2 = np.zeros((2*sizer,1), dtype=bool)

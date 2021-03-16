@@ -31,6 +31,8 @@ def map_from_canonical_space(user_samples, scale_parameters):
     delta = np.hstack((dx,dy))
     
     cov = scale_parameters.cov
+    # print(user_samples)
+    # print(scale_parameters.cov)
     vals = np.linalg.cholesky(cov)@np.asarray(user_samples).T + delta.T
     return vals.T
 

@@ -18,6 +18,8 @@ from pyopoly1 import LejaPoints as LP
 import distanceMetrics 
 from pyopoly1 import LejaPoints as LP
 from scipy.interpolate import griddata
+import random
+random.seed(10)
 
 
 def addPointsToMeshProcedure(Mesh, Pdf, triangulation, kstep, h, poly, GMat, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints):
@@ -63,7 +65,7 @@ def checkIntegrandForAddingPointsAroundBoundaryPoints(PDF, addPointsToBoundaryIf
     '''Check if the points on the edge are too big and we need more points around them
     Uses alpha hull to get the boundary points if boundaryOnly is True.'''
     valueList = -1*np.ones(len(PDF)) # Set to small values for placeholder
-    pointsOnEdge = getBoundaryPoints(Mesh, tri, maxDistanceBetweenPoints*1.5)
+    pointsOnEdge = getBoundaryPoints(Mesh, tri, maxDistanceBetweenPoints)
     for i in pointsOnEdge:
         valueList[i]=PDF[i]
     addingAround = [np.asarray(valueList) >= addPointsToBoundaryIfBiggerThanTolerance]
@@ -117,7 +119,7 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, addPointsToBoundaryIfBiggerTha
         iivals = np.expand_dims(np.arange(len(Mesh)),1)
         index = iivals[boundaryPointsToAddAround]
         for indx in index:
-            newPoints = addPointsRadially(Mesh[indx,0], Mesh[indx,1], Mesh, 12, minDistanceBetweenPoints, maxDistanceBetweenPoints)
+            newPoints = addPointsRadially(Mesh[indx,0], Mesh[indx,1], Mesh, 8, minDistanceBetweenPoints, maxDistanceBetweenPoints)
             if len(newPoints)>0:
                 Mesh = np.append(Mesh, newPoints, axis=0)
                 ChangedBool = 1
@@ -132,14 +134,15 @@ def addPointsToBoundary(Mesh, Pdf, triangulation, addPointsToBoundaryIfBiggerTha
             triangulation = houseKeepingAfterAdjustingMesh(Mesh, triangulation)
     return Mesh, Pdf, triangulation, ChangedBool
 
-import random
+
 def addPointsRadially(pointX, pointY, mesh, numPointsToAdd, minDistanceBetweenPoints, maxDistanceBetweenPoints):
     radius = minDistanceBetweenPoints/2 + maxDistanceBetweenPoints/2
+    noise = random.uniform(0, 1)*2*np.pi
     dTheta = 2*np.pi/numPointsToAdd
-    points = []
+    points = []     
     for i in range(numPointsToAdd):
-        newPointX = radius*np.cos(i*dTheta)+ pointX
-        newPointY = radius*np.sin(i*dTheta) + pointY
+        newPointX = radius*np.cos(i*dTheta + noise) + pointX
+        newPointY = radius*np.sin(i*dTheta + noise) + pointY
         if len(points)>0:
             mesh2 = np.vstack((mesh,points))
             nearestPoint,distToNearestPoint, idx = UM.findNearestPoint(newPointX, newPointY, mesh2)

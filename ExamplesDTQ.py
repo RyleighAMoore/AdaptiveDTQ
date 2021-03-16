@@ -25,19 +25,19 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 35
+NumSteps = 114
 '''Discretization Parameters'''
 a = 1
 h=0.01
 kstep = np.round(min(0.15, 0.144*fun.diff(np.asarray([0,0]))[0,0]+0.0056),2)
-
+kstep = 0.1
 '''Errors'''
 ComputeErrors = False
 twiceQuadFit = False
 numLejas = 10
-beta = 3.5
+beta = 3
 
-Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,beta)
+Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,beta, 2)
 # Meshes2, PdfTraj2, LinfErrors2, L2Errors2, L1Errors2, L2wErrors2, Timing2, LPReuseArr2, AltMethod2= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 3.5)
 
 x = np.arange(h,(NumSteps+1.5)*h,h)
@@ -61,7 +61,7 @@ from matplotlib import rcParams
 # Font styling
 rcParams['font.family'] = 'serif'
 rcParams['font.weight'] = 'bold'
-rcParams['font.size'] = '12'
+rcParams['font.size'] = '18'
 fontprops = {'fontweight': 'bold'}
 '''Plot figure'''
 plt.figure()
@@ -88,14 +88,14 @@ S = np.asarray(S)
 # plt.show()
 
 # plt.tricontour(M[:,0], M[:,1], S, levels=15, linewidths=0.5, colors='k', alpha=0.6)
-plt.plot(M[:,0], M[:,1], 'k.', markersize='1', alpha=1)
-# cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r", vmin=0.001, vmax = 0.06)
-cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r")
+plt.plot(M[:,0], M[:,1], 'k.', markersize='0.8', alpha=0.3)
+cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r", vmin=0.01, vmax = 0.1)
+# cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r")
 
 cbar = plt.colorbar(cntr2)
 cbar.set_label("PDF value")
-plt.xlabel("First dimension")
-plt.ylabel("Second dimension")
+plt.xlabel(r'$\mathbf{x}^{(1)}$')
+plt.ylabel(r'$\mathbf{x}^{(2)}$')
 plt.show()
 
 

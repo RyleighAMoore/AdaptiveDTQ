@@ -10,18 +10,25 @@ def drift(mesh):
     r = np.sqrt(x ** 2 + y ** 2)
     # return np.asarray([x**2/2-y*x, x*y+y**2/2]).T
     # return np.asarray([x-y,x+y]).T
-    return np.asarray([np.ones((np.size(mesh,0))), np.zeros((np.size(mesh,0)))]).T
+    # return np.asarray([np.ones((np.size(mesh,0))), np.zeros((np.size(mesh,0)))]).T
     # return np.asarray([5*x*(3- r ** 2), 5*y*(3- r ** 2)]).T
     return np.asarray([3*erf(10*x), 3*erf(10*y)]).T
+    # return np.asarray([np.ones((np.size(mesh,0))), 5*np.ones((np.size(mesh,0)))]).T
+    # return np.asarray([-2*np.ones((np.size(mesh,0))), 2*np.ones((np.size(mesh,0)))]).T
+    # return np.asarray([3*erf(10*x), np.zeros((np.size(mesh,0)))]).T
+
 
 def diff(mesh):
     if mesh.ndim == 1:
         mesh = np.expand_dims(mesh, axis=0)
     # return np.diag([1,1]) + np.ones((2,2))*0.5
+    # return np.diag([0.01*mesh[:,0][0]**2+0.5,0.01*mesh[:,1][0]**2+0.5]) + np.ones((2,2))*0.2
     # return np.diag([mesh[:,0][0],mesh[:,1][0]])
     # return np.diag([1,1])
 
     return np.diag([0.75,0.75])
+    # return [[mesh[:,0][0]**2,1],[1, mesh[:,1][0]**2]]
+
 
 # Density, distribution ction, quantile ction and random generation for the
 # normal distribution with mean equal to mu and standard deviation equal to sigma.

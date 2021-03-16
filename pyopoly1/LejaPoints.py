@@ -15,6 +15,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import math
 from Functions import diff
 from pyopoly1 import variableTransformations as VT
+np.random.seed(10)
 
 
 '''
