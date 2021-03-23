@@ -2,6 +2,7 @@ import numpy as np
 from scipy.stats import multivariate_normal
 from scipy.special import erf
 
+
 def drift(mesh):
     if mesh.ndim ==1:
         mesh = np.expand_dims(mesh, axis=0)
