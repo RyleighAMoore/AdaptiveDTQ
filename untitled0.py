@@ -17,4 +17,4 @@ for i in range(len(Meshes)-1):
     l = len(Meshes[i+1])
     pc.append(AltMethod[i]/l)
     
-mean = np.mean(pc[1:])
+mean2 = np.mean(pc[1:])

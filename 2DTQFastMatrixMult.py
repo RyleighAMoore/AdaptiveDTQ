@@ -37,10 +37,10 @@ h=0.01
 s=0.75
 kstep = h ** s
 kstep = 0.1
-xmin=-5
+xmin=-3
 xmax=5.1
-ymin=-5
-ymax=5.1
+ymin=-4
+ymax=4.1
 
 # xmin=-2
 # xmax=2
@@ -125,9 +125,9 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
 
 graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[2], linestyle="", marker="o")
-ax.set_zlim(0, np.max(surfaces[25]))
+ax.set_zlim(0, 0.1)
 ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
-                                         interval=100, blit=False)
+                                         interval=10, blit=False)
 
 plt.show()
 

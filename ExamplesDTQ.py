@@ -25,19 +25,20 @@ PlotFigure = False
 PlotStepIndex = -1
 
 '''Initialization Parameters'''
-NumSteps = 114
+NumSteps = 99
 '''Discretization Parameters'''
 a = 1
-h=0.01
+h=0.02
 kstep = np.round(min(0.15, 0.144*fun.diff(np.asarray([0,0]))[0,0]+0.0056),2)
-kstep = 0.1
+kstep = 0.08
 '''Errors'''
 ComputeErrors = False
 twiceQuadFit = False
 numLejas = 10
 beta = 3
+radius = 1
 
-Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,beta, 2)
+Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstep, h, numLejas,beta, radius)
 # Meshes2, PdfTraj2, LinfErrors2, L2Errors2, L1Errors2, L2wErrors2, Timing2, LPReuseArr2, AltMethod2= DTQ(NumSteps, kstep, h, numLejas,twiceQuadFit, 3.5)
 
 x = np.arange(h,(NumSteps+1.5)*h,h)
@@ -89,7 +90,7 @@ S = np.asarray(S)
 
 # plt.tricontour(M[:,0], M[:,1], S, levels=15, linewidths=0.5, colors='k', alpha=0.6)
 plt.plot(M[:,0], M[:,1], 'k.', markersize='0.8', alpha=0.3)
-cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r", vmin=0.01, vmax = 0.1)
+cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r", vmin=0.01, vmax = 0.15)
 # cntr2 = plt.tricontourf(M[:,0], M[:,1], S, levels=15, cmap="bone_r")
 
 cbar = plt.colorbar(cntr2)
@@ -113,7 +114,7 @@ if PlotAnimation:
     title = ax.set_title('3D Test')
         
     graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker=".")
-    # ax.set_zlim(0, np.max(PdfTraj[10]))
+    ax.set_zlim(0, 0.3)
     mini = np.min(Meshes[0])
     maxi = np.max(Meshes[0])
     # for i in range(len(Meshes)):
@@ -127,7 +128,7 @@ if PlotAnimation:
     # ax.set_xlim(mini, maxi)
     # ax.set_ylim(mini, maxi)
     ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj),
-                                              interval=300, blit=False)
+                                              interval=10, blit=False)
     plt.show()
 
 
@@ -148,3 +149,45 @@ if PlotAnimation:
 
 # plt.plot(mm)
 # plt.plot(nn, '.')
+
+
+fig, axs = plt.subplots(2, 2)
+times = 0
+count1 = [0,0,1,1]
+count2 = [0,1,0,1]
+for ij in [0,14,64,104]:
+   M= []
+   S = []
+   index = ij
+   for x in Meshes[index]:
+       M.append(x)
+    # for x in PdfTraj[0]:
+    #     S.append(x)
+   for x in PdfTraj[index]:
+        S.append(x)
+   M = np.asarray(M)
+   S = np.asarray(S)
+   # axs[count1[times],count2[times]].plot(M[:,0], M[:,1], 'k.', markersize='0.8', alpha=0.3)
+   cntr2 = axs[count1[times],count2[times]].tricontourf(M[:,0], M[:,1], np.log(S), levels=10, cmap="bone_r", vmin=-5.8, vmax =1)
+   # cntr2 = axs[count1[times],count2[times]].tricontourf(M[:,0], M[:,1], np.log(S), levels=15, cmap="bone_r", vmin=-5, vmax =3)
+   val = str(np.round((ij+1)*h,4))
+   axs[count1[times],count2[times]].set_title('t = %s' %val)
+   axs[count1[times],count2[times]].set_xlim([-8, 8])
+   axs[count1[times],count2[times]].set_ylim([-8, 8])
+   times = times+1
+
+
+# cntr2 = axs.tricontourf(M[:,0], M[:,1], np.log(S), levels=15, cmap="bone_r", vmin=-5, vmax =3)
+fig.text(0.5, 0.04, r'$\mathbf{x}^{(1)}$', ha='center')
+fig.text(0.04, 0.5, r'$\mathbf{x}^{(2)}$', va='center', rotation='vertical')
+# cbar = fig.colorbar(cntr2, ax=axs)
+# cbar.set_label("log(PDF) value")
+
+fig.show()
+
+for ax in axs.flat:
+    ax.set(xlabel='x-label', ylabel='y-label')
+
+# Hide x labels and tick labels for top plots and y ticks for right plots.
+for ax in axs.flat:
+    ax.label_outer()
