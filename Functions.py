@@ -1,37 +1,5 @@
 import numpy as np
 from scipy.stats import multivariate_normal
-from scipy.special import erf
-
-
-def drift(mesh):
-    if mesh.ndim ==1:
-        mesh = np.expand_dims(mesh, axis=0)
-    x = mesh[:,0]
-    y = mesh[:,1]
-    r = np.sqrt(x ** 2 + y ** 2)
-    # return np.asarray([x**2/2-y*x, x*y+y**2/2]).T
-    # return np.asarray([x-y,x+y]).T
-    # return np.asarray([np.ones((np.size(mesh,0))), np.zeros((np.size(mesh,0)))]).T
-    # return np.asarray([5*x*(3- r ** 2), 5*y*(3- r ** 2)]).T
-    # return np.asarray([3*erf(10*x), 3*erf(10*y)]).T
-    # return np.asarray([np.ones((np.size(mesh,0))), 5*np.ones((np.size(mesh,0)))]).T
-    # return np.asarray([-2*np.ones((np.size(mesh,0))), 2*np.ones((np.size(mesh,0)))]).T
-    # return np.asarray([2*erf(10*x), np.zeros((np.size(mesh,0)))]).T
-    return np.asarray([3*(10*erf(10*x)+5*y)/(r+10), 6*(-2*x+y)/(r+10)]).T
-
-
-
-def diff(mesh):
-    if mesh.ndim == 1:
-        mesh = np.expand_dims(mesh, axis=0)
-    # return np.diag([1,1])
-    # return np.diag([0.01*mesh[:,0][0]**2+0.5,0.01*mesh[:,1][0]**2+0.5]) + np.ones((2,2))*0.2
-    # return np.diag([mesh[:,0][0],mesh[:,1][0]])
-    return np.diag([.6,.6])
-
-    # return np.diag([0.75,0.75])
-    # return [[mesh[:,0][0]**2,1],[1, mesh[:,1][0]**2]]
-
 
 # Density, distribution ction, quantile ction and random generation for the
 # normal distribution with mean equal to mu and standard deviation equal to sigma.
@@ -75,7 +43,7 @@ def covPart(Px, Py, mesh, cov):
     return np.asarray(vals)
 
 
-def G(indexOfMesh,mesh, h):
+def G(indexOfMesh,mesh, h, drift, diff):
     x = mesh[indexOfMesh,:]
     D = mesh.shape[1]
     mean = mesh+drift(mesh)*h
@@ -93,8 +61,8 @@ def G(indexOfMesh,mesh, h):
 
 
 
-def AddPointToG(mesh, newPointindex, h, GMat):
-    newRow = G(newPointindex, mesh,h)
+def AddPointToG(mesh, newPointindex, h, GMat, drift, diff):
+    newRow = G(newPointindex, mesh,h, drift, diff)
     GMat[newPointindex,:len(newRow)] = newRow
     D = mesh.shape[1]
     mu = mesh[-1,:]+drift(np.expand_dims(mesh[-1,:],axis=0))*h
@@ -114,14 +82,14 @@ def AddPointToG(mesh, newPointindex, h, GMat):
 
 
 
-# Drift fuction
-def driftfun(x):
-    if isinstance(x, int) | isinstance(x, float):
-        return 1
-    else:
-        return np.ones(np.shape(x)) * 1
-    # return x * (4 - x ** 2)
+# # Drift fuction
+# def driftfun(x):
+#     if isinstance(x, int) | isinstance(x, float):
+#         return 1
+#     else:
+#         return np.ones(np.shape(x)) * 1
+#     # return x * (4 - x ** 2)
 
-# Diffusion ction
-def difffun(x):
-    return np.repeat(1, np.size(x))
+# # Diffusion ction
+# def difffun(x):
+#     return np.repeat(1, np.size(x))

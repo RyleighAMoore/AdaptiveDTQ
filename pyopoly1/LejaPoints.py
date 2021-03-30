@@ -13,7 +13,6 @@ from pyopoly1.opolynd import opolynd_eval
 import UnorderedMesh as UM
 from mpl_toolkits.mplot3d import Axes3D
 import math
-from Functions import diff
 from pyopoly1 import variableTransformations as VT
 np.random.seed(10)
 
@@ -62,7 +61,7 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
         return np.asarray(samples).T, np.asarray(samples[:,num_initial_samples:]).T
 
 
-def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf):   
+def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf, diff):   
     candidatesFull = VT.map_to_canonical_space(Mesh,scale)
     indices = [np.nan]
     count = 1

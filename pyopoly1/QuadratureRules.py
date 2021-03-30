@@ -33,7 +33,7 @@ def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
     return c[0]*JacFactor*np.pi, np.sum(np.abs(vinv[0,:]))
     
   
-def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas):
+def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas, diff):
     '''Quadrature rule with change of variables for nonzero covariance. 
     Used by QuadratureByInterpolationND_DivideOutGaussian
     Selects a Leja points subset of the passed in mesh'''
@@ -43,7 +43,7 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas):
     normScale.setMu(np.asarray([[0,0]]).T)
     normScale.setCov(np.asarray([[1,0],[0,1]]))
     
-    mesh2, pdfNew, indices = LP.getLejaSetFromPoints(normScale, u, NumLejas, poly, pdf)
+    mesh2, pdfNew, indices = LP.getLejaSetFromPoints(normScale, u, NumLejas, poly, pdf, diff)
     if math.isnan(indices[0]):
         return [10000], 10000, 10000
     assert np.max(indices) < len(mesh)
@@ -86,7 +86,7 @@ def QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices):
 
 
 
-def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LPMat, LPMatBool, index, NumLejas, numQuadPoints):
+def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fullPDF, LPMat, LPMatBool, index, NumLejas, numQuadPoints,diff):
     '''Divides out Gaussian using a quadratic fit. Then computes the update using a Leja Quadrature rule.'''
     x,y = fullMesh.T
     if not LPMatBool[index][0]: # Do not have points for quadratic fit
@@ -94,7 +94,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         mesh =  mesh[:numQuadPoints]
         pdf = fullPDF[ii[:numQuadPoints]]
         # scale1, temp, cc, Const = fitQuad(mesh, pdf)
-        scale1, temp, cc, Const = leastSquares(mesh, pdf)
+        scale1, cc, Const = leastSquares(mesh, pdf)
         
     else:
         QuadPoints = LPMat[index,:].astype(int)
@@ -103,15 +103,15 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         # plt.scatter(mesh[:,0], mesh[:,1])
         # plt.scatter(fullMesh[index,0], fullMesh[index,1])
         pdf = fullPDF[QuadPoints]
-        scale1, temp, cc, Const = leastSquares(mesh, pdf)
+        scale1, cc, Const = leastSquares(mesh, pdf)
         
         
     if not math.isnan(Const): # succeeded fitting Gaussian
         x,y = fullMesh.T
         vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
         # vals1 = vals*(1/np.sqrt(np.pi**2*np.linalg.det(scale1.cov)))
-        # vals2 = Gaussian(scale1, fullMesh)
-        # vals = weightExp(scale1,fullMesh)
+        vals2 = Gaussian(scale1, fullMesh)
+        # vals2 = weightExp(scale1,fullMesh)
         # vals = np.expand_dims(vals,0)
         # assert np.isclose(np.max(np.abs(vals-vals3)),0)
         
@@ -125,7 +125,7 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
                 return value[0], condNum, scale1, LPMat, LPMatBool, 1
             
         if not LPMatBool[index][0]: # Need Leja points.
-            value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,NumLejas)
+            value, condNum, indices = QuadratureByInterpolationND(poly, scale1, fullMesh, pdf2,NumLejas, diff)
             LPMat[index, :] = np.asarray(indices)
             if condNum < 1.1:
                 LPMatBool[index] = True

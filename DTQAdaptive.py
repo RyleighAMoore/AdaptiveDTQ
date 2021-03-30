@@ -18,15 +18,14 @@ from exactSolutions import TwoDdiffusionEquation
 from Errors import ErrorValsExact
 
 
-def DTQ(NumSteps, kstep, h, NumLejas, degree, meshRadius):
+def DTQ(NumSteps, minSpacing, maxSpacing, h, degree, meshRadius, drift, diff):
     '''Mesh updates parameter'''
-    # degree=3.5
-    deg =degree
-    addPointsToBoundaryIfBiggerThanTolerance = 10**(-deg)
-    removeZerosValuesIfLessThanTolerance = 10**(-deg-0.5)
-    minDistanceBetweenPoints = kstep #min(0.12, kstep)
-    maxDistanceBetweenPoints =  kstep + kstep*0.2 # max(0.17, kstep)
+    addPointsToBoundaryIfBiggerThanTolerance = 10**(-degree)
+    removeZerosValuesIfLessThanTolerance = 10**(-degree-0.5)
+    minDistanceBetweenPoints = minSpacing #min(0.12, kstep)
+    maxDistanceBetweenPoints = maxSpacing
     conditionNumForAltMethod = 3
+    NumLejas = 10
     start = datetime.now()
     
     ''' Initializd orthonormal Polynomial family'''
@@ -38,14 +37,11 @@ def DTQ(NumSteps, kstep, h, NumLejas, degree, meshRadius):
     poly.lambdas = lambdas
     
     '''pdf after one time step with Dirac initial condition centered at the origin'''
-    mesh = M.getICMesh(meshRadius, kstep, h)
-    #mesh = M.getICMesh(2*np.max(fun.diff(np.asarray([0,0]))), kstep, h)
-
-    # mesh = M.getICMesh(2, kstep, h)
+    mesh = M.getICMesh(meshRadius, minSpacing, h)
 
     scale = GaussScale(2)
-    scale.setMu(h*fun.drift(np.asarray([0,0])).T)
-    scale.setCov((h*fun.diff(np.asarray([0,0]))*fun.diff(np.asarray([0,0])).T).T)
+    scale.setMu(h*drift(np.asarray([0,0])).T)
+    scale.setCov((h*diff(np.asarray([0,0]))*diff(np.asarray([0,0])).T).T)
     
     pdf = fun.Gaussian(scale, mesh)
     
@@ -62,11 +58,11 @@ def DTQ(NumSteps, kstep, h, NumLejas, degree, meshRadius):
     '''Initialize Transition probabilities'''
     maxDegFreedom = len(mesh)*2
     # NumLejas = 15
-    numQuadFit = max(20,20*np.max(fun.diff(np.asarray([0,0]))).astype(int))*2
+    numQuadFit = max(20,20*np.max(diff(np.asarray([0,0]))).astype(int))*2
     
     GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
     for i in range(len(mesh)):
-        v = fun.G(i,mesh, h)
+        v = fun.G(i,mesh, h, drift, diff)
         GMat[i,:len(v)] = v
         
     LPMat = np.ones([maxDegFreedom, NumLejas])*-1
@@ -85,7 +81,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, degree, meshRadius):
             '''Add points to mesh'''
             # plt.figure()
             # plt.scatter(mesh[:,0], mesh[:,1])
-            mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, kstep, h, poly, GMat, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints)
+            mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, minSpacing, h, poly, GMat, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints, drift, diff)
             # plt.plot(mesh[:,0], mesh[:,1], '*r')
 
         if i>=15 and i%10==9:
@@ -96,7 +92,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, degree, meshRadius):
         if i >-1: 
             '''Step forward in time'''
             pdf = np.expand_dims(pdf,axis=1)
-            pdf, condnums, meshTemp, LPMat, LPMatBool, LPReuse, AltMethodCount = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod)
+            pdf, condnums, meshTemp, LPMat, LPMatBool, LPReuse, AltMethodCount = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod, drift, diff)
             pdf = np.squeeze(pdf)
             '''Add new values to lists for graphing'''
             PdfTraj.append(np.copy(pdf))
@@ -130,7 +126,7 @@ def DTQ(NumSteps, kstep, h, NumLejas, degree, meshRadius):
 
     surfaces = []
     for ii in range(len(PdfTraj)):
-        ana = TwoDdiffusionEquation(Meshes[ii],fun.diff(np.asarray([0,0]))[0,0], h*(ii+1),fun.drift(np.asarray([0,0]))[0,0])
+        ana = TwoDdiffusionEquation(Meshes[ii],diff(np.asarray([0,0]))[0,0], h*(ii+1),drift(np.asarray([0,0]))[0,0])
         surfaces.append(ana)
 
     LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, plot=True)

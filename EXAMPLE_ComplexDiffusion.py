@@ -1,14 +1,21 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Mar 26 13:42:29 2021
+
+@author: Rylei
+"""
+
 from DTQAdaptive import DTQ
 import numpy as np
-from DriftDiffFunctionBank import FourHillDrift, DiagDiffptSevenFive
+from DriftDiffFunctionBank import TwoHillDrift, ComplexDiff
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-mydrift = FourHillDrift
-mydiff = DiagDiffptSevenFive
+mydrift = TwoHillDrift
+mydiff = ComplexDiff
 
 '''Initialization Parameters'''
-NumSteps = 114
+NumSteps = 199
 '''Discretization Parameters'''
 a = 1
 h=0.01
@@ -16,7 +23,7 @@ h=0.01
 kstepMin = 0.12 # lambda
 kstepMax = 0.14 # Lambda
 beta = 3
-radius = 1.5 # R
+radius = 1 # R
 
 Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff)
 
@@ -39,9 +46,7 @@ print("Leja Reuse: ", mean2*100, "%")
 
 from plots import plotErrors, plotRowThreePlots
 '''Plot 3 Subplots'''
-plotRowThreePlots(Meshes, PdfTraj, h, [24,69,114], includeMeshPoints=False)
-
-plot2DColorPlot(-1, Meshes, PdfTraj)
+plotRowThreePlots(Meshes, PdfTraj, h, [69,139,199], includeMeshPoints=False)
 
 
 def update_graph(num):

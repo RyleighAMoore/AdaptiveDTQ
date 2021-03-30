@@ -6,7 +6,7 @@ import numpy as np
 import UnorderedMesh as UM
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from Functions import drift, diff, GVals, Gaussian, G, weightExp
+from Functions import GVals, Gaussian, G, weightExp
 from scipy.interpolate import griddata, interp2d 
 from pyopoly1.LejaPoints import getLejaSetFromPoints, getLejaPoints
 from pyopoly1.QuadratureRules import QuadratureByInterpolationND, QuadratureByInterpolation_Simple, QuadratureByInterpolationND_DivideOutGaussian
@@ -37,7 +37,7 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 lejaPointsFinal, new = getLejaPoints(10, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
     
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod):
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod, drift, diff):
     numLejas = LPMat.shape[1]
     newPDF = []
     condNums = []
@@ -59,7 +59,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
         # GPDF2 = np.expand_dims(GVals2(muX, muY, mesh, h),1)*pdf
         # assert np.max(abs(GPDF2-GPDF)) < 10**(-7)
         
-        value, condNum, scaleUsed, LPMat, LPMatBool, reuseLP = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMat, LPMatBool,ii,NumLejas, numQuadFit)
+        value, condNum, scaleUsed, LPMat, LPMatBool, reuseLP = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMat, LPMatBool,ii,NumLejas, numQuadFit, diff)
         LPUse = LPUse+reuseLP
         '''Alternative Method'''
         if math.isnan(condNum) or value < 0 or condNum > conditionNumForAltMethod: 
@@ -72,7 +72,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
             pdf12 = np.asarray(griddata(meshLP, pdfNew, mesh12, method='linear', fill_value=np.min(pdf)))
             pdfNew[pdfNew < 0] = np.min(pdf)
             
-            v = np.expand_dims(G(0,mesh12, h),1)
+            v = np.expand_dims(G(0,mesh12, h, drift, diff),1)
             g = weightExp(scaling,mesh12)
             
             testing = np.squeeze((pdf12*v)/np.expand_dims(g,1))
