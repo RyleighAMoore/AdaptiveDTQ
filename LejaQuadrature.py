@@ -73,9 +73,14 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
             pdfNew[pdfNew < 0] = np.min(pdf)
             
             v = np.expand_dims(G(0,mesh12, h, drift, diff),1)
-            g = weightExp(scaling,mesh12)
+            
+            
+            L = np.linalg.cholesky((scaling.cov))
+            JacFactor = np.prod(np.diag(L))
+            g = weightExp(scaling,mesh12)*1/(np.pi*JacFactor)
             
             testing = np.squeeze((pdf12*v)/np.expand_dims(g,1))
+            
             
             value, condNum = QuadratureByInterpolation_Simple(poly, scaling, mesh12, testing)
             

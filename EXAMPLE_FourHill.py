@@ -8,15 +8,15 @@ mydrift = FourHillDrift
 mydiff = DiagDiffptSevenFive
 
 '''Initialization Parameters'''
-NumSteps = 114
+NumSteps = 200
 '''Discretization Parameters'''
 a = 1
 h=0.01
 #kstepMin = np.round(min(0.15, 0.144*mydiff(np.asarray([0,0]))[0,0]+0.0056),2)
-kstepMin = 0.12 # lambda
-kstepMax = 0.14 # Lambda
+kstepMin = 0.15 # lambda
+kstepMax = 0.17 # Lambda
 beta = 3
-radius = 1.5 # R
+radius = 1 # R
 
 Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff)
 

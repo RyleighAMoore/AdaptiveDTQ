@@ -26,11 +26,12 @@ def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
     numSamples = len(u)          
     V = opolynd.opolynd_eval(u, poly.lambdas[:numSamples,:], poly.ab, poly)
     vinv = np.linalg.inv(V)
+    # L = np.linalg.cholesky((scaling.cov))
+    # JacFactor = np.prod(np.diag(L))
     c = np.matmul(vinv, pdf)
-    L = np.linalg.cholesky((scaling.cov))
-    JacFactor = np.prod(np.diag(L))
     
-    return c[0]*JacFactor*np.pi, np.sum(np.abs(vinv[0,:]))
+    
+    return c[0], np.sum(np.abs(vinv[0,:]))
     
   
 def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas, diff):
@@ -56,10 +57,10 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas, diff):
         if 'Singular matrix' in str(err):
             return [1000], 1000, indices
     c = np.matmul(vinv, pdfNew)
-    L = np.linalg.cholesky((scaling.cov))
-    JacFactor = np.prod(np.diag(L))
+    # L = np.linalg.cholesky((scaling.cov))
+    # JacFactor = np.prod(np.diag(L))
     
-    return c[0]*JacFactor*np.pi, np.sum(np.abs(vinv[0,:])), indices
+    return c[0], np.sum(np.abs(vinv[0,:])), indices
 
 
 def QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices):
@@ -79,10 +80,10 @@ def QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices):
         # print("Singular******************")
             return 100000, 100000
     c = np.matmul(vinv, pdfNew)
-    L = np.linalg.cholesky((scaling.cov))
-    JacFactor = np.prod(np.diag(L))
+    # L = np.linalg.cholesky((scaling.cov))
+    # JacFactor = np.prod(np.diag(L))
     
-    return c[0]*JacFactor*np.pi, np.sum(np.abs(vinv[0,:]))
+    return c[0], np.sum(np.abs(vinv[0,:]))
 
 
 
@@ -108,9 +109,12 @@ def QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, fullMesh, fu
         
     if not math.isnan(Const): # succeeded fitting Gaussian
         x,y = fullMesh.T
-        vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
+
+        L = np.linalg.cholesky((scale1.cov))
+        JacFactor = np.prod(np.diag(L))
+        vals = 1/(np.pi*JacFactor)*np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const
         # vals1 = vals*(1/np.sqrt(np.pi**2*np.linalg.det(scale1.cov)))
-        vals2 = Gaussian(scale1, fullMesh)
+        # vals2 = Gaussian(scale1, fullMesh)
         # vals2 = weightExp(scale1,fullMesh)
         # vals = np.expand_dims(vals,0)
         # assert np.isclose(np.max(np.abs(vals-vals3)),0)

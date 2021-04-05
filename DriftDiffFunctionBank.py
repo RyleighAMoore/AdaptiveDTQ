@@ -51,6 +51,7 @@ def DiagDiffptSevenFive(mesh):
 def DiagDiffOne(mesh):
     return np.diag([1,1])
 
+
 def ComplexDiff(mesh):
     if mesh.ndim == 1:
         mesh = np.expand_dims(mesh, axis=0)

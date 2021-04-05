@@ -75,12 +75,12 @@ def leastSquares(mesh, pdf):
     B = np.expand_dims(np.asarray([c[3], c[4]]),1)
     
     if np.linalg.det(A)<= 0:
-         return float('nan'),float('nan'),float('nan'),float('nan')
+         return float('nan'),float('nan'),float('nan')
          
     sigma = np.linalg.inv(A)
     Lam, U = np.linalg.eigh(A)
     if np.min(Lam) <= 0:
-        return float('nan'),float('nan'),float('nan'),float('nan')
+        return float('nan'),float('nan'),float('nan')
     
     La = np.diag(Lam)
     mu = -1/2*U @ np.linalg.inv(La) @ (B.T @ U).T    
@@ -91,7 +91,7 @@ def leastSquares(mesh, pdf):
         scaling.setMu(np.asarray([[mu[0][0],mu[1][0]]]).T)
         scaling.setCov(sigma)
     else:
-        return float('nan'),float('nan'),float('nan'),float('nan')
+        return float('nan'),float('nan'),float('nan')
     # cc=pred_params
     # x,y = xy   
     # vals = np.exp(-(cc[0]*x**2+ cc[1]*y**2 + 2*cc[2]*x*y + cc[3]*x + cc[4]*y + cc[5]))/Const[0][0]

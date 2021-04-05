@@ -4,18 +4,24 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import Functions as fun
+from DriftDiffFunctionBank import MovingHillDrift, DiagDiffOne
+
+
+mydrift = MovingHillDrift
+mydiff = DiagDiffOne
+
 
 '''Initialization Parameters'''
-NumSteps = 99
+NumSteps = 39
 
 '''Discretization Parameters'''
-kstep = np.round(min(0.15, 0.144*fun.diff(np.asarray([0,0]))[0,0]+0.0056),2)
-h=0.01
+
 
 x = [1,2,3,4,5,6,7,8,9,10,15]
-# x = [3]
+x = [15]
 
 # x=[20]
+h=0.01
 times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
 
 L2ErrorArray = np.zeros((len(x),len(times)))
@@ -26,9 +32,17 @@ timesArray = []
 stepArray = []
 count = 0
 table = ""
+
+a = 1
+#kstepMin = np.round(min(0.15, 0.144*mydiff(np.asarray([0,0]))[0,0]+0.0056),2)
+kstepMin = 0.12 # lambda
+kstepMax = 0.14 # Lambda
+beta = 3
+radius = 1 # R
+
 for i in x:
-    Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstep, h, 10, i,2)
-    table = table + str(i) + "&" +str("{:e}".format(L2wErrors[-1]))+ "&" +str("{:e}".format(L2Errors[-1])) + "&" +str("{:e}".format(L1Errors[-1])) + "&" +str("{:e}".format(LinfErrors[-1]))  + "&" + str(len(Meshes[-1])) + "\\\ \hline "
+    Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstepMin, kstepMax, h, i, radius, mydrift, mydiff)
+    table = table + str(i) + "&" +str("{:2e}".format(L2wErrors[-1]))+ "&" +str("{:2e}".format(L2Errors[-1])) + "&" +str("{:2e}".format(L1Errors[-1])) + "&" +str("{:2e}".format(LinfErrors[-1]))  + "&" + str(len(Meshes[-1])) + "\\\ \hline "
     L2ErrorArray[count,:] = np.asarray(L2Errors)
     LinfErrorArray[count,:] = np.asarray(LinfErrors)
     L1ErrorArray[count,:] = np.asarray(L1Errors)

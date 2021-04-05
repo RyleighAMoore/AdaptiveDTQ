@@ -23,6 +23,10 @@ from datetime import datetime
 from exactSolutions import TwoDdiffusionEquation
 from Errors import ErrorValsExact
 
+from DriftDiffFunctionBank import FourHillDrift, DiagDiffptSevenFive
+mydrift = FourHillDrift
+mydiff = DiagDiffptSevenFive
+
 start = datetime.now()
 
 
@@ -64,8 +68,8 @@ mesh = np.vstack([X.ravel(), Y.ravel()]).T
 # mesh = UM.generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep, includeOrigin=True)
 scale = GaussScale(2)
 # scale.setMu(np.asarray([[0,0]]).T)
-scale.setMu(h*fun.drift(np.asarray([0,0])).T)
-scale.setCov((h*fun.diff(np.asarray([0,0]))*fun.diff(np.asarray([0,0])).T).T)
+scale.setMu(h*mydrift(np.asarray([0,0])).T)
+scale.setCov((h*mydiff(np.asarray([0,0]))*mydiff(np.asarray([0,0])).T).T)
 pdf = fun.Gaussian(scale, mesh)
 # 
 # for i in range(len(pdf)):
@@ -82,7 +86,7 @@ pdf = fun.Gaussian(scale, mesh)
 '''Initialize Transition probabilities'''
 GMat = np.empty([len(mesh), len(mesh)])
 for i in trange(len(mesh)):
-    v = kstep**2*fun.G(i,mesh, h)
+    v = kstep**2*fun.G(i,mesh, h, mydrift, mydiff)
     GMat[i,:len(v)] = v
 
       

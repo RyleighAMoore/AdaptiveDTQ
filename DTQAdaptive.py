@@ -24,7 +24,7 @@ def DTQ(NumSteps, minSpacing, maxSpacing, h, degree, meshRadius, drift, diff):
     removeZerosValuesIfLessThanTolerance = 10**(-degree-0.5)
     minDistanceBetweenPoints = minSpacing #min(0.12, kstep)
     maxDistanceBetweenPoints = maxSpacing
-    conditionNumForAltMethod = 3
+    conditionNumForAltMethod = 8
     NumLejas = 10
     start = datetime.now()
     
