@@ -13,10 +13,10 @@ NumSteps = 200
 a = 1
 h=0.01
 #kstepMin = np.round(min(0.15, 0.144*mydiff(np.asarray([0,0]))[0,0]+0.0056),2)
-kstepMin = 0.15 # lambda
-kstepMax = 0.17 # Lambda
+kstepMin = 0.1 # lambda
+kstepMax = 0.12 # Lambda
 beta = 3
-radius = 1 # R
+radius = 1.5 # R
 
 Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff)
 
@@ -41,7 +41,7 @@ from plots import plotErrors, plotRowThreePlots
 '''Plot 3 Subplots'''
 plotRowThreePlots(Meshes, PdfTraj, h, [24,69,114], includeMeshPoints=False)
 
-plot2DColorPlot(-1, Meshes, PdfTraj)
+# plot2DColorPlot(-1, Meshes, PdfTraj)
 
 
 def update_graph(num):
@@ -54,7 +54,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker=".")
-ax.set_zlim(0, 0.5)
-ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj), interval=10, blit=False)
+ax.set_zlim(0, 1)
+ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj), interval=1000, blit=False)
 plt.show()
 

@@ -28,10 +28,10 @@ def QuadratureByInterpolation_Simple(poly, scaling, mesh, pdf):
     vinv = np.linalg.inv(V)
     # L = np.linalg.cholesky((scaling.cov))
     # JacFactor = np.prod(np.diag(L))
-    c = np.matmul(vinv, pdf)
+    c = np.matmul(vinv[0,:], pdf)
     
     
-    return c[0], np.sum(np.abs(vinv[0,:]))
+    return c, np.sum(np.abs(vinv[0,:]))
     
   
 def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas, diff):
@@ -56,11 +56,11 @@ def QuadratureByInterpolationND(poly, scaling, mesh, pdf, NumLejas, diff):
     except np.linalg.LinAlgError as err: 
         if 'Singular matrix' in str(err):
             return [1000], 1000, indices
-    c = np.matmul(vinv, pdfNew)
+    c = np.matmul(vinv[0,:], pdfNew)
     # L = np.linalg.cholesky((scaling.cov))
     # JacFactor = np.prod(np.diag(L))
     
-    return c[0], np.sum(np.abs(vinv[0,:])), indices
+    return c, np.sum(np.abs(vinv[0,:])), indices
 
 
 def QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices):
@@ -79,11 +79,11 @@ def QuadratureByInterpolationND_KnownLP(poly, scaling, mesh, pdf, LejaIndices):
         if 'Singular matrix' in str(err):
         # print("Singular******************")
             return 100000, 100000
-    c = np.matmul(vinv, pdfNew)
+    c = np.matmul(vinv[0,:], pdfNew)
     # L = np.linalg.cholesky((scaling.cov))
     # JacFactor = np.prod(np.diag(L))
     
-    return c[0], np.sum(np.abs(vinv[0,:]))
+    return c, np.sum(np.abs(vinv[0,:]))
 
 
 

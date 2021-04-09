@@ -56,7 +56,7 @@ def quad(xy, a, b, c, d, e, f):
 
 
 def leastSquares(mesh, pdf):
-    x =mesh[:,0]
+    x = mesh[:,0]
     y = mesh[:,1]
     A = np.zeros((len(mesh), 6))
     

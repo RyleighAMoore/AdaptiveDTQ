@@ -12,13 +12,13 @@ mydiff = DiagDiffOne
 
 
 '''Initialization Parameters'''
-NumSteps = 39
+NumSteps = 99
 
 '''Discretization Parameters'''
 
 
 x = [1,2,3,4,5,6,7,8,9,10,15]
-x = [15]
+# x = [3]
 
 # x=[20]
 h=0.01
@@ -37,8 +37,8 @@ a = 1
 #kstepMin = np.round(min(0.15, 0.144*mydiff(np.asarray([0,0]))[0,0]+0.0056),2)
 kstepMin = 0.12 # lambda
 kstepMax = 0.14 # Lambda
-beta = 3
-radius = 1 # R
+# beta = 3
+radius = 1.5 # R
 
 for i in x:
     Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstepMin, kstepMax, h, i, radius, mydrift, mydiff)
