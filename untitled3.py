@@ -140,6 +140,7 @@ plt.semilogx(L2wErrorArray[0,-1],np.asarray(TimingArray[0])/mm, 'o', label="Unit
 plt.ylabel("Relative Time")
 plt.xlabel(r"$L_{2w}$ Error")
 plt.legend()
+plt.show()
     
     
    
