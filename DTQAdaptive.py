@@ -73,7 +73,7 @@ def DTQ(NumSteps, minDistanceBetweenPoints, maxDistanceBetweenPoints, h, degree,
         LPReuseArr = []
         AltMethod = []
     
-    for i in trange(1,NumSteps+1):
+    for i in range(1,NumSteps+1):
         if (i >= 0):
             '''Add points to mesh'''
             # plt.figure()

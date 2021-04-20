@@ -18,7 +18,7 @@ NumSteps = 99
 
 x = [1,2,3,4,5,6,7,8,9,10,15]
 x = [1,3,5,7]
-x = [7,5,3,1]
+# x = [7,5,3,1]
 
 # x=[0]
 # x=[1,2]
@@ -34,7 +34,6 @@ TimingArray = []
 a = 1
 kstepMin = 0.05 # lambda
 kstepMax = 0.07 # Lambda
-# beta = 3
 radius = 0.5 # R
 count = 0
 mTimes = []
@@ -59,7 +58,6 @@ for i in x:
     count = count+1
     
 
-
 '''Discretization Parameters'''
 
 x = [0.1, 0.15, 0.18]
@@ -76,8 +74,6 @@ LengthArrayT = []
 
 TimingArrayT = []
 
-#kstepMin = np.round(min(0.15, 0.144*mydiff(np.asarray([0,0]))[0,0]+0.0056),2)
-# kstep = 0.12 # lambda
 xmin = -2.5
 xmax = 5.1
 ymin = -3
@@ -91,6 +87,7 @@ ymax = 1.5
 meshF = np.asarray(Meshes[0])
 meshL = np.asarray(Meshes[-1])
 
+'''Find essential support for tensorized version'''
 xmin = min(np.min(meshF[:,0]), np.min(meshL[:,0]))
 xmax = max(np.max(meshF[:,0]), np.max(meshL[:,0]))
 ymin = min(np.min(meshF[:,1]), np.min(meshL[:,1]))
