@@ -128,9 +128,10 @@ rcParams['font.family'] = 'serif'
 rcParams['font.weight'] = 'bold'
 rcParams['font.size'] = '18'
 fontprops = {'fontweight': 'bold'}
-    
+m = np.max(np.asarray(TimingArrayT)/mm) 
+nearest_multiple = int(5 * round(m/5))
 plt.figure()
-plt.yticks(np.arange(0, 65, 5))
+plt.yticks(np.arange(0, nearest_multiple+10, 5))
 plt.semilogx(L2wErrorArrayT[:,-1],np.asarray(TimingArrayT)/mm, 'o-',label="Tensorized")
 plt.semilogx(L2wErrorArray[:,-1],np.asarray(TimingArray)/mm, 'o:r', label="Adaptive")
 plt.semilogx(L2wErrorArray[0,-1],np.asarray(TimingArray[0])/mm, 'o', label="Unit Time")
