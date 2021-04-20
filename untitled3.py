@@ -21,7 +21,7 @@ x = [1,3,5,7]
 x = [7,5,3,1]
 
 # x=[0]
-# x=[20]
+# x=[1,2]
 h=0.01
 times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
 
@@ -37,12 +37,16 @@ kstepMax = 0.07 # Lambda
 # beta = 3
 radius = 0.5 # R
 count = 0
+mTimes = []
+numTimes = 1
 for i in x:
-    start = datetime.now()
-    Meshes, PdfTraj, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstepMin, kstepMax, h, i, radius, mydrift, mydiff, PrintStuff=False)
-    end = datetime.now()
-    time = end-start
-    TimingArray.append(time.total_seconds())
+    for j in range(numTimes):
+        start = datetime.now()
+        Meshes, PdfTraj, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstepMin, kstepMax, h, i, radius, mydrift, mydiff, PrintStuff=False)
+        end = datetime.now()
+        time = end-start
+        mTimes.append(time.total_seconds())
+    TimingArray.append(sum(mTimes)/len(mTimes))
     
     surfaces = []
     for ii in range(len(PdfTraj)):
@@ -60,7 +64,7 @@ for i in x:
 
 x = [0.1, 0.15, 0.18]
 x = [0.06, 0.05, 0.04, 0.03]
-# x=[0.04]
+# x=[0.1,.15]
 
 h=0.01
 times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
@@ -92,12 +96,15 @@ xmax = max(np.max(meshF[:,0]), np.max(meshL[:,0]))
 ymin = min(np.min(meshF[:,1]), np.min(meshL[:,1]))
 ymax = max(np.max(meshF[:,1]), np.max(meshL[:,1]))
 count = 0
+mTimesT = []
 for i in x:
-    start = datetime.now()
-    mesh, surfaces = MatrixMultiplyDTQ(NumSteps, i, h, mydrift, mydiff, xmin, xmax, ymin, ymax)
-    end = datetime.now()
-    time = end-start
-    TimingArrayT.append(time.total_seconds())
+    for j in range(numTimes):
+        start = datetime.now()
+        mesh, surfaces = MatrixMultiplyDTQ(NumSteps, i, h, mydrift, mydiff, xmin, xmax, ymin, ymax)
+        end = datetime.now()
+        time = end-start
+        mTimesT.append(time.total_seconds())
+    TimingArrayT.append(sum(mTimesT)/len(mTimesT))
     
     LengthArrayT.append(len(mesh))
     Meshes = []
@@ -127,9 +134,9 @@ fontprops = {'fontweight': 'bold'}
     
 plt.figure()
 plt.yticks(np.arange(0, 65, 5))
-plt.semilogx(L2wErrorArrayT[:,-1],np.asarray(TimingArrayT)/mm, label="Tensorized")
-plt.semilogx(L2wErrorArray[:,-1],np.asarray(TimingArray)/mm, '-.', label="Adaptive")
-plt.semilogx(L2wErrorArray[0,-1],np.asarray(TimingArray[0])/mm, 'or', label="Unit Time")
+plt.semilogx(L2wErrorArrayT[:,-1],np.asarray(TimingArrayT)/mm, 'o-',label="Tensorized")
+plt.semilogx(L2wErrorArray[:,-1],np.asarray(TimingArray)/mm, 'o:r', label="Adaptive")
+plt.semilogx(L2wErrorArray[0,-1],np.asarray(TimingArray[0])/mm, 'o', label="Unit Time")
 plt.ylabel("Relative Time")
 plt.xlabel(r"$L_{2w}$ Error")
 plt.legend()
