@@ -37,7 +37,7 @@ kstepMax = 0.07 # Lambda
 radius = 0.5 # R
 count = 0
 mTimes = []
-numTimes = 1
+numTimes = 5
 for i in x:
     for j in range(numTimes):
         start = datetime.now()
@@ -134,7 +134,7 @@ plt.figure()
 plt.yticks(np.arange(0, nearest_multiple+10, 5))
 plt.semilogx(L2wErrorArrayT[:,-1],np.asarray(TimingArrayT)/mm, 'o-',label="Tensorized")
 plt.semilogx(L2wErrorArray[:,-1],np.asarray(TimingArray)/mm, 'o:r', label="Adaptive")
-plt.semilogx(L2wErrorArray[0,-1],np.asarray(TimingArray[0])/mm, 'o', label="Unit Time")
+plt.semilogx(L2wErrorArray[0,-1],np.asarray(TimingArray[0])/mm, 'ok', label="Unit Time")
 plt.ylabel("Relative Time")
 plt.xlabel(r"$L_{2w}$ Error")
 plt.legend()

@@ -90,7 +90,7 @@ def MatrixMultiplyDTQ(NumSteps, kstep, h, drift, diff, xmin, xmax, ymin, ymax):
     #     GMat.append(np.copy(gRow))
     '''Initialize Transition probabilities'''
     GMat = np.empty([len(mesh), len(mesh)])
-    for i in range(len(mesh)):
+    for i in trange(len(mesh)):
         v = kstep**2*fun.G(i,mesh, h, mydrift, mydiff)
         GMat[i,:len(v)] = v
     
