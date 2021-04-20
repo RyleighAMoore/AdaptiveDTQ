@@ -20,12 +20,12 @@ NumSteps = 199
 a = 1
 h=0.01
 #kstepMin = np.round(min(0.15, 0.144*mydiff(np.asarray([0,0]))[0,0]+0.0056),2)
-kstepMin = 0.12 # lambda
-kstepMax = 0.14 # Lambda
+kstepMin = 0.1 # lambda
+kstepMax = 0.12 # Lambda
 beta = 3
 radius = 1 # R
 
-Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff)
+Meshes, PdfTraj, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff)
 
 pc = []
 for i in range(len(Meshes)-1):
@@ -41,13 +41,15 @@ for i in range(len(Meshes)-1):
     pc.append(AltMethod[i]/l)
     
 mean2 = np.mean(pc[1:])
-print("Leja Reuse: ", mean2*100, "%")
+print("Alt Method Use: ", mean2*100, "%")
 
 
 from plots import plotErrors, plotRowThreePlots
 '''Plot 3 Subplots'''
 plotRowThreePlots(Meshes, PdfTraj, h, [69,139,199], includeMeshPoints=False)
+from plots import plotErrors, plotRowThreePlots, plot2DColorPlot, plotRowThreePlotsMesh, plotRowSixPlots
 
+plotRowSixPlots(Meshes, PdfTraj, h, [69,139,199])
 
 def update_graph(num):
     graph.set_data (Meshes[num][:,0], Meshes[num][:,1])
@@ -59,7 +61,7 @@ ax = fig.add_subplot(111, projection='3d')
 title = ax.set_title('3D Test')
     
 graph, = ax.plot(Meshes[-1][:,0], Meshes[-1][:,1], PdfTraj[-1], linestyle="", marker=".")
-ax.set_zlim(0, 0.5)
+ax.set_zlim(0, 4.5)
 ani = animation.FuncAnimation(fig, update_graph, frames=len(PdfTraj), interval=100, blit=False)
 plt.show()
 

@@ -37,10 +37,10 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 lejaPointsFinal, new = getLejaPoints(10, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
     
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod, drift, diff):
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod, drift, diff,numPointsForLejaCandidates, PrintStuff = True):
     numLejas = LPMat.shape[1]
     newPDF = []
-    condNums = []
+    # condNums = []
     countUseMorePoints = 0 # Used to count if we have to revert to alternative procedure
     meshSize = len(mesh)
     LPUse = 0
@@ -59,8 +59,9 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
         # GPDF2 = np.expand_dims(GVals2(muX, muY, mesh, h),1)*pdf
         # assert np.max(abs(GPDF2-GPDF)) < 10**(-7)
         
-        value, condNum, scaleUsed, LPMat, LPMatBool, reuseLP = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMat, LPMatBool,ii,NumLejas, numQuadFit, diff)
-        LPUse = LPUse+reuseLP
+        value, condNum, scaleUsed, LPMat, LPMatBool, reuseLP = QuadratureByInterpolationND_DivideOutGaussian(scaling, h, poly, mesh, GPDF, LPMat, LPMatBool,ii,NumLejas, numQuadFit, diff, numPointsForLejaCandidates)
+        if PrintStuff:
+            LPUse = LPUse+reuseLP
         '''Alternative Method'''
         if math.isnan(condNum) or value < 0 or condNum > conditionNumForAltMethod: 
             scaling.setCov((h*diff(np.asarray([muX,muY]))*diff(np.asarray([muX,muY])).T).T)
@@ -83,19 +84,20 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
             
             
             value, condNum = QuadratureByInterpolation_Simple(poly, scaling, mesh12, testing)
-            
-            countUseMorePoints = countUseMorePoints+1
+            if PrintStuff:
+                countUseMorePoints = countUseMorePoints+1
             
         if value < 0:
             value = np.min(pdf)
 
         newPDF.append(value)
-        condNums.append(condNum)
-    print('\n',(countUseMorePoints/len(mesh))*100, "% Used Alternative Method**************")
-    print('\n',(LPUse/len(mesh))*100, "% Reused Leja Points")
+        # condNums.append(condNum)
+    if PrintStuff:
+        print('\n',(countUseMorePoints/len(mesh))*100, "% Used Alternative Method**************")
+        print('\n',(LPUse/len(mesh))*100, "% Reused Leja Points")
 
     newPDFs = np.asarray(newPDF)
-    condNums = np.asarray([condNums]).T
-    return newPDFs,condNums, mesh, LPMat, LPMatBool, LPUse, countUseMorePoints
+    # condNums = np.asarray([condNums]).T
+    return newPDFs, mesh, LPMat, LPMatBool, LPUse, countUseMorePoints
 
 

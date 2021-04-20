@@ -135,6 +135,102 @@ def plotRowThreePlots(Meshes, PdfTraj, h, indices, includeMeshPoints = False):
     fig.text(0.52, 0, r'$\mathbf{x}^{(1)}$', ha='center')
     fig.text(0.04, 0.57, r'$\mathbf{x}^{(2)}$', va='center', rotation='vertical')
 
+
+def plotRowSixPlots(Meshes, PdfTraj, h, indices):
+    minVal = 0.002
+    maxVal = 0.3
+    # plt.figure()
+    fig, axs = plt.subplots(2, 3)
+    times = 0
+    for ij in indices:
+        M= []
+        S = []
+        index = ij
+        for x in Meshes[index]:
+            M.append(x)
+        for x in PdfTraj[index]:
+            S.append(x)
+        M = np.asarray(M)
+        S = np.asarray(S)
+        levels = np.round(np.linspace(minVal, maxVal, 10),3)
+        cntr2 = axs[0,times].tricontourf(M[:,0], M[:,1], S, levels=levels, cmap="viridis")
+        axs[0,times].set(adjustable='box', aspect='equal')
+        axs[1,times].set(adjustable='box', aspect='equal')
+
+        axs[1, times].scatter(Meshes[ij][:,0], Meshes[ij][:,1], s=0.01, c='k')
+        val = str(np.round((ij+1)*h,4))
+        axs[0,times].set_title('t = %s' %val)
+        axs[0,times].set_xlim([-8, 8])
+        axs[0,times].set_ylim([-8, 8])
+        # axs[1,times].set_title('t = %s' %val)
+        axs[1,times].set_xlim([-8, 8])
+        axs[1,times].set_ylim([-8, 8])
+        for tick in axs[1,times].xaxis.get_major_ticks():
+            tick.label.set_fontsize(14) 
+        for tick in axs[1,times].yaxis.get_major_ticks():
+            tick.label.set_fontsize(14) 
+        for tick in axs[0,times].xaxis.get_major_ticks():
+            tick.label.set_fontsize(14) 
+        for tick in axs[0,times].yaxis.get_major_ticks():
+            tick.label.set_fontsize(14) 
+        if times > 0:
+            axs[0,times].set_yticklabels([])
+            # axs[0,times].set_yticks([])
+            axs[1,times].set_yticklabels([])
+            # axs[1,times].set_yticks([])
+            
+        if times > -1:
+            axs[0,times].set_xticklabels([])
+            # axs[0,times].set_xticks([])
+
+            
+            
+        
+        
+        times = times+1
+    cbar = plt.colorbar(cntr2, ax=axs[:3], location='bottom')
+    cbar.ax.tick_params(labelsize=10) 
+    fig.text(0.52, 0.05, r'$\mathbf{x}^{(1)}$', ha='center')
+    fig.text(0.04, 0.6, r'$\mathbf{x}^{(2)}$', va='center', rotation='vertical')
+
+def plotRowThreePlotsMesh(Meshes, PdfTraj, h, indices, includeMeshPoints = False):
+    minVal = 0.002
+    maxVal = 0.3
+    # plt.figure()
+    fig, axs = plt.subplots(1, 3)
+    times = 0
+    for ij in indices:
+        M= []
+        S = []
+        index = ij
+        for x in Meshes[index]:
+            M.append(x)
+        for x in PdfTraj[index]:
+            S.append(x)
+        M = np.asarray(M)
+        S = np.asarray(S)
+        if includeMeshPoints:
+            axs[times].plot(Meshes[ij][:,0], Meshes[ij][:,1], 'k.', markersize='0.5', alpha=0.3)
+        # levels = np.round(np.linspace(minVal, maxVal, 10),3)
+        # cntr2 = axs[times].tricontourf(M[:,0], M[:,1], S, levels=levels, cmap="viridis")
+        axs[times].set(adjustable='box', aspect='equal')
+        val = str(np.round((ij+1)*h,4))
+        axs[times].set_title('t = %s' %val)
+        axs[times].set_xlim([-8, 8])
+        axs[times].set_ylim([-8, 8])
+        for tick in axs[times].xaxis.get_major_ticks():
+            tick.label.set_fontsize(14) 
+        for tick in axs[times].yaxis.get_major_ticks():
+            tick.label.set_fontsize(14) 
+        if times > 0:
+            axs[times].set_yticklabels([])
+            axs[times].set_yticks([])
+        
+        times = times+1
+    # cbar = plt.colorbar(cntr2, ax=axs[:3], location='bottom')
+    # cbar.ax.tick_params(labelsize=10) 
+    fig.text(0.52, 0.22, r'$\mathbf{x}^{(1)}$', ha='center')
+    fig.text(0.04, 0.52, r'$\mathbf{x}^{(2)}$', va='center', rotation='vertical')
 # sizes = []
 # Times = []
 # T = []

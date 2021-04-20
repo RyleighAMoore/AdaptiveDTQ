@@ -1,32 +1,37 @@
 from DTQAdaptive import DTQ
 import numpy as np
-from DriftDiffFunctionBank import MovingHillDrift, DiagDiffOne
+from DriftDiffFunctionBank import MovingHillDrift, DiagDiffptThree
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 mydrift = MovingHillDrift
-mydiff = DiagDiffOne
+mydiff = DiagDiffptThree
 
 '''Initialization Parameters'''
-NumSteps = 115
+NumSteps = 299
 '''Discretization Parameters'''
 a = 1
 h=0.01
 #kstepMin = np.round(min(0.15, 0.144*mydiff(np.asarray([0,0]))[0,0]+0.0056),2)
-kstepMin = 0.13 # lambda
-kstepMax = 0.15 # Lambda
-beta = 3
-radius = 1.5 # R
+kstepMin = 0.05 # lambda
+kstepMax = 0.07 # Lambda
+# kstepMin = 0.04 # lambda
+# kstepMax = 0.06 # Lambda
+beta = 2.2
+beta =4
+radius = 0.75 # R
+PrintStuff = False
 
-Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff)
-
+Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff, PrintStuff)
+print(L2wErrors[-1])
 pc = []
 for i in range(len(Meshes)-1):
     l = len(Meshes[i+1])
     pc.append(LPReuseArr[i]/l)
     
 mean = np.mean(pc[1:])
-print("Leja Reuse: ", mean*100, "%")
+if PrintStuff:
+    print("Leja Reuse: ", mean*100, "%")
 
 pc = []
 for i in range(len(Meshes)-1):
@@ -34,7 +39,8 @@ for i in range(len(Meshes)-1):
     pc.append(AltMethod[i]/l)
     
 mean2 = np.mean(pc[1:])
-print("Leja Reuse: ", mean2*100, "%")
+if PrintStuff:
+    print("Leja Reuse: ", mean2*100, "%")
 
 
 from plots import plotErrors, plotRowThreePlots

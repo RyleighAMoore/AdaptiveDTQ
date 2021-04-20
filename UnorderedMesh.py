@@ -63,5 +63,5 @@ def generateOrderedGridCenteredAtZero(xmin, xmax, ymin, ymax, kstep, includeOrig
     mesh = np.asarray([x1,x2]).T
     if includeOrigin == False:
         mesh = np.delete(mesh,0,0)
-    return mesh
+    return mesh, stepsX, stepsY
     

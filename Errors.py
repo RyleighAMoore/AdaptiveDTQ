@@ -8,12 +8,13 @@ from pyopoly1 import opolynd as op
 from pyopoly1 import families as f
 from pyopoly1.indexing import total_degree_indices
 
-def ErrorVals(Meshes, PdfTraj, mesh2, surfaces):
+def ErrorVals(Meshes, PdfTraj, mesh2, surfaces, PrintStuff=True):
     L2Errors = []
     LinfErrors = []
     L1Errors = []
     L2wErrors = []
-    print('l2w errors:')
+    if PrintStuff:
+        print('l2w errors:')
 
     for step in range(len(PdfTraj)):
         # Interpolate the fine grid soln to the leja points
@@ -22,7 +23,8 @@ def ErrorVals(Meshes, PdfTraj, mesh2, surfaces):
         #compute errors
         l2w = np.sqrt(np.sum(np.abs((gridSolnOnLejas - PdfTraj[step]))**2*gridSolnOnLejas)/np.sum(gridSolnOnLejas))
         L2wErrors.append(np.copy(l2w))
-        print(l2w)
+        if PrintStuff:
+            print(l2w)
         
         # fig = plt.figure()
         # ax = Axes3D(fig)

@@ -4,17 +4,17 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import Functions as fun
-from DriftDiffFunctionBank import MovingHillDrift, DiagDiffptThree
+from DriftDiffFunctionBank import FourHillDrift, DiagDiffptSevenFive
 from DTQFastMatrixMult import MatrixMultiplyDTQ
 
 from datetime import datetime
 
-mydrift = MovingHillDrift
-mydiff = DiagDiffptThree
+mydrift = FourHillDrift
+mydiff = DiagDiffptSevenFive
 
 
 '''Initialization Parameters'''
-NumSteps = 300
+NumSteps = 199
 
 '''Discretization Parameters'''
 
@@ -22,7 +22,7 @@ NumSteps = 300
 x = [0.1, 0.15, 0.18]
 x = [0.04,0.05, 0.06]
 
-x=[0.04]
+x=[0.12]
 h=0.01
 times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
 
@@ -38,15 +38,15 @@ table = ""
 a = 1
 #kstepMin = np.round(min(0.15, 0.144*mydiff(np.asarray([0,0]))[0,0]+0.0056),2)
 # kstep = 0.12 # lambda
-xmin = -2.5
-xmax = 5.1
-ymin = -3
-ymax = 3.1
+xmin = -5.2
+xmax = 5.2
+ymin = -5.2
+ymax = 5.2
 
-xmin = -0.5
-xmax = 4.5
-ymin = -1.5
-ymax = 1.5
+# xmin = -1.5
+# xmax = 1.5
+# ymin = -1.5
+# ymax = 1.5
 
 for i in x:
     start = datetime.now()

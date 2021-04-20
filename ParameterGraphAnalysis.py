@@ -5,20 +5,22 @@ import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import Functions as fun
 from DriftDiffFunctionBank import MovingHillDrift, DiagDiffOne
-
+from exactSolutions import TwoDdiffusionEquation
+from Errors import ErrorValsExact
 
 mydrift = MovingHillDrift
 mydiff = DiagDiffOne
 
 
 '''Initialization Parameters'''
-NumSteps = 99
+NumSteps = 114
 
 '''Discretization Parameters'''
 
 
 x = [1,2,3,4,5,6,7,8,9,10,15]
-# x = [3]
+
+x = [15]
 
 # x=[20]
 h=0.01
@@ -35,13 +37,21 @@ table = ""
 
 a = 1
 #kstepMin = np.round(min(0.15, 0.144*mydiff(np.asarray([0,0]))[0,0]+0.0056),2)
-kstepMin = 0.12 # lambda
-kstepMax = 0.14 # Lambda
+kstepMin = 0.15 # lambda
+kstepMax = 0.17 # Lambda
 # beta = 3
 radius = 1.5 # R
 
 for i in x:
-    Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstepMin, kstepMax, h, i, radius, mydrift, mydiff)
+    Meshes, PdfTraj, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstepMin, kstepMax, h, i, radius, mydrift, mydiff, PrintStuff=False)
+    surfaces = []
+    for ii in range(len(PdfTraj)):
+        ana = TwoDdiffusionEquation(Meshes[ii],mydiff(np.asarray([0,0]))[0,0], h*(ii+1), mydrift(np.asarray([0,0]))[0,0])
+        surfaces.append(ana)
+    
+    LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, plot=False)
+    
+    
     table = table + str(i) + "&" +str("{:2e}".format(L2wErrors[-1]))+ "&" +str("{:2e}".format(L2Errors[-1])) + "&" +str("{:2e}".format(L1Errors[-1])) + "&" +str("{:2e}".format(LinfErrors[-1]))  + "&" + str(len(Meshes[-1])) + "\\\ \hline "
     L2ErrorArray[count,:] = np.asarray(L2Errors)
     LinfErrorArray[count,:] = np.asarray(LinfErrors)
@@ -55,13 +65,9 @@ for i in x:
     
 X,Y = np.meshgrid(times,x)
 fig = plt.figure()
-ax = Axes3D(fig)
 # ax.scatter(X, Y, L2wErrorArray, c='r', marker='.')
-ax.scatter(X, Y, np.log(L2wErrorArray), c='r', marker='.')
-
-ax.set_xlabel('time step')
-ax.set_ylabel('mesh space')
-ax.set_zlabel('Error')
+plt.semilogy(times, L2wErrorArray[-1], c='r', marker='.')
+plt.semilogy(times, LinfErrorArray[-1], c='r', marker='.')
 plt.show()    
 
 from matplotlib import rcParams

@@ -41,6 +41,8 @@ def TwoHillDrift(mesh):
     x = mesh[:,0]
     return np.asarray([2*erf(10*x), np.zeros((np.size(mesh,0)))]).T
 
+def DiagDiffptThree(mesh):
+    return np.diag([0.3,0.3])
 
 def DiagDiffptSix(mesh):
     return np.diag([0.6,0.6])

@@ -108,7 +108,7 @@ def houseKeepingAfterAdjustingMesh(Mesh, tri):
     
 def addPointsToBoundary(Mesh, Pdf, triangulation, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints):
     ChangedBool = 0
-    print("adding boundary points...")
+    # print("adding boundary points...")
     count = 0
     MeshOrig = np.copy(Mesh)
     PdfOrig = np.copy(Pdf)

@@ -61,43 +61,50 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
         return np.asarray(samples).T, np.asarray(samples[:,num_initial_samples:]).T
 
 
-def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf, diff):   
+def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf, diff, numPointsForLejaCandidates):   
     candidatesFull = VT.map_to_canonical_space(Mesh,scale)
     indices = [np.nan]
-    count = 1
-    while math.isnan(indices[0]) and count < 4:
-        # if count >1:
-            # print("Trying to find Leja points again using more samples")
-        candidates, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], candidatesFull,30*int(count*np.ceil(np.max(diff(np.asarray([0,0]))))), getIndices = True)
-            
-        Px = candidates[0,0]
-        Py = candidates[0,1]
-        candidates = candidates[1:]
+    candidates, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], candidatesFull,numPointsForLejaCandidates, getIndices = True)
+    Px = candidates[0,0]
+    Py = candidates[0,1]
+    candidates = candidates[1:]
+    lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[Px,Py]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
         
-        lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[Px,Py]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
-        count = count+1
+    # while math.isnan(indices[0]) and count < 4:
+    #     # if count >1:
+    #         # print("Trying to find Leja points again using more samples")
+    #     candidates, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], candidatesFull,30*int(count*np.ceil(np.max(diff(np.asarray([0,0]))))), getIndices = True)
+
+    #     Px = candidates[0,0]
+    #     Py = candidates[0,1]
+    #     candidates = candidates[1:]
         
-    if math.isnan(indices[0]): #Try one more time with full mesh
-        candidates, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], candidatesFull,len(Mesh), getIndices = True)
-        Px = candidates[0,0]
-        Py = candidates[0,1]
-        candidates = candidates[1:]
+    #     lejaPointsFinal, indices = getLejaPoints(numLejaPointsToReturn, np.asarray([[Px,Py]]).T, poly, num_candidate_samples = 0, candidateSampleMesh = candidates.T, returnIndices=True)
+    #     if count > 1:
+    #         t=0
+    #     count = count+1
+
+    # if math.isnan(indices[0]): #Try one more time with full mesh
+    #     candidates, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], candidatesFull,len(Mesh), getIndices = True)
+    #     Px = candidates[0,0]
+    #     Py = candidates[0,1]
+    #     candidates = candidates[1:]
         
     
     if math.isnan(indices[0]):
-        print("LEJA FAIL - LEJA FAIL - LEJA FAIL")
+        print("LEJA FAIL - Try increasing numPointsForLejaCandidates and/or the numQuadFit paramaters.")
         return 0, 0, indices
     
-    lejaPointsFinal = VT.map_from_canonical_space(lejaPointsFinal, scale)
+    # lejaPointsFinal = VT.map_from_canonical_space(lejaPointsFinal, scale)
 
-    plot= False
-    if plot:
-        plt.figure()
-        plt.plot(Mesh[:,0], Mesh[:,1], '*k', label='mesh', markersize=14)
-        plt.plot(Px, Py, '*r',label='Main Point',markersize=14)
-        plt.plot(lejaPointsFinal[:,0], lejaPointsFinal[:,1], '.c', label='Leja Points',markersize=10)
-        plt.legend()
-        plt.show()
+    # plot= False
+    # if plot:
+    #     plt.figure()
+    #     plt.plot(Mesh[:,0], Mesh[:,1], '*k', label='mesh', markersize=14)
+    #     plt.plot(Px, Py, '*r',label='Main Point',markersize=14)
+    #     plt.plot(lejaPointsFinal[:,0], lejaPointsFinal[:,1], '.c', label='Leja Points',markersize=10)
+    #     plt.legend()
+    #     plt.show()
 
     indicesNew = indik[indices]
     return Mesh[indicesNew], Pdf[indicesNew], indicesNew

@@ -25,7 +25,7 @@ from Errors import ErrorValsExact
 
 from DriftDiffFunctionBank import FourHillDrift, DiagDiffptSevenFive, MovingHillDrift, DiagDiffOne
 
-def MatrixMultiplyDTQ(NumSteps, kstep, h, degree, drift, diff, xmin, xmax, ymin, ymax):
+def MatrixMultiplyDTQ(NumSteps, kstep, h, drift, diff, xmin, xmax, ymin, ymax):
     mydrift = drift
     mydiff = diff
     
@@ -98,8 +98,8 @@ def MatrixMultiplyDTQ(NumSteps, kstep, h, degree, drift, diff, xmin, xmax, ymin,
     surfaces = [] 
     surfaces.append(np.copy(pdf))
     t=0
-    while t < 200:
-        print(t)
+    while t < NumSteps:
+        # print(t)
         pdf = np.matmul(GMat, pdf)
         surfaces.append(np.copy(pdf))
         t=t+1
@@ -120,25 +120,25 @@ def MatrixMultiplyDTQ(NumSteps, kstep, h, degree, drift, diff, xmin, xmax, ymin,
     # 
     
     #  
-    def update_graph(num):
-        graph.set_data(mesh[:,0], mesh[:,1])
-        graph.set_3d_properties(surfaces[num])
-        title.set_text('3D Test, time={}'.format(num))
-        return title, graph
+    # def update_graph(num):
+    #     graph.set_data(mesh[:,0], mesh[:,1])
+    #     graph.set_3d_properties(surfaces[num])
+    #     title.set_text('3D Test, time={}'.format(num))
+    #     return title, graph
     
-    meshSoln = np.copy(mesh)
-    pdfSoln = surfaces.copy()
+    # meshSoln = np.copy(mesh)
+    # pdfSoln = surfaces.copy()
     
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    title = ax.set_title('3D Test')
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    # title = ax.set_title('3D Test')
     
-    graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[2], linestyle="", marker="o")
-    ax.set_zlim(0, 1)
-    ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
-                                             interval=1000, blit=False)
+    # graph, = ax.plot(mesh[:,0], mesh[:,1], surfaces[2], linestyle="", marker="o")
+    # ax.set_zlim(0, 1)
+    # ani = animation.FuncAnimation(fig, update_graph, frames=len(surfaces),
+    #                                          interval=1000, blit=False)
     
-    plt.show()
+    # plt.show()
     
     # import pickle  
     
@@ -186,13 +186,14 @@ def MatrixMultiplyDTQ(NumSteps, kstep, h, degree, drift, diff, xmin, xmax, ymin,
     # GScale = one+two
     # GmatScaled = GScale@GMat
     
-    Meshes=[]
-    for i in range(len(surfaces)):
-        Meshes.append(mesh)
+    # Meshes=[]
+    # for i in range(len(surfaces)):
+    #     Meshes.append(mesh)
         
-    solution = []
-    for ii in range(len(surfaces)):
-        ana = TwoDdiffusionEquation(Meshes[ii],mydiff(np.asarray([0,0]))[0,0], h*(ii+1),mydrift(np.asarray([0,0]))[0,0])
-        solution.append(ana)
+    # solution = []
+    # for ii in range(len(surfaces)):
+    #     ana = TwoDdiffusionEquation(Meshes[ii],mydiff(np.asarray([0,0]))[0,0], h*(ii+1),mydrift(np.asarray([0,0]))[0,0])
+    #     solution.append(ana)
     
-    LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, surfaces, solution, plot=True)
+    # LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, surfaces, solution, plot=True)
+    return mesh, surfaces

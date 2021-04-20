@@ -18,16 +18,15 @@ from exactSolutions import TwoDdiffusionEquation
 from Errors import ErrorValsExact
 
 
-def DTQ(NumSteps, minSpacing, maxSpacing, h, degree, meshRadius, drift, diff):
-    '''Mesh updates parameter'''
+def DTQ(NumSteps, minDistanceBetweenPoints, maxDistanceBetweenPoints, h, degree, meshRadius, drift, diff, PrintStuff = True, computeErrors = True):
+    '''Paramaters'''
     addPointsToBoundaryIfBiggerThanTolerance = 10**(-degree)
     removeZerosValuesIfLessThanTolerance = 10**(-degree-0.5)
-    minDistanceBetweenPoints = minSpacing #min(0.12, kstep)
-    maxDistanceBetweenPoints = maxSpacing
     conditionNumForAltMethod = 8
     NumLejas = 10
-    start = datetime.now()
-    
+    numPointsForLejaCandidates = 40
+    numQuadFit = 20
+
     ''' Initializd orthonormal Polynomial family'''
     poly = HermitePolynomials(rho=0)
     d=2
@@ -37,7 +36,7 @@ def DTQ(NumSteps, minSpacing, maxSpacing, h, degree, meshRadius, drift, diff):
     poly.lambdas = lambdas
     
     '''pdf after one time step with Dirac initial condition centered at the origin'''
-    mesh = M.getICMesh(meshRadius, minSpacing, h)
+    mesh = M.getICMeshRadius(meshRadius, minDistanceBetweenPoints, h)
 
     scale = GaussScale(2)
     scale.setMu(h*drift(np.asarray([0,0])).T)
@@ -58,7 +57,8 @@ def DTQ(NumSteps, minSpacing, maxSpacing, h, degree, meshRadius, drift, diff):
     '''Initialize Transition probabilities'''
     maxDegFreedom = len(mesh)*2
     # NumLejas = 15
-    numQuadFit = max(20,20*np.max(diff(np.asarray([0,0]))).astype(int))*2
+    # numQuadFit = max(20,20*np.max(diff(np.asarray([0,0]))).astype(int))*2
+
     
     GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
     for i in range(len(mesh)):
@@ -69,41 +69,40 @@ def DTQ(NumSteps, minSpacing, maxSpacing, h, degree, meshRadius, drift, diff):
     LPMatBool = np.zeros((maxDegFreedom,1), dtype=bool) # True if we have Lejas, False if we need Lejas
         
     '''Grid updates'''
-    LPReuseArr = []
-    Timing = []
-    AltMethod = []
-    QuadFitRecomputed = []
-    Timing.append(start)
-    
+    if PrintStuff:
+        LPReuseArr = []
+        AltMethod = []
     
     for i in trange(1,NumSteps+1):
         if (i >= 0):
             '''Add points to mesh'''
             # plt.figure()
             # plt.scatter(mesh[:,0], mesh[:,1])
-            mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, minSpacing, h, poly, GMat, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints, drift, diff)
+            mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, minDistanceBetweenPoints, h, poly, GMat, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints, drift, diff)
             # plt.plot(mesh[:,0], mesh[:,1], '*r')
 
         if i>=15 and i%10==9:
             '''Remove points from mesh'''
             mesh, pdf, GMat, LPMat, LPMatBool, tri = MeshUp.removePointsFromMeshProcedure(mesh, pdf, tri, True, poly, GMat, LPMat, LPMatBool, removeZerosValuesIfLessThanTolerance)
-              
-        print('Length of mesh = ', len(mesh))
+        
+        if PrintStuff:
+            print('Length of mesh = ', len(mesh))
         if i >-1: 
             '''Step forward in time'''
             pdf = np.expand_dims(pdf,axis=1)
-            pdf, condnums, meshTemp, LPMat, LPMatBool, LPReuse, AltMethodCount = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod, drift, diff)
+            pdf, meshTemp, LPMat, LPMatBool, LPReuse, AltMethodCount = LQ.Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly,h,NumLejas, i, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod, drift, diff, numPointsForLejaCandidates, PrintStuff)
             pdf = np.squeeze(pdf)
             '''Add new values to lists for graphing'''
+            
             PdfTraj.append(np.copy(pdf))
             Meshes.append(np.copy(mesh))
-            LPReuseArr.append(LPReuse)
-            time = datetime.now()
-            Timing.append(time)
-            AltMethod.append(AltMethodCount)
+            if PrintStuff:
+                LPReuseArr.append(LPReuse)
+                AltMethod.append(AltMethodCount)
              
         else:
-            print('Length of mesh = ', len(mesh))
+            if PrintStuff:
+                print('Length of mesh = ', len(mesh))
         
         sizer = len(mesh)
         if np.shape(GMat)[0] - sizer < sizer:
@@ -120,15 +119,17 @@ def DTQ(NumSteps, minSpacing, maxSpacing, h, degree, meshRadius, drift, diff):
             LPMatBool = LPMatBool2
         
     
-    end = datetime.now()
-    Timing.append(end)
-    print("Time: ", end-start)
+    # end = datetime.now()
+    # Timing.append(end)
+    # print("Time: ", end-start)
 
-    surfaces = []
-    for ii in range(len(PdfTraj)):
-        ana = TwoDdiffusionEquation(Meshes[ii],diff(np.asarray([0,0]))[0,0], h*(ii+1),drift(np.asarray([0,0]))[0,0])
-        surfaces.append(ana)
+    # surfaces = []
+    # for ii in range(len(PdfTraj)):
+    #     ana = TwoDdiffusionEquation(Meshes[ii],diff(np.asarray([0,0]))[0,0], h*(ii+1),drift(np.asarray([0,0]))[0,0])
+    #     surfaces.append(ana)
 
-    LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, plot=True)
-    return Meshes, PdfTraj, LinfErrors, L2Errors, L1Errors, L2wErrors, Timing, LPReuseArr, AltMethod
-
+    # LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, PrintStuff, plot=True)
+    if PrintStuff:
+        return Meshes, PdfTraj, LPReuseArr, AltMethod
+    else: 
+        return Meshes, PdfTraj, [], []
