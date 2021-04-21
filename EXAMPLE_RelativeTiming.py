@@ -4,17 +4,17 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import Functions as fun
-from DriftDiffFunctionBank import MovingHillDrift, DiagDiffptThree
+from DriftDiffFunctionBank import MovingHillDrift, DiagDiffOne
 from DTQFastMatrixMult import MatrixMultiplyDTQ
 from exactSolutions import TwoDdiffusionEquation
 from Errors import ErrorValsExact
 from datetime import datetime
 
 mydrift = MovingHillDrift
-mydiff = DiagDiffptThree
+mydiff = DiagDiffOne
 
 '''Initialization Parameters'''
-NumSteps = 99
+NumSteps = 199
 
 x = [1,2,3,4,5,6,7,8,9,10,15]
 x = [1,3,5,7]
@@ -32,9 +32,12 @@ LengthArray = []
 TimingArray = []
 
 a = 1
-kstepMin = 0.05 # lambda
-kstepMax = 0.07 # Lambda
-radius = 0.5 # R
+# kstepMin = 0.05 # lambda
+# kstepMax = 0.07 # Lambda
+# radius = 0.5 # R
+kstepMin = 0.15 # lambda
+kstepMax = 0.17 # Lambda
+radius = 1.5 # R
 count = 0
 mTimes = []
 numTimes = 1
@@ -61,7 +64,7 @@ for i in x:
 '''Discretization Parameters'''
 
 x = [0.1, 0.15, 0.18]
-x = [0.06, 0.05, 0.04, 0.03]
+x = [0.1, 0.08, 0.06, 0.05, 0.04, 0.03]
 # x=[0.1,.15]
 
 h=0.01

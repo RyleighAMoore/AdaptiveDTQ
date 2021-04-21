@@ -66,7 +66,7 @@ def MatrixMultiplyDTQ(NumSteps, kstep, h, drift, diff, xmin, xmax, ymin, ymax):
     #         OrderA.append([point[0], point[1], allPoints[i,0], allPoints[i,1]])
     #     return row
     
-    X, Y = np.mgrid[xmin:xmax:kstep, ymin:ymax:kstep]
+    X, Y = np.mgrid[xmin:xmax+kstep/2:kstep, ymin:ymax+kstep/2:kstep]
     mesh = np.vstack([X.ravel(), Y.ravel()]).T
     
     
