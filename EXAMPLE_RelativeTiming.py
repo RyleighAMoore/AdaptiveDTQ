@@ -118,6 +118,20 @@ for i in x:
     L2wErrorArrayT[count,:] = np.asarray(L2wErrors)
     count = count+1
     
+import pickle
+with open('L2wErrorArrayT.pickle', 'wb') as f:
+    pickle.dump(L2wErrorArrayT, f)
+f.close()
+with open('L2wErrorArray.pickle', 'wb') as f:
+    pickle.dump(L2wErrorArray, f)
+f.close()
+with open('TimingArrayT.pickle', 'wb') as f:
+    pickle.dump(np.asarray(TimingArrayT), f)
+f.close()
+with open('TimingArray.pickle', 'wb') as f:
+    pickle.dump(np.asarray(TimingArray), f)
+f.close()
+    
 mm = min(min(TimingArrayT), min(TimingArray))
 mm = TimingArray[0]
 
@@ -128,10 +142,11 @@ rcParams['font.family'] = 'serif'
 rcParams['font.weight'] = 'bold'
 rcParams['font.size'] = '18'
 fontprops = {'fontweight': 'bold'}
+
 m = np.max(np.asarray(TimingArrayT)/mm) 
-nearest_multiple = int(5 * round(m/5))
+# nearest_multiple = int(5 * round(m/5))
 plt.figure()
-plt.yticks(np.arange(0, nearest_multiple+10, 5))
+# plt.yticks(np.arange(0, nearest_multiple+10, 5))
 plt.semilogx(L2wErrorArrayT[:,-1],np.asarray(TimingArrayT)/mm, 'o-',label="Tensorized")
 plt.semilogx(L2wErrorArray[:,-1],np.asarray(TimingArray)/mm, 'o:r', label="Adaptive")
 plt.semilogx(L2wErrorArray[0,-1],np.asarray(TimingArray[0])/mm, 'ok', label="Unit Time")
