@@ -37,7 +37,7 @@ kstepMax = 0.07 # Lambda
 radius = 0.5 # R
 count = 0
 mTimes = []
-numTimes = 5
+numTimes = 2
 for i in x:
     for j in range(numTimes):
         start = datetime.now()
