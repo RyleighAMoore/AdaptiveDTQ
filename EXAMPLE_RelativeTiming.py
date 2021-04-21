@@ -23,10 +23,10 @@ x = [1,3,5,7]
 # x=[0]
 # x=[1,2]
 h=0.01
-times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
+# times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
 
 
-L2wErrorArray = np.zeros((len(x),len(times)))
+L2wErrorArray = np.zeros((len(x),NumSteps+1))
 LengthArray = []
 
 TimingArray = []
@@ -68,9 +68,9 @@ x = [0.1, 0.08, 0.06, 0.05, 0.04, 0.03]
 # x=[0.1,.15]
 
 h=0.01
-times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
+# times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
 
-L2wErrorArrayT = np.zeros((len(x),len(times)))
+L2wErrorArrayT = np.zeros((len(x),NumSteps+1))
 timesArrayT = []
 stepArrayT = []
 LengthArrayT = []
