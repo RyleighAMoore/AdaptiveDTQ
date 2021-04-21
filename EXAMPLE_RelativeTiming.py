@@ -37,7 +37,7 @@ kstepMax = 0.07 # Lambda
 radius = 0.5 # R
 count = 0
 mTimes = []
-numTimes = 2
+numTimes = 1
 for i in x:
     for j in range(numTimes):
         start = datetime.now()
@@ -45,7 +45,7 @@ for i in x:
         end = datetime.now()
         time = end-start
         mTimes.append(time.total_seconds())
-    TimingArray.append(sum(mTimes)/len(mTimes))
+    TimingArray.append(sum(mTimes)/numTimes)
     
     surfaces = []
     for ii in range(len(PdfTraj)):
@@ -74,15 +74,15 @@ LengthArrayT = []
 
 TimingArrayT = []
 
-xmin = -2.5
-xmax = 5.1
-ymin = -3
-ymax = 3.1
+# xmin = -2.5
+# xmax = 5.1
+# ymin = -3
+# ymax = 3.1
 
-xmin = -0.5
-xmax = 4.5
-ymin = -1.5
-ymax = 1.5
+# xmin = -0.5
+# xmax = 4.5
+# ymin = -1.5
+# ymax = 1.5
 
 meshF = np.asarray(Meshes[0])
 meshL = np.asarray(Meshes[-1])
@@ -92,6 +92,7 @@ xmin = min(np.min(meshF[:,0]), np.min(meshL[:,0]))
 xmax = max(np.max(meshF[:,0]), np.max(meshL[:,0]))
 ymin = min(np.min(meshF[:,1]), np.min(meshL[:,1]))
 ymax = max(np.max(meshF[:,1]), np.max(meshL[:,1]))
+# print("!!!!!!!!!")
 count = 0
 mTimesT = []
 for i in x:
@@ -101,7 +102,7 @@ for i in x:
         end = datetime.now()
         time = end-start
         mTimesT.append(time.total_seconds())
-    TimingArrayT.append(sum(mTimesT)/len(mTimesT))
+    TimingArrayT.append(sum(mTimesT)/numTimes)
     
     LengthArrayT.append(len(mesh))
     Meshes = []
