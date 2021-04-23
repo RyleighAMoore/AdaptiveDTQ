@@ -14,7 +14,7 @@ mydrift = MovingHillDrift
 mydiff = DiagDiffOne
 
 '''Initialization Parameters'''
-NumSteps = 115
+NumSteps = 199
 
 x = [1,2,3,4,5,6,7,8,9,10,15]
 x = [1,3,5,7]
@@ -64,7 +64,7 @@ for i in x:
 '''Discretization Parameters'''
 
 x = [0.1, 0.15, 0.18]
-x = [0.2, 0.15, 0.1, 0.08]
+x = [0.2, 0.15, 0.1]
 # x=[0.1,.15]
 
 h=0.01
