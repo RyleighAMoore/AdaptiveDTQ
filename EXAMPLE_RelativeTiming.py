@@ -17,7 +17,7 @@ mydiff = DiagDiffOne
 NumSteps = 199
 
 x = [1,2,3,4,5,6,7,8,9,10,15]
-x = [1,3,5,7]
+x = [2,3,5,7]
 # x = [7,5,3,1]
 
 # x=[0]
@@ -47,6 +47,7 @@ for i in x:
         Meshes, PdfTraj, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstepMin, kstepMax, h, i, radius, mydrift, mydiff, PrintStuff=False)
         end = datetime.now()
         time = end-start
+        print(time)
         mTimes.append(time.total_seconds())
     TimingArray.append(sum(mTimes)/numTimes)
     
