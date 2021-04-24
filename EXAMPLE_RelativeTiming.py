@@ -105,6 +105,8 @@ for i in x:
         mesh, surfaces = MatrixMultiplyDTQ(NumSteps, i, h, mydrift, mydiff, xmin, xmax, ymin, ymax)
         end = datetime.now()
         time = end-start
+        print(time)
+
         mTimesT.append(time.total_seconds())
     TimingArrayT.append(sum(mTimesT)/numTimes)
     
