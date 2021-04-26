@@ -14,7 +14,7 @@ mydrift = MovingHillDrift
 mydiff = DiagDiffOne
 
 '''Initialization Parameters'''
-NumSteps = 199
+NumSteps = 114
 
 x = [1,2,3,4,5,6,7,8,9,10,15]
 x = [2,3,5,7]
@@ -126,16 +126,16 @@ for i in x:
     count = count+1
     
 import pickle
-with open('L2wErrorArrayT.pickle', 'wb') as f:
+with open('L2wErrorArrayT115.pickle', 'wb') as f:
     pickle.dump(L2wErrorArrayT, f)
 f.close()
-with open('L2wErrorArray.pickle', 'wb') as f:
+with open('L2wErrorArray115.pickle', 'wb') as f:
     pickle.dump(L2wErrorArray, f)
 f.close()
-with open('TimingArrayT.pickle', 'wb') as f:
+with open('TimingArrayT115.pickle', 'wb') as f:
     pickle.dump(np.asarray(TimingArrayT), f)
 f.close()
-with open('TimingArray.pickle', 'wb') as f:
+with open('TimingArray115.pickle', 'wb') as f:
     pickle.dump(np.asarray(TimingArray), f)
 f.close()
     
