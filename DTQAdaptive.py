@@ -1,9 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import Functions as fun
-from mpl_toolkits.mplot3d import Axes3D
-from tqdm import trange
 from scipy.spatial import Delaunay
 import LejaQuadrature as LQ
 from pyopoly1.families import HermitePolynomials
@@ -11,11 +7,6 @@ from pyopoly1 import indexing
 import MeshUpdates2D as MeshUp
 from pyopoly1.Scaling import GaussScale
 import ICMeshGenerator as M
-import pickle  
-from Errors import ErrorVals
-from datetime import datetime
-from exactSolutions import TwoDdiffusionEquation
-from Errors import ErrorValsExact
 
 
 def DTQ(NumSteps, minDistanceBetweenPoints, maxDistanceBetweenPoints, h, degree, meshRadius, drift, diff, PrintStuff = True):
@@ -31,7 +22,6 @@ def DTQ(NumSteps, minDistanceBetweenPoints, maxDistanceBetweenPoints, h, degree,
     poly = HermitePolynomials(rho=0)
     d=2
     k = 40    
-    ab = poly.recurrence(k+1)
     lambdas = indexing.total_degree_indices(d, k)
     poly.lambdas = lambdas
     
@@ -118,17 +108,7 @@ def DTQ(NumSteps, minDistanceBetweenPoints, maxDistanceBetweenPoints, h, degree,
             LPMatBool2[:len(mesh)]= LPMatBool[:len(mesh)]
             LPMatBool = LPMatBool2
         
-    
-    # end = datetime.now()
-    # Timing.append(end)
-    # print("Time: ", end-start)
 
-    # surfaces = []
-    # for ii in range(len(PdfTraj)):
-    #     ana = TwoDdiffusionEquation(Meshes[ii],diff(np.asarray([0,0]))[0,0], h*(ii+1),drift(np.asarray([0,0]))[0,0])
-    #     surfaces.append(ana)
-
-    # LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, PrintStuff, plot=True)
     if PrintStuff:
         return Meshes, PdfTraj, LPReuseArr, AltMethod
     else: 

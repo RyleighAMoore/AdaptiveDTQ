@@ -1,11 +1,5 @@
 import numpy as np
-import XGrid
-import random
 import matplotlib.pyplot as plt
-from scipy.spatial import Delaunay
-import Functions as fun
-import Operations2D
-from mpl_toolkits.mplot3d import Axes3D
 
 # xCoord, yCoord, is the point we are looking for the closests 
 # two points to. 

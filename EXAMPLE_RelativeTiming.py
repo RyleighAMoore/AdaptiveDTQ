@@ -5,7 +5,7 @@ import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import Functions as fun
 from DriftDiffFunctionBank import MovingHillDrift, DiagDiffOne
-from DTQFastMatrixMult import MatrixMultiplyDTQ
+from DTQTensorized import MatrixMultiplyDTQ
 from exactSolutions import TwoDdiffusionEquation
 from Errors import ErrorValsExact
 from datetime import datetime
@@ -16,25 +16,15 @@ mydiff = DiagDiffOne
 '''Initialization Parameters'''
 NumSteps = 115
 
-x = [1,2,3,4,5,6,7,8,9,10,15]
 x = [2,3,5,7]
-# x = [7,5,3,1]
-
-# x=[0]
-# x=[1,2]
 h=0.01
-# times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
 
-
-L2wErrorArray = np.zeros((len(x),NumSteps+1))
+L2wErrorArray = np.zeros((len(x),NumSteps))
 LengthArray = []
 
 TimingArray = []
 
 a = 1
-# kstepMin = 0.05 # lambda
-# kstepMax = 0.07 # Lambda
-# radius = 0.5 # R
 kstepMin = 0.15 # lambda
 kstepMax = 0.17 # Lambda
 radius = 1.5 # R
@@ -69,24 +59,12 @@ x = [0.2, 0.15,0.12, 0.1]
 # x=[0.1,.15]
 
 h=0.01
-# times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
-
-L2wErrorArrayT = np.zeros((len(x),NumSteps+1))
+L2wErrorArrayT = np.zeros((len(x),NumSteps))
 timesArrayT = []
 stepArrayT = []
 LengthArrayT = []
 
 TimingArrayT = []
-
-# xmin = -2.5
-# xmax = 5.1
-# ymin = -3
-# ymax = 3.1
-
-# xmin = -0.5
-# xmax = 4.5
-# ymin = -1.5
-# ymax = 1.5
 
 meshF = np.asarray(Meshes[0])
 meshL = np.asarray(Meshes[-1])
@@ -96,7 +74,6 @@ xmin = min(np.min(meshF[:,0]), np.min(meshL[:,0]))
 xmax = max(np.max(meshF[:,0]), np.max(meshL[:,0]))
 ymin = min(np.min(meshF[:,1]), np.min(meshL[:,1]))
 ymax = max(np.max(meshF[:,1]), np.max(meshL[:,1]))
-# print("!!!!!!!!!")
 count = 0
 mTimesT = []
 for i in x:
