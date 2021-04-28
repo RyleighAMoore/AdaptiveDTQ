@@ -1,48 +1,26 @@
 2D Method
 
-The main code for the 2D method is located at 2DTQ-UnorderedMeshWithMeshUpdates.py.
-The drift and diffustion for the code is set in the Function.py file. You can
-select from the options given or define your own. 
+Currently this code is only set up to run a two dimensional procedure.
 
-The current code has mesh updates where we add and remove points at the boundary.
-You can change tolerances for mesh spacing, etc in MeshUpdates.py. The current values work well
-in general. 
+The main function for the 2D adaptive method is located at DTQAdaptive.py. 
+The inputs for the procedure:
+ - NumSteps: The number of time steps you wish to run.
+ - minDistanceBetweenPoints (lambda in paper): Used to enforce minimum distances between points
+                                               Smaller diffusions require smaller values.
+ - maxDistanceBetweenPoints (Lambda in paper): Used to enforce maximum distances between points 
+                                               Smaller diffusions require smaller values.
+ - h: The time step size
+ - degree (beta in paper): Used to adjust the accuracy of the method by maintianing boundary points.
+                           A larger value means more accuracy but greater cost.
+ - meshRadius: Used to determine the radius of the inital radial mesh
+ - drift: The drift function
+ - diff: The diffusion function
+ - PrintStuff: Default is true. When true we print runtime information, when false, minimal information is printed.
 
+Sample drift and diffustion functions for the methods are set in the file DriftDiffFunctionBank.py
+and they can be imported for use. You can also write your own functions. 
 
-Untested/Needs to be implemented List:
-    1. Using diffusion that depends on (x,y) is currently untested with this version of the code. 
-
- 
-    2. Updates to change the density of the mesh interior are not working currently 
-        and are turned off right now in the code.
-        
-    3. h should be 0.01 right now. May require code adjustments to use different values.
-    
-    4. Currently using candidate samples of 7*np.random.normal(0, 1, (num_vars, n)) for Leja points.
-        Not sure if this is best. Need to test sqrt(2)*np.random.normal(0, 1, (num_vars, n)), etc.
-        
-        
-        
-Other good files to know:
-    Function.py - Change drift and diffusion functions here
-    
-    LejaQuadrature.py - Called from 2DTQ-UnorderedMeshWithMeshUpdates.py to step the solution forward in time.
-    
-    MeshUpdates2D.py - Contains the mesh update procedures. 
-                        You can change tolerances for mesh spacing, etc in MeshUpdates.py. 
-                        The current values seem to work well in general. 
-    
-    pyopoly1/QuadratureRules.py - Contains the Leja quadrature rules
-    
-    QuadraticFit.py - Contains the code for the Quadratic fit method to divide out gaussian from integrand.
-    
-    pyopoly1/LejaPoints.py - Methods to generate Leja Points. Uses code in pyopoly1/LejaUtilities.py
-    
-    
-
-WARNING:
-The files for the 1D method are mixed into this code as well. I should move them at some point to be separate.
-For example, setupMethods.py and QuadRules.py are for the 1D method.
+Please see the files which start with EXAMPLE_ the see how to run the procedure.
     
     
     

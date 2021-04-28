@@ -18,7 +18,7 @@ from exactSolutions import TwoDdiffusionEquation
 from Errors import ErrorValsExact
 
 
-def DTQ(NumSteps, minDistanceBetweenPoints, maxDistanceBetweenPoints, h, degree, meshRadius, drift, diff, PrintStuff = True, computeErrors = True):
+def DTQ(NumSteps, minDistanceBetweenPoints, maxDistanceBetweenPoints, h, degree, meshRadius, drift, diff, PrintStuff = True):
     '''Paramaters'''
     addPointsToBoundaryIfBiggerThanTolerance = 10**(-degree)
     removeZerosValuesIfLessThanTolerance = 10**(-degree-0.5)
@@ -73,7 +73,7 @@ def DTQ(NumSteps, minDistanceBetweenPoints, maxDistanceBetweenPoints, h, degree,
         LPReuseArr = []
         AltMethod = []
     
-    for i in range(1,NumSteps+1):
+    for i in range(1,NumSteps): # Since the first step is taken before this loop.
         if (i >= 0):
             '''Add points to mesh'''
             # plt.figure()

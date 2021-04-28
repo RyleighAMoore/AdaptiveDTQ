@@ -15,7 +15,7 @@ mydrift = TwoHillDrift
 mydiff = ComplexDiff
 
 '''Initialization Parameters'''
-NumSteps = 199
+NumSteps = 200
 '''Discretization Parameters'''
 a = 1
 h=0.01

@@ -8,7 +8,7 @@ mydrift = FourHillDrift
 mydiff = DiagDiffptSevenFive
 
 '''Initialization Parameters'''
-NumSteps = 114
+NumSteps = 115
 '''Discretization Parameters'''
 a = 1
 h=0.01

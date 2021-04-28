@@ -13,18 +13,15 @@ mydiff = DiagDiffOne
 
 
 '''Initialization Parameters'''
-NumSteps = 114
+NumSteps = 115
 
 '''Discretization Parameters'''
 
 
-x = [1,2,3,4,5,6,7,8,9,10,15]
+x = [1,2,3,4,5,6,7,8,9,10]
 
-x = [15]
-
-# x=[20]
 h=0.01
-times = np.asarray(np.arange(h,(NumSteps+2)*h,h))
+times = np.asarray(np.arange(h,(NumSteps+1)*h,h))
 
 L2ErrorArray = np.zeros((len(x),len(times)))
 LinfErrorArray = np.zeros((len(x),len(times)))
@@ -36,7 +33,6 @@ count = 0
 table = ""
 
 a = 1
-#kstepMin = np.round(min(0.15, 0.144*mydiff(np.asarray([0,0]))[0,0]+0.0056),2)
 kstepMin = 0.15 # lambda
 kstepMax = 0.17 # Lambda
 # beta = 3
@@ -65,7 +61,6 @@ for i in x:
     
 X,Y = np.meshgrid(times,x)
 fig = plt.figure()
-# ax.scatter(X, Y, L2wErrorArray, c='r', marker='.')
 plt.semilogy(times, L2wErrorArray[-1], c='r', marker='.')
 plt.semilogy(times, LinfErrorArray[-1], c='r', marker='.')
 plt.show()    
