@@ -62,7 +62,8 @@ def getLejaPoints(num_leja_samples, initial_samples, poly, num_candidate_samples
 
 
 def getLejaSetFromPoints(scale, Mesh, numLejaPointsToReturn, poly, Pdf, diff, numPointsForLejaCandidates):   
-    candidatesFull = VT.map_to_canonical_space(Mesh,scale)
+    # candidatesFull = VT.map_to_canonical_space(Mesh,scale)
+    candidatesFull = Mesh # don't need to transform since the scale is normal when this function is used.
     indices = [np.nan]
     candidates, distances, indik = UM.findNearestKPoints(scale.mu[0][0], scale.mu[1][0], candidatesFull,numPointsForLejaCandidates, getIndices = True)
     Px = candidates[0,0]

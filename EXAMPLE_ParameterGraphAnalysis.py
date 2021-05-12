@@ -14,7 +14,6 @@ mydiff = DiagDiffOne
 
 '''Initialization Parameters'''
 NumSteps = 115
-
 '''Discretization Parameters'''
 
 
