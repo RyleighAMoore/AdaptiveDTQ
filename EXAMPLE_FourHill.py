@@ -22,18 +22,18 @@ Meshes, PdfTraj, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, bet
 
 pc = []
 for i in range(len(Meshes)-1):
-    l = len(Meshes[i+1])
+    l = len(Meshes[i])
     pc.append(LPReuseArr[i]/l)
     
-mean = np.mean(pc[1:])
+mean = np.mean(pc)
 print("Leja Reuse: ", mean*100, "%")
 
 pc = []
 for i in range(len(Meshes)-1):
-    l = len(Meshes[i+1])
+    l = len(Meshes[i])
     pc.append(AltMethod[i]/l)
     
-mean2 = np.mean(pc[1:])
+mean2 = np.mean(pc)
 print("Alt Method: ", mean2*100, "%")
 
 
@@ -44,7 +44,7 @@ from plots import plotErrors, plotRowThreePlots, plot2DColorPlot, plotRowThreePl
 # plotRowThreePlotsMesh(Meshes, PdfTraj, h, [24,69,114], includeMeshPoints=True)
 plotRowSixPlots(Meshes, PdfTraj, h, [24,69,114])
 
-plot2DColorPlot(-1, Meshes, PdfTraj)
+# plot2DColorPlot(-1, Meshes, PdfTraj)
 
 
 def update_graph(num):

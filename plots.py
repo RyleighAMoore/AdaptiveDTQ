@@ -157,7 +157,7 @@ def plotRowSixPlots(Meshes, PdfTraj, h, indices):
         axs[0,times].set(adjustable='box', aspect='equal')
         axs[1,times].set(adjustable='box', aspect='equal')
 
-        axs[1, times].scatter(Meshes[ij][:,0], Meshes[ij][:,1], s=0.01, c='k')
+        axs[1, times].scatter(Meshes[ij][:,0], Meshes[ij][:,1],marker=".", color="k", s=0.005)
         val = str(np.round((ij+1)*h,4))
         axs[0,times].set_title('t = %s' %val)
         axs[0,times].set_xlim([-8, 8])

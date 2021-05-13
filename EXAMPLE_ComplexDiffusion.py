@@ -29,24 +29,24 @@ Meshes, PdfTraj, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, bet
 
 pc = []
 for i in range(len(Meshes)-1):
-    l = len(Meshes[i+1])
+    l = len(Meshes[i])
     pc.append(LPReuseArr[i]/l)
     
-mean = np.mean(pc[1:])
+mean = np.mean(pc)
 print("Leja Reuse: ", mean*100, "%")
 
 pc = []
 for i in range(len(Meshes)-1):
-    l = len(Meshes[i+1])
+    l = len(Meshes[i])
     pc.append(AltMethod[i]/l)
     
-mean2 = np.mean(pc[1:])
-print("Alt Method Use: ", mean2*100, "%")
+mean2 = np.mean(pc)
+print("Alt Method: ", mean2*100, "%")
 
 
 from plots import plotErrors, plotRowThreePlots
 '''Plot 3 Subplots'''
-plotRowThreePlots(Meshes, PdfTraj, h, [69,139,199], includeMeshPoints=False)
+# plotRowThreePlots(Meshes, PdfTraj, h, [69,139,199], includeMeshPoints=False)
 from plots import plotErrors, plotRowThreePlots, plot2DColorPlot, plotRowThreePlotsMesh, plotRowSixPlots
 
 plotRowSixPlots(Meshes, PdfTraj, h, [69,139,199])
