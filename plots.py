@@ -183,9 +183,6 @@ def plotRowSixPlots(Meshes, PdfTraj, h, indices):
             axs[0,times].set_xticklabels([])
             # axs[0,times].set_xticks([])
 
-            
-            
-        
         
         times = times+1
     cbar = plt.colorbar(cntr2, ax=axs[:3], location='bottom')
