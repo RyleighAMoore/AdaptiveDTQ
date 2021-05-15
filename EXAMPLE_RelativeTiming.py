@@ -103,16 +103,16 @@ for i in x:
     count = count+1
     
 import pickle
-with open('L2wErrorArrayT115nn.pickle', 'wb') as f:
+with open('L2wErrorArrayT115nn2.pickle', 'wb') as f:
     pickle.dump(L2wErrorArrayT, f)
 f.close()
-with open('L2wErrorArray115nn.pickle', 'wb') as f:
+with open('L2wErrorArray115nn2.pickle', 'wb') as f:
     pickle.dump(L2wErrorArray, f)
 f.close()
-with open('TimingArrayT115nn.pickle', 'wb') as f:
+with open('TimingArrayT115nn2.pickle', 'wb') as f:
     pickle.dump(np.asarray(TimingArrayT), f)
 f.close()
-with open('TimingArray115nn.pickle', 'wb') as f:
+with open('TimingArray115nn2.pickle', 'wb') as f:
     pickle.dump(np.asarray(TimingArray), f)
 f.close()
     
