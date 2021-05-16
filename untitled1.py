@@ -25,11 +25,11 @@ from datetime import datetime
 
 import pickle
 
-L2wErrorArray  = pickle.load( open("MiscCodeNotForProcedure\L2wErrorArray115n.pickle", "rb" ) )
-L2wErrorArrayT  = pickle.load( open( "MiscCodeNotForProcedure\L2wErrorArrayT115n.pickle", "rb" ) )
+L2wErrorArray  = pickle.load( open("L2wErrorArray115nn.pickle", "rb" ) )
+L2wErrorArrayT  = pickle.load( open( "L2wErrorArrayT115nn.pickle", "rb" ) )
 
-TimingArray  = pickle.load( open( "MiscCodeNotForProcedure\TimingArray115n.pickle", "rb" ) )
-TimingArrayT  = pickle.load( open( "MiscCodeNotForProcedure\TimingArrayT115n.pickle", "rb" ) ) 
+TimingArray  = pickle.load( open( "TimingArray115nn.pickle", "rb" ) )
+TimingArrayT  = pickle.load( open( "TimingArrayT115nn.pickle", "rb" ) ) 
     
 
 
@@ -56,6 +56,8 @@ plt.xlabel(r"$L_{2w}$ Error")
 plt.legend()
 # plt.xticks([10**(-7), 10**(-6), 10**(-5),  10**(-4), 10**(-3),  10**(-2),  10**(-1), 10**(0)])
 plt.xticks([10**(-8), 10**(-6),  10**(-4),  10**(-2), 10**(0)])
+plt.yticks([0,10,20,30,40,50,60])
+
 
 plt.show()
     

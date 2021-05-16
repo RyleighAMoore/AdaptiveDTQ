@@ -16,7 +16,7 @@ mydiff = DiagDiffOne
 '''Initialization Parameters'''
 NumSteps = 115
 
-x = [2,3,5,7]
+x = [1.5,2,3,5,7]
 h=0.01
 
 L2wErrorArray = np.zeros((len(x),NumSteps))
@@ -49,6 +49,7 @@ for i in x:
     LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, plot=False)
 
     L2wErrorArray[count,:] = np.asarray(L2wErrors)
+    print(L2wErrorArray)
     count = count+1
     
 
