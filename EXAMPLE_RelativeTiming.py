@@ -16,7 +16,7 @@ mydiff = DiagDiffOne
 '''Initialization Parameters'''
 NumSteps = 115
 
-x = [1.5,2,3,5,7]
+x = [1.55,3,5,7]
 h=0.01
 
 L2wErrorArray = np.zeros((len(x),NumSteps))
@@ -49,13 +49,12 @@ for i in x:
     LinfErrors, L2Errors, L1Errors, L2wErrors = ErrorValsExact(Meshes, PdfTraj, surfaces, plot=False)
 
     L2wErrorArray[count,:] = np.asarray(L2wErrors)
-    print(L2wErrorArray)
     count = count+1
     
 
 '''Discretization Parameters'''
 
-x = [0.1, 0.15, 0.18]
+# x = [0.1, 0.15, 0.18]
 x = [0.2, 0.15,0.12, 0.1]
 # x=[0.1,.15]
 
@@ -104,16 +103,16 @@ for i in x:
     count = count+1
     
 import pickle
-with open('L2wErrorArrayT115nn2.pickle', 'wb') as f:
+with open('L2wErrorArrayT115a.pickle', 'wb') as f:
     pickle.dump(L2wErrorArrayT, f)
 f.close()
-with open('L2wErrorArray115nn2.pickle', 'wb') as f:
+with open('L2wErrorArray115a.pickle', 'wb') as f:
     pickle.dump(L2wErrorArray, f)
 f.close()
-with open('TimingArrayT115nn2.pickle', 'wb') as f:
+with open('TimingArrayT115a.pickle', 'wb') as f:
     pickle.dump(np.asarray(TimingArrayT), f)
 f.close()
-with open('TimingArray115nn2.pickle', 'wb') as f:
+with open('TimingArray115a.pickle', 'wb') as f:
     pickle.dump(np.asarray(TimingArray), f)
 f.close()
     
