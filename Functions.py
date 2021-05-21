@@ -91,35 +91,3 @@ def AddPointToG(mesh, newPointindex, h, GMat, drift, diff, SpatialDiff):
     return GMat
 
 
-# def AddPointToG(mesh, newPointindex, h, GMat, drift, diff):
-#     newRow = G(newPointindex, mesh,h, drift, diff)
-#     GMat[newPointindex,:len(newRow)] = newRow
-#     D = mesh.shape[1]
-#     mu = mesh[-1,:]+drift(np.expand_dims(mesh[-1,:],axis=0))*h
-#     mu = mu[0]
-#     # cov = diff(mesh) ** 2 * h # put inside loop if cov changes spatially
-#     cov = diff(mesh)@diff(mesh).T*h
-#     newCol = np.empty(len(mesh))
-#     const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
-#     covInv = np.linalg.inv(cov)
-#     for j in range(len(mesh)):
-#         x = mesh[j,:]
-#         Gs = np.exp(-1/2*((x-mu).T@covInv@(x.T-mu.T)))
-#         newCol[j] = (Gs)
-
-#     GMat[:len(newCol),newPointindex] = newCol*const
-#     return GMat
-
-
-
-# # Drift fuction
-# def driftfun(x):
-#     if isinstance(x, int) | isinstance(x, float):
-#         return 1
-#     else:
-#         return np.ones(np.shape(x)) * 1
-#     # return x * (4 - x ** 2)
-
-# # Diffusion ction
-# def difffun(x):
-#     return np.repeat(1, np.size(x))
