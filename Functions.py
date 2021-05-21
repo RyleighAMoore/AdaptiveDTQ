@@ -44,6 +44,7 @@ def covPart(Px, Py, mesh, cov):
 
 
 def G(indexOfMesh,mesh, h, drift, diff, SpatialDiff):
+    '''Changing mu and cov over each row'''
     x = mesh[indexOfMesh,:]
     D = mesh.shape[1]
     mean = mesh+drift(mesh)*h
