@@ -37,7 +37,7 @@ lambdas = indexing.total_degree_indices(d, k)
 poly.lambdas = lambdas
 lejaPointsFinal, new = getLejaPoints(10, np.asarray([[0,0]]).T, poly, num_candidate_samples=5000, candidateSampleMesh = [], returnIndices = False)
     
-def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod, drift, diff,numPointsForLejaCandidates, PrintStuff = True):
+def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, step, GMat, LPMat, LPMatBool, numQuadFit, removeZerosValuesIfLessThanTolerance, conditionNumForAltMethod, drift, diff,numPointsForLejaCandidates, SpatialDiff, PrintStuff = True):
     numLejas = LPMat.shape[1]
     newPDF = []
     # condNums = []
@@ -73,7 +73,7 @@ def Test_LejaQuadratureLinearizationOnLejaPoints(mesh, pdf, poly, h, NumLejas, s
             pdf12 = np.asarray(griddata(meshLP, pdfNew, mesh12, method='linear', fill_value=np.min(pdf)))
             pdfNew[pdfNew < 0] = np.min(pdf)
             
-            v = np.expand_dims(G(0,mesh12, h, drift, diff),1)
+            v = np.expand_dims(G(0,mesh12, h, drift, diff, SpatialDiff),1)
             
             
             L = np.linalg.cholesky((scaling.cov))

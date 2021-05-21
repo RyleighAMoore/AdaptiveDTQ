@@ -36,9 +36,10 @@ kstepMin = 0.15 # lambda
 kstepMax = 0.17 # Lambda
 # beta = 3
 radius = 1.5 # R
+SpatialDiff = False
 
 for i in x:
-    Meshes, PdfTraj, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstepMin, kstepMax, h, i, radius, mydrift, mydiff, PrintStuff=False)
+    Meshes, PdfTraj, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstepMin, kstepMax, h, i, radius, mydrift, mydiff, SpatialDiff, PrintStuff=False)
     surfaces = []
     for ii in range(len(PdfTraj)):
         ana = TwoDdiffusionEquation(Meshes[ii],mydiff(np.asarray([0,0]))[0,0], h*(ii+1), mydrift(np.asarray([0,0]))[0,0])

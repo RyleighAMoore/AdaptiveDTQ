@@ -17,8 +17,9 @@ kstepMin = 0.08 # lambda
 kstepMax =  0.1
 beta = 3
 radius = 1 # R
+SpatialDiff = False
 
-Meshes, PdfTraj, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff)
+Meshes, PdfTraj, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff, SpatialDiff)
 
 from plots import plotErrors, plotRowThreePlots
 '''Plot 3 Subplots'''

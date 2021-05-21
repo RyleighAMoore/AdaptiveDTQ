@@ -43,16 +43,23 @@ def covPart(Px, Py, mesh, cov):
     return np.asarray(vals)
 
 
-def G(indexOfMesh,mesh, h, drift, diff):
+def G(indexOfMesh,mesh, h, drift, diff, SpatialDiff):
     x = mesh[indexOfMesh,:]
     D = mesh.shape[1]
     mean = mesh+drift(mesh)*h
-    # cov = diff(mesh) ** 2 * h
-    soln_vals = np.empty(len(mesh))
-    for j in range(len(mesh)):
-        cov = diff(mesh)@diff(mesh).T * h
+    
+    if not SpatialDiff:
+        cov = diff(x)@diff(x).T * h
         const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
         invCov = np.linalg.inv(cov)
+        
+    soln_vals = np.empty(len(mesh))
+    for j in range(len(mesh)):
+        if SpatialDiff:
+            m = mesh[j,:]
+            cov = diff(m)@diff(m).T * h
+            const = 1/(np.sqrt((2*np.pi)**D*abs(np.linalg.det(cov))))
+            invCov = np.linalg.inv(cov)
         mu = mean[j,:]
         Gs = np.exp(-1/2*((x-mu).T@invCov@(x.T-mu.T)))
         soln_vals[j] = Gs
@@ -60,8 +67,8 @@ def G(indexOfMesh,mesh, h, drift, diff):
 
 
 
-def AddPointToG(mesh, newPointindex, h, GMat, drift, diff):
-    newRow = G(newPointindex, mesh,h, drift, diff)
+def AddPointToG(mesh, newPointindex, h, GMat, drift, diff, SpatialDiff):
+    newRow = G(newPointindex, mesh,h, drift, diff, SpatialDiff)
     
     #Now, add new column
     GMat[newPointindex,:len(newRow)] = newRow

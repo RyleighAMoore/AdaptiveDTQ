@@ -17,8 +17,9 @@ kstepMin = 0.12 # lambda
 kstepMax = 0.14 # Lambda
 beta = 3
 radius = 1 # R
+SpatialDiff = False
 
-Meshes, PdfTraj, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff, PrintStuff=True)
+Meshes, PdfTraj, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff, SpatialDiff, PrintStuff=True)
 
 pc = []
 for i in range(len(Meshes)-1):

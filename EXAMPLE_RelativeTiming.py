@@ -28,13 +28,15 @@ a = 1
 kstepMin = 0.15 # lambda
 kstepMax = 0.17 # Lambda
 radius = 1.5 # R
+SpatialDiff = False
 count = 0
 mTimes = []
 numTimes = 5
+
 for i in x:
     for j in range(numTimes):
         start = datetime.now()
-        Meshes, PdfTraj, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstepMin, kstepMax, h, i, radius, mydrift, mydiff, PrintStuff=False)
+        Meshes, PdfTraj, LPReuseArr, AltMethod= D.DTQ(NumSteps, kstepMin, kstepMax, h, i, radius, mydrift, mydiff,SpatialDiff, PrintStuff=False)
         end = datetime.now()
         time = end-start
         print(time)

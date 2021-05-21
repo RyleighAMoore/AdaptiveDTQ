@@ -9,7 +9,7 @@ from pyopoly1.Scaling import GaussScale
 import ICMeshGenerator as M
 
 
-def DTQ(NumSteps, minDistanceBetweenPoints, maxDistanceBetweenPoints, h, degree, meshRadius, drift, diff, PrintStuff = True):
+def DTQ(NumSteps, minDistanceBetweenPoints, maxDistanceBetweenPoints, h, degree, meshRadius, drift, diff, SpatialDiff, PrintStuff = True):
     '''Paramaters'''
     addPointsToBoundaryIfBiggerThanTolerance = 10**(-degree)
     removeZerosValuesIfLessThanTolerance = 10**(-degree-0.5)
@@ -52,7 +52,7 @@ def DTQ(NumSteps, minDistanceBetweenPoints, maxDistanceBetweenPoints, h, degree,
     
     GMat = np.empty([maxDegFreedom, maxDegFreedom])*np.NaN
     for i in range(len(mesh)):
-        v = fun.G(i,mesh, h, drift, diff)
+        v = fun.G(i,mesh, h, drift, diff, SpatialDiff)
         GMat[i,:len(v)] = v
         
     LPMat = np.ones([maxDegFreedom, NumLejas])*-1
@@ -68,7 +68,7 @@ def DTQ(NumSteps, minDistanceBetweenPoints, maxDistanceBetweenPoints, h, degree,
             '''Add points to mesh'''
             # plt.figure()
             # plt.scatter(mesh[:,0], mesh[:,1])
-            mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, minDistanceBetweenPoints, h, poly, GMat, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints, drift, diff)
+            mesh, pdf, tri, addBool, GMat = MeshUp.addPointsToMeshProcedure(mesh, pdf, tri, minDistanceBetweenPoints, h, poly, GMat, addPointsToBoundaryIfBiggerThanTolerance, removeZerosValuesIfLessThanTolerance, minDistanceBetweenPoints,maxDistanceBetweenPoints, drift, diff, SpatialDiff)
             # plt.plot(mesh[:,0], mesh[:,1], '*r')
 
         if i>=15 and i%10==9:

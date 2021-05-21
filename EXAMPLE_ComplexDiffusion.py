@@ -15,7 +15,7 @@ mydrift = TwoHillDrift
 mydiff = ComplexDiff
 
 '''Initialization Parameters'''
-NumSteps = 200
+NumSteps = 150
 '''Discretization Parameters'''
 a = 1
 h=0.01
@@ -24,8 +24,9 @@ kstepMin = 0.1 # lambda
 kstepMax = 0.12 # Lambda
 beta = 3
 radius = 1 # R
+SpatialDiff = True
 
-Meshes, PdfTraj, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff)
+Meshes, PdfTraj, LPReuseArr, AltMethod= DTQ(NumSteps, kstepMin, kstepMax, h, beta, radius, mydrift, mydiff, SpatialDiff)
 
 pc = []
 for i in range(len(Meshes)-1):
@@ -49,7 +50,7 @@ from plots import plotErrors, plotRowThreePlots
 # plotRowThreePlots(Meshes, PdfTraj, h, [69,139,199], includeMeshPoints=False)
 from plots import plotErrors, plotRowThreePlots, plot2DColorPlot, plotRowThreePlotsMesh, plotRowSixPlots
 
-plotRowSixPlots(Meshes, PdfTraj, h, [69,139,199])
+plotRowSixPlots(Meshes, PdfTraj, h, [49,109,149])
 
 def update_graph(num):
     graph.set_data (Meshes[num][:,0], Meshes[num][:,1])
