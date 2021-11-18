@@ -1,4 +1,6 @@
-This code has been rewritten for the general ND case using a more class driven approach. The current repo for the rewritten code is currently private. 
+This code has been rewritten for the general ND case using a more class driven approach. 
+The current repo for the rewritten code is currently private but will be made public at
+a later date.
 
 2D Method
 
