@@ -1,3 +1,5 @@
+This code has been rewritten for the general ND case using a more class driven approach. The current repo for the rewritten code is currently private. 
+
 2D Method
 
 Currently this code is only set up to run a two dimensional procedure.
